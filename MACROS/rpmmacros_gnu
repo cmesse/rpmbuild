@@ -3,7 +3,7 @@
 %tpls_compiler       gnu
 %tpls_libs           shared
 %tpls_host           skylake
-%tpls_gpu            cuda
+%tpls_gpu            lapack
 
 %tpls_mklroot           /opt/intel/oneapi/mkl/latest
 
@@ -19,7 +19,7 @@
 %tpls_arflags        -cru
 %tpls_coptflags      -O2 -mtune=%{tpls_host} -fno-fast-math
 %tpls_cxxoptflags    -O2 -mtune=%{tpls_host} -fno-fast-math
-%tpls_foptflags      -O2 -mtune=%{tpls_host} -fno-fast-math -fdefault-integer-4
+%tpls_foptflags      -O2 -mtune=%{tpls_host} -fno-fast-math
 %tpls_includes      -I%{tpls_prefix}/include
 
 %tpls_mkl_ldflags   -L%{tpls_mklroot}/lib

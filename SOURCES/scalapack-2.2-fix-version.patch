@@ -1,0 +1,44 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -10,6 +10,11 @@ configure_file(
+ # Add the CMake directory for custon CMake modules
+ set(CMAKE_MODULE_PATH "${SCALAPACK_SOURCE_DIR}/CMAKE" ${CMAKE_MODULE_PATH})
+ 
++set(SCALAPACK_VERSION_MAJOR 2)
++set(SCALAPACK_VERSION_MINOR 2)
++set(SCALAPACK_VERSION_PATCH 0)
++set(SCALAPACK_VERSION ${SCALAPACK_VERSION_MAJOR}.${SCALAPACK_VERSION_MINOR}.${SCALAPACK_VERSION_PATCH} )
++
+ if (UNIX)
+    if ("${CMAKE_Fortran_COMPILER_ID}" STREQUAL "Intel")
+       set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fltconsistency -fp_port" )
+@@ -232,6 +237,7 @@ append_subdir_files(src-C "SRC")
+ 
+ if (UNIX)
+    add_library(scalapack ${blacs} ${tools} ${tools-C} ${extra_lapack} ${pblas} ${pblas-F} ${ptzblas} ${ptools} ${pbblas} ${redist} ${src} ${src-C})
++   set_target_properties(scalapack PROPERTIES VERSION ${SCALAPACK_VERSION} SOVERSION ${SCALAPACK_VERSION_MAJOR} )
+    target_link_libraries( scalapack ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
+    scalapack_install_library(scalapack)
+ else (UNIX) # Need to separate Fortran and C Code
+@@ -255,9 +261,8 @@ endif()
+ SET(CPACK_PACKAGE_NAME "ScaLAPACK")
+ SET(CPACK_PACKAGE_VENDOR "University of Tennessee, Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd")
+ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "ScaLAPACK- Linear Algebra Package")
+-set(SCALAPACK_VERSION 2.1.0)
+ set(CPACK_PACKAGE_VERSION_MAJOR 2)
+-set(CPACK_PACKAGE_VERSION_MINOR 1)
++set(CPACK_PACKAGE_VERSION_MINOR 2)
+ set(CPACK_PACKAGE_VERSION_PATCH 0)
+ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "SCALAPACK")
+@@ -307,8 +312,8 @@ configure_file(${SCALAPACK_SOURCE_DIR}/C
+ install(FILES
+   ${SCALAPACK_BINARY_DIR}/CMakeFiles/scalapack-config.cmake
+   ${SCALAPACK_BINARY_DIR}/scalapack-config-version.cmake
+-  DESTINATION lib/cmake/scalapack-${SCALAPACK_VERSION}
++  DESTINATION lib${LIB_SUFFIX}/cmake/scalapack-${SCALAPACK_VERSION}
+   )
+ 
+ install(EXPORT scalapack-targets
+-  DESTINATION lib/cmake/scalapack-${SCALAPACK_VERSION})
++  DESTINATION lib${LIB_SUFFIX}/cmake/scalapack-${SCALAPACK_VERSION})

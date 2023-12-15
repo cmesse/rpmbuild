@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        The NIST Reference Implementation of the Fortran Sparse Matrix Toolkit
 
 
-License:        Not Specified - Contact NIST
+License:        Public Domain
 URL:            https://math.nist.gov/spblas/
 Source0:        ftp://gams.nist.gov/pub/karin/fspblas/fspblas.shar.gz
 
@@ -12,9 +12,16 @@ BuildRequires:  tpls-%{tpls_flavor}-blas
 Requires:       tpls-%{tpls_flavor}-blas
 
 %description
-FSPBLAS, from NIST, serves as a reference Fortran implementation for sparse matrix computations, akin to the role of BLAS in linear algebra. It supports key formats like CSR, CSC, and COO, and includes routines for matrix multiplication and triangular solves. While primarily used for development and testing in scientific computing, for performance-critical applications, alternatives like Intel's MKL are recommended. FSPBLAS's vintage status means it lacks a contemporary open-source license; users should consult NIST or legal advisors for usage permissions. As a reference tool, it's valuable for understanding and developing sparse matrix operations in high-performance computing contexts.
+FSPBLAS, from NIST, serves as a reference Fortran implementation for sparse matrix computations, akin to the role of BLAS in linear algebra. It supports key formats like CSR, CSC, and COO, and includes routines for matrix multiplication and triangular solves. While primarily used for development and testing in scientific computing, for performance-critical applications, alternatives like Intel's MKL are recommended. 
 
 %prep
+
+if [ "%{tpls_gpu}" != "lapack" ] || [ "%{tpls_compiler}" != "gnu" ]; then
+    echo "Error: We only want to compile this library for tpls-gnu-lapack-* flavors!"
+    exit 1
+fi
+
+
 # Decompress the .shar.gz file
 gzip -dc %{SOURCE0} > fspblas.shar
 

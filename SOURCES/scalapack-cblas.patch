@@ -1,0 +1,111 @@
+--- a/BLACS/SRC/Bdef.h
++++ b/BLACS/SRC/Bdef.h
+@@ -523,5 +523,25 @@
+ 
+ #endif
+ 
++// ISO C99 and later do not support implicit function declarations
++// let's define some frequently used functions here
++
++void BI_ivmcopy(Int m, Int n, Int *A, Int lda, Int *buff);
++void BI_imvcopy(Int m, Int n, Int *A, Int lda, Int *buff);
++void BI_dvmcopy(Int m, Int n, double *A, Int lda, double *buff);
++void BI_dmvcopy(Int m, Int n, double *A, Int lda, double *buff);
++void BI_svmcopy(Int m, Int n, float *A, Int lda, float *buff);
++void BI_smvcopy(Int m, Int n, float *A, Int lda, float *buff);
++void BI_TransDist(BLACSCONTEXT *ctxt, char scope, Int m, Int n, Int *rA,
++                  Int *cA, Int ldrc, BI_DistType *dist, Int rdest, Int cdest);
++
++#if (INTFACE == C_CALL)
++void Cblacs_pinfo(Int *mypnum, Int *nprocs);
++void Cblacs_gridmap(Int *ConTxt, Int *usermap, Int ldup, Int nprow0, Int npcol0);
++#else
++F_VOID_FUNC blacs_pinfo_(Int *mypnum, Int *nprocs);
++F_VOID_FUNC blacs_gridmap_(Int *ConTxt, Int *usermap, Int *ldup, Int *nprow0,
++                           Int *npcol0);
++#endif
+ 
+ #endif
+--- a/BLACS/SRC/blacs_get_.c
++++ b/BLACS/SRC/blacs_get_.c
+@@ -14,15 +14,20 @@
+    switch( Mpval(what) )
+    {
+    case SGET_SYSCONTXT:
+-      if (BI_COMM_WORLD == NULL) Cblacs_pinfo(val, &ierr);
+ #if (INTFACE == C_CALL)
++      if (BI_COMM_WORLD == NULL) Cblacs_pinfo(val, &ierr);
+       *val = Csys2blacs_handle(MPI_COMM_WORLD);
+ #else
++	  if (BI_COMM_WORLD == NULL) blacs_pinfo_(val, &ierr);
+       *val = *BI_COMM_WORLD;
+ #endif
+       break;
+    case SGET_MSGIDS:
++#if (INTFACE == C_CALL)
+       if (BI_COMM_WORLD == NULL) Cblacs_pinfo(val, &val[1]);
++#else
++      if (BI_COMM_WORLD == NULL) blacs_pinfo_(val, &val[1]);
++#endif
+       iptr = &val[1];
+       ierr=MPI_Comm_get_attr(MPI_COMM_WORLD, MPI_TAG_UB, (BVOID **) &iptr,&flag);
+       val[0] = 0;
+--- a/TOOLS/SL_gridreshape.c
++++ b/TOOLS/SL_gridreshape.c
+@@ -5,6 +5,14 @@
+ #define Int int
+ #endif
+ 
++// ISO C99 and later do not support implicit function declarations
++// let's define some frequently used functions here
++void Cblacs_get(Int ConTxt, Int what, Int *val );
++void Cblacs_gridmap(Int *ConTxt, Int *usermap, Int ldup, Int nprow0, Int npcol0);
++void Cblacs_abort(Int ConTxt, Int ErrNo);
++Int Cblacs_pnum(Int ConTxt, Int prow, Int pcol);
++void Cblacs_gridinfo(Int ConTxt, Int *nprow, Int *npcol, Int *myrow, Int *mycol);
++
+ Int SL_Cgridreshape(Int ctxt, Int pstart, Int row_major_in, Int row_major_out, Int P, Int Q)
+ {
+    Int Cblacs_pnum();
+--- a/SRC/pcrot.c
++++ b/SRC/pcrot.c
+@@ -10,6 +10,10 @@
+ */
+ #include "pblas.h"
+ 
++// interface to numroc.f
++Int
++numroc_( Int * n, Int * nb, Int * iproc , Int * isrcproc, Int * nproc );
++
+ void pcrot_( Int *n, complex X[], Int *ix, Int *jx, Int desc_X[], Int *incx, complex Y[], Int *iy, Int *jy, Int desc_Y[], Int *incy, float *c, complex *s )
+ /*
+ *  Mark Fahey
+--- a/SRC/pzrot.c
++++ b/SRC/pzrot.c
+@@ -10,6 +10,10 @@
+ */
+ #include "pblas.h"
+ 
++// interface to numroc.f
++Int
++numroc_( Int * n, Int * nb, Int * iproc , Int * isrcproc, Int * nproc );
++
+ void pzrot_( Int *n, complex16 X[], Int *ix, Int *jx, Int desc_X[], Int *incx, complex16 Y[], Int *iy, Int *jy, Int desc_Y[], Int *incy, double *c, complex16 *s )
+ /*
+ *  Mark Fahey
+--- a/REDIST/SRC/redist.h
++++ a/REDIST/SRC/redist.h
+@@ -10,3 +10,13 @@
+ #ifndef Int
+ #define Int int
+ #endif
++
++// ISO C99 and later do not support implicit function declarations
++// let's define some frequently used functions here
++
++Int
++numroc_( Int * n, Int * nb, Int * iproc , Int * isrcproc, Int * nproc );
++
++void Cblacs_get(Int ConTxt, Int what, Int *val);
++void Cblacs_gridinfo(Int ConTxt, Int *nprow, Int *npcol, Int *myrow, Int *mycol);
++void Cblacs_gridmap(Int *ConTxt, Int *usermap, Int ldup, Int nprow0, Int npcol0);

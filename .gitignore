@@ -1,9 +1,7 @@
 .DS_Store
 BUILD/
 BUILDROOT/
-RPMS/
-SRPMS/
-
+RPMS/x86_64/repodata/
 =======
 
 # archives
@@ -11,3 +9,4 @@ SRPMS/
 *.tar.bz2
 *.tar.x2
 *.tgz
+*.rpm

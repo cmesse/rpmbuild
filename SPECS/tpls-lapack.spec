@@ -71,6 +71,13 @@ from C/C++ code by handling the differences between the Fortran and
 C calling conventions and data representations.
 
 %prep
+
+if [ "%{tpls_gpu}" != "lapack" ] || [ "%{tpls_compiler}" != "gnu" ]; then
+    echo "Error: We only want to compile this library for tpls-gnu-lapack-* flavors!"
+    exit 1
+fi
+
+
 %setup -q -n lapack-%{version}
 
 %build
@@ -90,16 +97,16 @@ mkdir -p build && cd build && LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" 
 %if "%{tpls_compiler}" == "intel"
 -DCMAKE_Fortran_COMPILER_ID="Intel" \
 %if "%{tpls_libs}" == "static"
--DCMAKE_Fortran_FLAGS_RELEASE="-O3 -fp-model strict -assume protect_parens -recursive -diag-disable 10121" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -assume protect_parens -recursive -diag-disable 10121" \
 %else
--DCMAKE_Fortran_FLAGS_RELEASE="-O3 -fp-model strict -assume protect_parens -recursive  -fPIC -diag-disable 10121" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -assume protect_parens -recursive  -fPIC -diag-disable 10121" \
 %endif
 %else
 -DCMAKE_Fortran_COMPILER_ID="GNU" \
 %if "%{tpls_libs}" == "static"
--DCMAKE_Fortran_FLAGS_RELEASE="-O2 -frecursive" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -frecursive" \
 %else
--DCMAKE_Fortran_FLAGS_RELEASE="-O2 -frecursive -fPIC " \
+-DCMAKE_Fortran_FLAGS_RELEASE="{tpls_foptflags} -frecursive -fPIC " \
 %endif
 %endif
 -DCBLAS=ON \

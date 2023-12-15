@@ -94,6 +94,7 @@ make %{?_smp_mflags} test
 %make_install
 %{tpls_remove_la_files}
 
+
 %files
 %{tpls_prefix}/bin/hwloc-annotate
 %{tpls_prefix}/bin/hwloc-bind
@@ -181,6 +182,10 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/include/mpif-sizeof.h
 %{tpls_prefix}/include/mpif.h
 %{tpls_prefix}/include/openmpi/mpiext/mpiext_cuda_c.h
+%{tpls_prefix}/include/openmpi/mpiext/mpiext_affinity_c.h
+%{tpls_prefix}/include/openmpi/mpiext/mpiext_ftmpi_c.h
+%{tpls_prefix}/include/openmpi/mpiext/mpiext_ftmpi_mpifh.h
+%{tpls_prefix}/include/openmpi/mpiext/mpiext_rocm_c.h
 %{tpls_prefix}/include/pmix.h
 %{tpls_prefix}/include/pmix/src/class/pmix_bitmap.h
 %{tpls_prefix}/include/pmix/src/class/pmix_hash_table.h
@@ -3613,6 +3618,7 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/share/openmpi/help-mpi-coll-sm.txt
 %{tpls_prefix}/share/openmpi/help-mpi-common-sm.txt
 %{tpls_prefix}/share/openmpi/help-mpi-errors.txt
+%{tpls_prefix}/share/openmpi/help-mpi-ft.txt
 %{tpls_prefix}/share/openmpi/help-mpi-pml-ob1.txt
 %{tpls_prefix}/share/openmpi/help-mpi-runtime.txt
 %{tpls_prefix}/share/openmpi/help-mpirun.txt
@@ -3742,7 +3748,6 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/share/prte/rst/prrte-rst-content/prterun-all-cli.rst
 %{tpls_prefix}/share/prte/rst/prrte-rst-content/prterun-all-deprecated.rst
 %{tpls_prefix}/share/prte/rst/schizo-ompi-rst-content/schizo-ompi-cli.rstxt
-
 
 %changelog
 * Thu Dec 14 2023 Christian Messe <cmesse@lbl.gov> - 5.0.0-1
