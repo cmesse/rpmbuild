@@ -1,0 +1,73 @@
+%debug_package %{nil}
+
+%tpls_compiler       gnu
+%tpls_libs           shared
+%tpls_host           skylake
+%tpls_gpu            cuda
+
+%tpls_mklroot           /opt/intel/oneapi/mkl/latest
+
+# compiler specific settings
+
+%tpls_ld            ld
+%tpls_ar            ar
+%tpls_cc            gcc
+%tpls_cxx           g++
+%tpls_fc            gfortran
+%tpls_cpp			gcc -E
+%tpls_cxxcpp		g++ -E
+%tpls_arflags        -cru
+%tpls_coptflags      -O2 -mtune=%{tpls_host} -fno-fast-math
+%tpls_cxxoptflags    -O2 -mtune=%{tpls_host} -fno-fast-math
+%tpls_foptflags      -O2 -mtune=%{tpls_host} -fno-fast-math -fdefault-integer-4
+%tpls_includes      -I%{tpls_prefix}/include
+
+%tpls_mkl_ldflags   -L%{tpls_mklroot}/lib
+%tpls_mkl_rpath    -Wl,-rpath,%{tpls_mklroot}/lib
+%tpls_ldflags      -L/opt/tpls/%{tpls_flavor}/%{tpls_libdir} %{tpls_comp_ldflags}
+%tpls_rpath       -Wl,-rpath,/opt/tpls/%{tpls_flavor}/%{tpls_libdir} %{tpls_comp_rpath}
+%tpls_ld_library_path %{tpls_prefix}/%{tpls_libdir}:%{tpls_mklroot}/lib 
+
+# library dependencies
+%tpls_comp_minver   11.4.1
+%tpls_rpm_cc        gcc
+%tpls_rpm_cxx       gcc-c++
+%tpls_rpm_fc        gfortran
+
+
+
+# shared settings
+%tpls_flavor       %{tpls_compiler}-%{tpls_host}-%{tpls_gpu}-%{tpls_libs}
+%tpls_prefix       /opt/tpls/%{tpls_flavor}
+
+# more macros
+%tpls_cuda        1
+%tpls_rocm        0
+%tpls_libdir        lib
+
+
+%tpls_compilers LD=%{tpls_ld} AR=%{tpls_ar} CC=%{tpls_cc} CXX=%{tpls_cxx} FC=%{tpls_fc}
+%tpls_configure LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
+%tpls_configure_noprefixdir %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
+
+%tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
+
+
+
+
+
+%tpls_mkl_includes      -I%{tpls_mklroot}/include
+
+%tpls_mkl_includes      -I%{tpls_mklroot}/include -m64
+
+%tpls_mkl_static        -Wl,--start-group %{tpls_mklroot}/lib/libmkl_intel_lp64.a %{tpls_mklroot}/lib/libmkl_gnu_thread.a ${MKLROOT}/lib/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl
+%tpls_mkl_mpi_static    %{tpls_mklroot}/lib/libmkl_scalapack_lp64.a -Wl,--start-group %{tpls_mklroot}/lib/libmkl_intel_lp64.a ${MKLROOT}/lib/libmkl_gnu_thread.a ${MKLROOT}/lib/libmkl_core.a ${MKLROOT}/lib/libmkl_blacs_openmpi_lp64.a -Wl,--end-group -lgomp -lpthread -lm -ldl
+
+%tpls_mkl_shared        -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lgomp -lpthread -lm -ldl
+%tpls_mkl_mpi_shared    -lmkl_scalapack_lp64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lmkl_blacs_openmpi_lp64 -lgomp -lpthread -lm -ldl
+
+%tpls_blas_static       %{tpls_prefix}/lib/libblas.a
+%tpls_lapack_static     %{tpls_prefix}/lib/liblapack.a
+
+%tpls_blas_shared       %{tpls_prefix}/lib/libblas.so
+%tpls_lapack_shared     %{tpls_prefix}/lib/liblapack.so

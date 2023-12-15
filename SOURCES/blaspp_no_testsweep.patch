@@ -1,0 +1,57 @@
+--- a/configure.py
++++ b/configure.py
+@@ -78,15 +78,6 @@
+ 
+     config.gpu_blas()
+ 
+-    testsweeper = config.get_package(
+-        'TestSweeper',
+-        ['../testsweeper', './testsweeper'],
+-        'https://github.com/icl-utk-edu/testsweeper',
+-        'https://github.com/icl-utk-edu/testsweeper/tarball/master',
+-        'testsweeper.tar.gz' )
+-    if (not testsweeper):
+-        print_warn( 'BLAS++ needs TestSweeper for testers.' )
+-
+     config.extract_defines_from_flags( 'CXXFLAGS', 'blaspp_header_defines' )
+     config.output_files( ['make.inc', 'include/blas/defines.h'] )
+     print( 'log in config/log.txt' )
+--- a/GNUmakefile
++++ b/GNUmakefile
+@@ -86,19 +86,14 @@
+ #-------------------------------------------------------------------------------
+ # TestSweeper
+ 
+-testsweeper_dir = $(wildcard ../testsweeper)
+-ifeq ($(testsweeper_dir),)
+-    testsweeper_dir = $(wildcard ./testsweeper)
+-endif
+-ifeq ($(testsweeper_dir),)
+-    $(tester_obj):
+-		$(error Tester requires TestSweeper, which was not found. Run 'make config' \
+-		        or download manually from https://github.com/icl-utk-edu/testsweeper)
+-endif
++# Set to the installed location of testsweeper, assuming it's in $(abs_prefix)
++testsweeper_dir = $(abs_prefix)
+ 
+-testsweeper_src = $(wildcard $(testsweeper_dir)/testsweeper.cc $(testsweeper_dir)/testsweeper.hh)
++# Update to include testsweeper headers, if needed
++testsweeper_src = $(wildcard $(testsweeper_dir)/include/testsweeper.hh)
+ 
+-testsweeper = $(testsweeper_dir)/libtestsweeper.$(lib_ext)
++# Point to the precompiled testsweeper library
++testsweeper = $(testsweeper_dir)/lib/libtestsweeper.$(lib_ext)
+ 
+ testsweeper: $(testsweeper)
+ 
+--- a/test/test.hh
++++ b/test/test.hh
+@@ -6,7 +6,7 @@
+ #ifndef TEST_HH
+ #define TEST_HH
+ 
+-#include "testsweeper.hh"
++#include <testsweeper.hh>
+ #include "blas.hh"
+ 
+ // -----------------------------------------------------------------------------

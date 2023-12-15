@@ -1,0 +1,43 @@
+%debug_package %{nil}
+
+%tpls_compiler       nvidia
+%tpls_libs           shared
+# skylake, alterlake, cascadelake
+%tpls_host           skylake
+# compiler specific settings
+
+# shared settings
+%tpls_flavor       %{tpls_compiler}-%{tpls_host}-%{tpls_libs}
+%tpls_prefix       /opt/tpls/%{tpls_flavor}
+
+%tpls_ld            ld
+%tpls_ar            ar
+%tpls_cc            nvc
+%tpls_cxx           nvc++
+%tpls_fc            nvfortran
+%tpls_cpp			nvc -E
+%tpls_cxxcpp		nvc++ -E
+%tpls_arflags        -cru
+%tpls_coptflags      -O3 -mtune=%{tpls_host}  -Mstandard -Kieee
+%tpls_cxxoptflags    -O3 -mtune=%{tpls_host}  -Mstandard -Kieee
+%tpls_includes      -I%{tpls_prefix}/include
+%tpls_foptflags      -O3 -mtune=%{tpls_host}  -Mstandard -Kieee
+%tpls_comp_ldflags   -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/lib
+%tpls_ldflags        -L%{tpls_prefix}/lib %{tpls_comp_ldflags}
+%tpls_comp_rpath    -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/lib
+%tpls_rpath         -Wl,-rpath,%{tpls_prefix}/lib %tpls_comp_rpath
+
+# library dependencies
+%tpls_comp_minver   23.11-1 
+%tpls_rpm_cc        nvhpc
+%tpls_rpm_cxx       nvhpc
+%tpls_rpm_fc        nvhpc
+
+
+# more macros
+%tpls_check       1
+%tpls_libdir        lib
+%tpls_compilers LD=%{tpls_ld} AR=%{tpls_ar} CC=%{tpls_cc} CXX=%{tpls_cxx} FC=%{tpls_fc}
+%tpls_configure LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
+%tpls_configure_noprefixdir LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
+%tpls_remove_la_files    find %{buildroot} -name '*.la' -delete

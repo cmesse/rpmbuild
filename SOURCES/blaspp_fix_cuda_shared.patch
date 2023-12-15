@@ -1,0 +1,38 @@
+--- a/config/config.py
++++ b/config/config.py
+@@ -626,30 +626,11 @@
+     # CUDA_PATH is used in NVIDIA Getting Started documentation;
+     # CUDA_HOME is used in Spack CUDA package;
+     # else infer from `which nvcc`.
+-    cuda_path = environ['CUDA_PATH']
+-    if (not cuda_path):
+-        cuda_path = environ['CUDA_HOME']
+-    if (not cuda_path):
+-        nvcc_path = shutil.which( 'nvcc' )
+-        if (nvcc_path):
+-            (bin_path, nvcc) = os.path.split( nvcc_path )
+-            (cuda_path, bin_) = os.path.split( bin_path )
+-
+-    cxxflags = define('HAVE_CUBLAS')
+-    ldflags  = ''
+-    libs     = '-lcublas -lcudart'
+-
+-    if (cuda_path):
+-        incdir = os.path.join( cuda_path, 'include' )
+-        if (os.path.exists( incdir )):
+-            cxxflags += ' -I' + incdir
+-
+-        libdir = os.path.join( cuda_path, 'lib64' )
+-        if (not os.path.exists( libdir )):
+-            libdir = os.path.join( cuda_path, 'lib' )
+-        if (os.path.exists( libdir )):
+-            ldflags += '-L' + libdir + ' -Wl,-rpath,' + libdir
+-    # end
++   
++    cxxflags = '-DHAVE_CUBLAS -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include'
++    ldflags  = '-L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64 -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64 -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64'
++    libs    = '/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64/libcublas.so /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64/libcudart.so'
++    
+ 
+     print_subhead( 'CUDA and cuBLAS libraries' )
+     print_test( '    ' + cxxflags + ' ' + ldflags + ' ' + libs )

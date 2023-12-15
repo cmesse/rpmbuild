@@ -1,0 +1,59 @@
+%debug_package %{nil}
+
+%tpls_compiler       intel
+%tpls_libs           shared
+# alterlake, cascadelake
+%tpls_host           cascadelake
+%tpls_gpu            cuda
+
+# compiler specific settings
+
+# shared settings
+%tpls_flavor       %{tpls_compiler}-%{tpls_host}-%{tpls_gpu}-%{tpls_libs}
+%tpls_prefix       /opt/tpls/%{tpls_flavor}
+
+
+%tpls_ld            xild
+%tpls_ar            xiar
+%tpls_cc            icx
+%tpls_cxx           icpx
+%tpls_fc            ifx
+%tpls_cpp			ixc -E
+%tpls_cxxcpp		icpx -E
+%tpls_arflags        cru
+%tpls_coptflags      -O3 -mtune=%{tpls_host} -fp-model precise -no-ftz
+%tpls_cxxoptflags    -O3 -mtune=%{tpls_host} -fp-model precise -no-ftz
+%tpls_foptflags      -O3 -mtune=%{tpls_host} -fp-model precise -no-ftz -i4
+%tpls_includes      -I%{tpls_prefix}/include
+%tpls_comp_ldflags   -L%{tpls_mklroot}/lib -L/opt/intel/oneapi/compiler/latest/lib
+%tpls_comp_rpath    -Wl,-rpath,%{tpls_mklroot}/lib -Wl,-rpath,/opt/intel/oneapi/compiler/latest/lib
+
+# library dependencies
+%tpls_comp_minver   2024.0.1
+%tpls_rpm_cc        intel-oneapi-compiler-dpcpp-cpp
+%tpls_rpm_cxx       intel-oneapi-compiler-dpcpp-cpp
+%tpls_rpm_fc        intel-oneapi-compiler-fortran
+
+
+
+# more macros
+%tpls_cuda        1
+%tpls_rocm        0
+%tpls_libdir        lib
+%tpls_compilers LD=%{tpls_ld} AR=%{tpls_ar} CC=%{tpls_cc} CXX=%{tpls_cxx} FC=%{tpls_fc}
+%tpls_configure LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
+%tpls_configure_noprefixdir LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
+%tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
+%tpls_ldflags      -L/opt/tpls/%{tpls_flavor}/%{tpls_libdir} %{tpls_comp_ldflags}
+%tpls_rpath       -Wl,-rpath,/opt/tpls/%{tpls_flavor}/%{tpls_libdir} %{tpls_comp_rpath}
+%tpls_ld_library_path %{tpls_mklroot}/lib:/opt/intel/oneapi/compiler/latest/lib:%{tpls_prefix}/%{tpls_libdir}
+
+
+%tpls_mklroot           /opt/intel/oneapi/mkl/latest
+%tpls_mkl_includes      -I%{tpls_mklroot}/include
+
+%tpls_mkl_static  -Wl,--start-group %{tpls_mklroot}/lib/libmkl_intel_lp64.a %{tpls_mklroot}/lib/libmkl_intel_thread.a %{tpls_mklroot}/lib/libmkl_core.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
+%tpls_mkl_mpi_static %{tpls_mklroot}/lib/libmkl_scalapack_lp64.a -Wl,--start-group %{tpls_mklroot}/lib/libmkl_intel_lp64.a %{tpls_mklroot}/lib/libmkl_intel_thread.a %{tpls_mklroot}/lib/libmkl_core.a %{tpls_mklroot}/lib/libmkl_blacs_openmpi_lp64.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
+
+%tpls_mkl_shared        -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl
+%tpls_mkl_mpi_shared    -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_openmpi_lp64 -liomp5 -lpthread -lm -ldl
