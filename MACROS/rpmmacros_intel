@@ -11,7 +11,7 @@
 # shared settings
 %tpls_flavor       %{tpls_compiler}-%{tpls_host}-%{tpls_gpu}-%{tpls_libs}
 %tpls_prefix       /opt/tpls/%{tpls_flavor}
-
+%tpls_mklroot     /opt/intel/oneapi/mkl/latest
 
 %tpls_ld            xild
 %tpls_ar            xiar
@@ -49,7 +49,7 @@
 %tpls_ld_library_path %{tpls_mklroot}/lib:/opt/intel/oneapi/compiler/latest/lib:%{tpls_prefix}/%{tpls_libdir}
 
 
-%tpls_mklroot           /opt/intel/oneapi/mkl/latest
+
 %tpls_mkl_includes      -I%{tpls_mklroot}/include
 
 %tpls_mkl_static  -Wl,--start-group %{tpls_mklroot}/lib/libmkl_intel_lp64.a %{tpls_mklroot}/lib/libmkl_intel_thread.a %{tpls_mklroot}/lib/libmkl_core.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
@@ -57,3 +57,49 @@
 
 %tpls_mkl_shared        -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl
 %tpls_mkl_mpi_shared    -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_openmpi_lp64 -liomp5 -lpthread -lm -ldl
+
+
+%setup_tpls_env() { \
+  export LD=%{tpls_ld} \
+  export AR=%{tpls_ar} \
+  export CC=%{tpls_cc} \
+  export CPP="%{tpls_cc} -E" \
+  export CXXCPP="%{tpls_cxx} -E" \
+  export CXX=%{tpls_cxx} \
+  export FC=%{tpls_fc} \
+  export F77=%{tpls_fc} \
+  export FF=%{tpls_fc} \
+  export CFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include" \
+  export CXXFLAGS="%{tpls_cxxoptflags} -I%{tpls_prefix}/include" \
+  export FFLAGS="%{tpls_foptflags}" \
+  export FCLAGS="%{tpls_foptflags}" \
+  # check if the NVIDIA compilers are used and in the path \
+  if [ "%{tpls_gpu}" == "cuda" ]; then \
+    if [[ ":$PATH:" != *:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/bin* ]]; then \
+      export PATH="/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/bin:$PATH"; \
+    fi; \
+  fi; \
+  # check if ROCM is used and in the path \
+  if [ "%{tpls_gpu}" == "rocm" ]; then \
+    if [[ ":$PATH:" != *:/opt/rocm/bin* ]]; then \
+      export PATH="/opt/rocm/bin:$PATH"; \
+    fi; \
+  fi; \
+  # add the TPLS binary directory \
+  if [[ ":$PATH:" != *:%{tpls_prefix}/bin* ]]; then \
+    export PATH="%{tpls_prefix}/bin:$PATH"; \
+  fi; \
+  # setup the Intel OneAPI (excluding ROCM) \
+  if [ "%{tpls_gpu}" != "lapack" ]; then \
+    if [ "$SETVARS_COMPLETED" != "1" ]; then \
+      source /opt/intel/oneapi/setvars.sh intel64; \
+    fi; \
+  fi; \
+}
+
+%error_if_not_lapack() { \
+  if [ "%{tpls_gpu}" != "lapack" ] || [ "%{tpls_compiler}" != "gnu" ]; then \
+    echo "Error: We only want to compile this library for tpls-gnu-lapack-* flavors!"; \
+    exit 1; \
+  fi; \
+}

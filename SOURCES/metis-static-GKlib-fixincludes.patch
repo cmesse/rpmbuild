@@ -1,0 +1,8 @@
+--- a/GKlib/CMakeLists.txt
++++ b/GKlib/CMakeLists.txt
+@@ -18,4 +18,4 @@
+ install(TARGETS GKlib
+   ARCHIVE DESTINATION lib
+   LIBRARY DESTINATION lib)
+-install(FILES ${GKlib_includes} DESTINATION include)
++install(FILES ${GKlib_includes} DESTINATION include/metis )

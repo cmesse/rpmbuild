@@ -1,0 +1,13 @@
+Index: scotch/src/libscotchmetis/library_metis.h
+===================================================================
+--- scotch.orig/src/libscotchmetis/library_metis.h	2022-01-02 23:54:41.643952218 +0100
++++ scotch/src/libscotchmetis/library_metis.h	2022-01-02 23:54:41.639952189 +0100
+@@ -176,7 +176,7 @@
+ int                         SCOTCH_METIS_V5_PartGraphRecursive (const SCOTCH_Num * const, const SCOTCH_Num * const, const SCOTCH_Num * const, const SCOTCH_Num * const, const SCOTCH_Num * const, const SCOTCH_Num * const, const SCOTCH_Num * const, const SCOTCH_Num * const, const double * const, const double * const, const SCOTCH_Num * const, SCOTCH_Num * const, SCOTCH_Num * const);
+ 
+ #ifndef SCOTCH_METIS_VERSION
+-#define SCOTCH_METIS_VERSION        3             /* MeTiS API version is 3 by default */
++#define SCOTCH_METIS_VERSION        5             /* MeTiS API version is 5 by default on Debian-based systems */
+ #endif /* SCOTCH_METIS_VERSION */
+ 
+ #if (SCOTCH_METIS_VERSION == 3)

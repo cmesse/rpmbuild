@@ -81,13 +81,12 @@ fi
 %setup -q -n lapack-%{version}
 
 %build
+%{expand: %setup_tpls_env}
 
-%if "%{tpls_compiler}" == "intel"
-if [ "$SETVARS_COMPLETED" != "1" ]; then
-	source /opt/intel/oneapi/setvars.sh intel64
-fi
-%endif
-
+unset CFLAGS
+unset CXXFLAGS
+unset FCFLAGS
+unset FFLAGS
 %if "%{tpls_compiler}" == "gnu"
 mkdir -p build && cd build && %{tpls_compilers} cmake \
 %else
@@ -106,7 +105,7 @@ mkdir -p build && cd build && LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" 
 %if "%{tpls_libs}" == "static"
 -DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -frecursive" \
 %else
--DCMAKE_Fortran_FLAGS_RELEASE="{tpls_foptflags} -frecursive -fPIC " \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -frecursive -fPIC " \
 %endif
 %endif
 -DCBLAS=ON \

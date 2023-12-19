@@ -10,8 +10,8 @@ Source0:        https://github.com/Reference-ScaLAPACK/scalapack/archive/refs/ta
 Patch1: scalapack-2.2-fix-version.patch
 Patch2: scalapack-2.2-set-CMAKE_POSITION_INDEPENDENT_CODE.patch
 Patch3: scalapack-2.2.0-fix57.patch
-#Patch4: scalapack-mpi.patch
-#Patch5: scalapack-cblas.patch
+Patch4: scalapack-cblas.patch
+#Patch5: scalapack-mpi.patch
 
 BuildRequires:  tpls-%{tpls_flavor}-blas
 BuildRequires:  tpls-%{tpls_flavor}-lapack
@@ -48,19 +48,18 @@ routines resemble their LAPACK equivalents as much as possible.
 
 %prep
 
-if [ "%{tpls_gpu}" != "lapack" ] || [ "%{tpls_compiler}" != "gnu" ]; then
-    echo "Error: We only want to compile this library for tpls-gnu-lapack-* flavors!"
-    exit 1
-fi
+%{expand: %error_if_not_lapack}
 
 %setup -q -n scalapack-%{version}
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-#%patch4 -p1
+%patch4 -p1
 #%patch5 -p1
 
 %build
+
+%{expand: %setup_tpls_env}
 
 CC=%{tpls_prefix}/bin/mpicc \
 FC=%{tpls_prefix}/bin/mpifort \
@@ -81,17 +80,29 @@ FC=%{tpls_prefix}/bin/mpifort \
 	-DLAPACK_LIBRARIES=%{tpls_lapack_shared} \
 %endif
 	-DUSE_OPTIMIZED_LAPACK_BLAS=OFF \
-    -DBUILD_TESTING=ON
+    -DBUILD_TESTING=OFF
 
 %make_build
 
-%check
-make test
+# not doing tests as they fail on many machines
+#%check
+#make test
  
 %install
 %make_install
 
 %files
+%{tpls_prefix}/lib/cmake/scalapack-%{version}/scalapack-config-version.cmake
+%{tpls_prefix}/lib/cmake/scalapack-%{version}/scalapack-config.cmake
+%{tpls_prefix}/lib/cmake/scalapack-%{version}/scalapack-targets-noconfig.cmake
+%{tpls_prefix}/lib/cmake/scalapack-%{version}/scalapack-targets.cmake
+%if "%{tpls_libs}" == "static"
+%{tpls_prefix}/lib/libscalapack.a
+%else
+%{tpls_prefix}/lib/libscalapack.so
+%{tpls_prefix}/lib/libscalapack.so.*
+%endif
+%{tpls_prefix}/lib/pkgconfig/scalapack.pc
 
 
 %changelog

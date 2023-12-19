@@ -43,11 +43,7 @@ without having to change the event loop.
 #%patch04 -p1 -b .revert-problematic-change
 
 %build
-%if "%{tpls_compiler}" == "intel"
-if [ "$SETVARS_COMPLETED" != "1" ]; then
-	source /opt/intel/oneapi/setvars.sh intel64
-fi
-%endif
+%{expand: %setup_tpls_env}
 
 ./configure \
     --prefix=%{tpls_prefix} \

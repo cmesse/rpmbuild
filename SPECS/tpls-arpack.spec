@@ -5,8 +5,7 @@ Summary:	    Fortran 77 subroutines for solving large scale eigenvalue problems
 
 License:        BSD
 URL:            https://github.com/opencollab/arpack-ng
-Source0:        arpack-ng-%{version}.tar.gz 
-
+Source0:       https://src.fedoraproject.org/lookaside/pkgs/arpack/arpack-ng-3.9.1.tar.gz/sha512/1ca590a8c4f75aa74402f9bd62e63851039687f4cb11afa8acb05fce1f22a512bff5fd1709ea85fdbea90b344fbbc01e3944c770b5ddc4d1aabc98ac334f78d2/arpack-ng-3.9.1.tar.gz
 
 
 %if "%{tpls_gpu}" == "lapack"
@@ -32,19 +31,9 @@ Restarted Arnoldi Method (IRAM).
 %setup -q -n arpack-ng-%{version}
 
 %build
-echo PWD
-pwd
 
-%if "%{tpls_compiler}" == "intel"
-if [ "$SETVARS_COMPLETED" != "1" ]; then
-	source /opt/intel/oneapi/setvars.sh intel64
-fi
-%elif "%{tpls_gpu}" != "lapack"
-if [ "$SETVARS_COMPLETED" != "1" ]; then
-	source /opt/intel/oneapi/setvars.sh intel64
-fi
-%endif
-
+# Compiler Settings
+%{expand: %setup_tpls_env}
 
 CC=%{tpls_cc} \
 CXX=%{tpls_cxx} \
@@ -69,6 +58,7 @@ cmake \
 %else
 	-DBLAS_LIBRARIES="%{tpls_mkl_shared}" \
 	-DLAPACK_LIBRARIES="%{tpls_mkl_shared}" \
+	-DCMAKE_INSTALL_LIBDIR=%{tpls_libdir}
 %endif
 %endif
 .
@@ -97,11 +87,14 @@ LD_LIBRARY_PATH=%{tpls_mklroot}/lib make %{?_smp_mflags} test
 %{tpls_prefix}/lib64/cmake/arpackng/arpackng-config.cmake
 %{tpls_prefix}/lib64/cmake/arpackng/arpackngTargets-release.cmake
 %{tpls_prefix}/lib64/cmake/arpackng/arpackngTargets.cmake
+%if "%{tpls_libs}" == "static"
+%{tpls_prefix}/lib64/libarpack.a
+%else
 %{tpls_prefix}/lib64/libarpack.so
-%{tpls_prefix}/lib64/libarpack.so.2
-%{tpls_prefix}/lib64/libarpack.so.2.1.0
+%{tpls_prefix}/lib64/libarpack.so.*
+%endif
 %{tpls_prefix}/lib64/pkgconfig/arpack.pc
 
 %changelog
-* Thu Dec 14 2023 Christian Messe <cmesse@lbl.gov> - 3.9.1-1
-- Initial package.
+* Tue Dec 19 2023 Christian Messe <cmesse@lbl.gov> - 3.9.1-1
+- Initial Package

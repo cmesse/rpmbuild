@@ -1,0 +1,13 @@
+Index: scotch/src/libscotchmetis/library_metis.h
+===================================================================
+--- scotch.orig/src/libscotchmetis/library_metis.h	2021-06-25 16:01:43.967531847 +0200
++++ scotch/src/libscotchmetis/library_metis.h	2021-06-25 16:01:43.963531798 +0200
+@@ -136,6 +136,8 @@
+ } mobjtype_et;
+ #endif /* SCOTCH_METIS_OBJTYPE */
+ 
++typedef int idxtype;
++
+ #ifndef SCOTCH_METIS_RETURN
+ #define SCOTCH_METIS_RETURN
+ typedef enum {

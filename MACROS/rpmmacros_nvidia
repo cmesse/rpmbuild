@@ -41,3 +41,43 @@
 %tpls_configure LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
 %tpls_configure_noprefixdir LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" %{tpls_compilers} ./configure --prefix=%{tpls_prefix}
 %tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
+
+%tpls_mkl_includes      -I%{tpls_mklroot}/include
+
+%tpls_mkl_static         -Wl,--start-group %{tpls_mklroot}/lib/libmkl_intel_lp64.a %{tpls_mklroot}/lib/libmkl_pgi_thread.a %{tpls_mklroot}/lib/libmkl_core.a -Wl,--end-group -pgf90libs -mp -lpthread -lm -ldl
+%tpls_mkl_mpi_static     %{tpls_mklroot}/lib/libmkl_scalapack_lp64.a -Wl,--start-group %{tpls_mklroot}/lib/libmkl_intel_lp64.a %{tpls_mklroot}/lib/libmkl_pgi_thread.a %{tpls_mklroot}/lib/libmkl_core.a %{tpls_mklroot}/lib/libmkl_blacs_openmpi_lp64.a -Wl,--end-group -pgf90libs -mp -lpthread -lm -ldl
+
+%tpls_mkl_shared         -lmkl_intel_lp64 -lmkl_pgi_thread -lmkl_core -pgf90libs -mp -lpthread -lm -ldl
+%tpls_mkl_mpi_shared     -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_pgi_thread -lmkl_core -lmkl_blacs_openmpi_lp64 -pgf90libs -mp -lpthread -lm -ldl
+
+%setup_tpls_env() { \
+  # check if the NVIDIA compilers are used and in the path \
+  if [ "%{tpls_gpu}" == "cuda" ]; then \
+    if [[ ":$PATH:" != *:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/bin* ]]; then \
+      export PATH="/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/bin:$PATH"; \
+    fi; \
+  fi; \
+  # check if ROCM is used and in the path \
+  if [ "%{tpls_gpu}" == "rocm" ]; then \
+    if [[ ":$PATH:" != *:/opt/rocm/bin* ]]; then \
+      export PATH="/opt/rocm/bin:$PATH"; \
+    fi; \
+  fi; \
+  # add the TPLS binary directory \
+  if [[ ":$PATH:" != *:%{tpls_prefix}/bin* ]]; then \
+    export PATH="%{tpls_prefix}/bin:$PATH"; \
+  fi; \
+  # setup the Intel OneAPI (excluding ROCM) \
+  if [ "%{tpls_gpu}" != "lapack" ]; then \
+    if [ "$SETVARS_COMPLETED" != "1" ]; then \
+      source /opt/intel/oneapi/setvars.sh intel64; \
+    fi; \
+  fi; \
+}
+
+%error_if_not_lapack() { \
+  if [ "%{tpls_gpu}" != "lapack" ] || [ "%{tpls_compiler}" != "gnu" ]; then \
+    echo "Error: We only want to compile this library for tpls-gnu-lapack-* flavors!"; \
+    exit 1; \
+  fi; \
+}

@@ -1,0 +1,43 @@
+--- a/Lib/encodings/rot_13.py
++++ b/Lib/encodings/rot_13.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ """ Python Character Mapping Codec for ROT13.
+ 
+ This codec de/encodes from str to str.
+--- a/Lib/test/test_lib2to3/data/different_encoding.py
++++ b/Lib/test/test_lib2to3/data/different_encoding.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ # -*- coding: utf-8 -*-
+ print u'ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ'
+ 
+--- a/Lib/test/test_lib2to3/data/false_encoding.py
++++ b/Lib/test/test_lib2to3/data/false_encoding.py
+@@ -1,2 +1,2 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python3
+ print '#coding=0'
+--- a/Lib/test/test_importlib/resources/update-zips.py
++++ b/Lib/test/test_importlib/resources/update-zips.py
+@@ -1,3 +1,4 @@
++#!/usr/bin/env python3
+ """
+ Generate the zip test data files.
+ 
+--- a/Lib/test/test_array.py
++++ b/Lib/test/test_array.py
+@@ -1,3 +1,4 @@
++#!/usr/bin/env python3
+ """Test the arraymodule.
+    Roger E. Masse
+ """
+--- a/Lib/test/test_uuid.py
++++ b/Lib/test/test_uuid.py
+@@ -1,3 +1,4 @@
++#!/usr/bin/env python3
+ import unittest
+ from test import support
+ from test.support import import_helper

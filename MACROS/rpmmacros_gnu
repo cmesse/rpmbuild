@@ -5,7 +5,10 @@
 %tpls_host           skylake
 %tpls_gpu            lapack
 
-%tpls_mklroot           /opt/intel/oneapi/mkl/latest
+# shared settings
+%tpls_flavor       %{tpls_compiler}-%{tpls_host}-%{tpls_gpu}-%{tpls_libs}
+%tpls_prefix       /opt/tpls/%{tpls_flavor}
+%tpls_mklroot     /opt/intel/oneapi/mkl/latest
 
 # compiler specific settings
 
@@ -24,8 +27,8 @@
 
 %tpls_mkl_ldflags   -L%{tpls_mklroot}/lib
 %tpls_mkl_rpath    -Wl,-rpath,%{tpls_mklroot}/lib
-%tpls_ldflags      -L/opt/tpls/%{tpls_flavor}/%{tpls_libdir} %{tpls_comp_ldflags}
-%tpls_rpath       -Wl,-rpath,/opt/tpls/%{tpls_flavor}/%{tpls_libdir} %{tpls_comp_rpath}
+%tpls_ldflags      -L/opt/tpls/%{tpls_flavor}/%{tpls_libdir}
+%tpls_rpath       -Wl,-rpath,/opt/tpls/%{tpls_flavor}/%{tpls_libdir}
 %tpls_ld_library_path %{tpls_prefix}/%{tpls_libdir}:%{tpls_mklroot}/lib 
 
 # library dependencies
@@ -71,3 +74,37 @@
 
 %tpls_blas_shared       %{tpls_prefix}/lib/libblas.so
 %tpls_lapack_shared     %{tpls_prefix}/lib/liblapack.so
+
+%setup_tpls_env() { \
+  # check if the NVIDIA compilers are used and in the path \
+  if [ "%{tpls_gpu}" == "cuda" ]; then \
+    if [[ ":$PATH:" != *:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/bin* ]]; then \
+      export PATH="/opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers/bin:$PATH"; \
+    fi; \
+  fi; \
+  # check if ROCM is used and in the path \
+  if [ "%{tpls_gpu}" == "rocm" ]; then \
+    if [[ ":$PATH:" != *:/opt/rocm/bin* ]]; then \
+      export PATH="/opt/rocm/bin:$PATH"; \
+    fi; \
+  fi; \
+  # add the TPLS binary directory \
+  if [[ ":$PATH:" != *:%{tpls_prefix}/bin* ]]; then \
+    export PATH="%{tpls_prefix}/bin:$PATH"; \
+  fi; \
+  # setup the Intel OneAPI (excluding ROCM) \
+  if [ "%{tpls_gpu}" != "lapack" ]; then \
+    if [ "$SETVARS_COMPLETED" != "1" ]; then \
+      source /opt/intel/oneapi/setvars.sh intel64; \
+    fi; \
+  fi; \
+}
+
+%error_if_not_lapack() { \
+  if [ "%{tpls_gpu}" != "lapack" ] || [ "%{tpls_compiler}" != "gnu" ]; then \
+    echo "Error: We only want to compile this library for tpls-gnu-lapack-* flavors!"; \
+    exit 1; \
+  fi; \
+}
+
+

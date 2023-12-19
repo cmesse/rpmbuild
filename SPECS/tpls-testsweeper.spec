@@ -5,8 +5,7 @@ Summary:        A C++ testing framework for parameter sweeps.
 
 License:        BSD
 URL:            https://github.com/icl-utk-edu/testsweeper
-Source0:        https://github.com/icl-utk-edu/testsweeper/archive/refs/tags/testsweeper-%{version}.tar.gz
-
+Source0:        https://github.com/icl-utk-edu/testsweeper/releases/download/v2023.11.05/testsweeper-%{version}.tar.gz
 BuildRequires: make
 BuildRequires: cmake
 
@@ -28,24 +27,18 @@ the Department of Energy as part of its Exascale Computing Initiative
 %setup -q -n testsweeper-%{version}
 
 %build
-
-%if "%{tpls_compiler}" == "intel"
-if [ "$SETVARS_COMPLETED" != "1" ]; then
-	source /opt/intel/oneapi/setvars.sh intel64
-fi
-%endif
+%{expand: %setup_tpls_env}
 
 mkdir -p build && cd build && LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_compilers} LD=%{tpls_cxx} cmake \
 -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
 -DCMAKE_CXX_COMPILER=%{tpls_cxx} \
 -DCMAKE_INSTALL_LIBDIR=%{tpls_libdir} \
-%if %{tpls_check} == 1
 -Dbuild_tests=ON \
-%endif
 %if "%{tpls_libs}" == "static"
 -DBUILD_SHARED_LIBS=OFF \
+-DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags}" \
 %else
--DCMAKE_CXX_FLAGS=-fPIC \
+-DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -fPIC" \
 -DBUILD_SHARED_LIBS=ON \
 %endif
 ..
@@ -53,7 +46,7 @@ mkdir -p build && cd build && LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_com
 %make_build
 
 %check
-make check
+make test
 
 %install
 cd build && %make_install
