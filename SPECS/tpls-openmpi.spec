@@ -14,6 +14,7 @@ Requires:      %{tpls_rpm_cc}  >= %{tpls_comp_minver}
 Requires:      %{tpls_rpm_cxx} >= %{tpls_comp_minver}
 Requires:      %{tpls_rpm_fc}  >= %{tpls_comp_minver}
 Requires:      tpls-%{tpls_flavor}-libevent
+AutoReqProv:   %{tpls_auto_req_prov}
 
 %if "%{tpls_gpu}" == "cuda"
 BuildRequires: nvhpc-cuda-multi 
@@ -56,10 +57,16 @@ Documentation files for OpenMPI
 
 %build
 
-%{expand: %setup_tpls_env}
-
+%{setup_tpls_env}
+%if "%{tpls_libs}" == "static"
 CFLAGS+="  -DHAVE_UNIX_BYTESWAP" \
 CXXFLAGS+=" -DHAVE_UNIX_BYTESWAP" \
+FCFLAGS+="  -DHAVE_UNIX_BYTESWAP" \
+%else
+CFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
+CXXFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
+FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
+%endif
 ./configure \
    --prefix=%{tpls_prefix} \
    --enable-mpi-fortran \
@@ -74,12 +81,12 @@ CXXFLAGS+=" -DHAVE_UNIX_BYTESWAP" \
 %endif
 %if "%{tpls_gpu}" == "cuda"
    --enable-mpi-ext=cuda \
-   --with-cuda=/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda \
-   --with-cuda-libdir=/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 \
+   --with-cuda=%{tpls_cudaroot} \
+   --with-cuda-libdir=%{tpls_cudaroot}/lib64 \
 %endif
 %if "%{tpls_gpu}" == "rocm"
    --enable-mpi-ext=rocm \
-   --with-rocm=/opt/rocm \
+   --with-rocm=%{tpls_rocmroot} \
 %endif
    --enable-mpi1-compatibility \
    --with-libevent-libdir=%{tpls_prefix}
@@ -143,29 +150,7 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/etc/prte.conf
 %{tpls_prefix}/include/hwloc.h
 %{tpls_prefix}/include/hwloc/autogen/config.h
-%{tpls_prefix}/include/hwloc/bitmap.h
-%{tpls_prefix}/include/hwloc/cpukinds.h
-%{tpls_prefix}/include/hwloc/cuda.h
-%{tpls_prefix}/include/hwloc/cudart.h
-%{tpls_prefix}/include/hwloc/deprecated.h
-%{tpls_prefix}/include/hwloc/diff.h
-%{tpls_prefix}/include/hwloc/distances.h
-%{tpls_prefix}/include/hwloc/export.h
-%{tpls_prefix}/include/hwloc/gl.h
-%{tpls_prefix}/include/hwloc/glibc-sched.h
-%{tpls_prefix}/include/hwloc/helper.h
-%{tpls_prefix}/include/hwloc/inlines.h
-%{tpls_prefix}/include/hwloc/levelzero.h
-%{tpls_prefix}/include/hwloc/linux-libnuma.h
-%{tpls_prefix}/include/hwloc/linux.h
-%{tpls_prefix}/include/hwloc/memattrs.h
-%{tpls_prefix}/include/hwloc/nvml.h
-%{tpls_prefix}/include/hwloc/opencl.h
-%{tpls_prefix}/include/hwloc/openfabrics-verbs.h
-%{tpls_prefix}/include/hwloc/plugins.h
-%{tpls_prefix}/include/hwloc/rename.h
-%{tpls_prefix}/include/hwloc/rsmi.h
-%{tpls_prefix}/include/hwloc/shmem.h
+%{tpls_prefix}/include/hwloc/*.h
 %{tpls_prefix}/include/mpi-ext.h
 %{tpls_prefix}/include/mpi.h
 %{tpls_prefix}/include/mpi_portable_platform.h
@@ -180,49 +165,16 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/include/mpif-sentinels.h
 %{tpls_prefix}/include/mpif-sizeof.h
 %{tpls_prefix}/include/mpif.h
-%{tpls_prefix}/include/openmpi/mpiext/mpiext_cuda_c.h
-%{tpls_prefix}/include/openmpi/mpiext/mpiext_affinity_c.h
-%{tpls_prefix}/include/openmpi/mpiext/mpiext_ftmpi_c.h
-%{tpls_prefix}/include/openmpi/mpiext/mpiext_ftmpi_mpifh.h
-%{tpls_prefix}/include/openmpi/mpiext/mpiext_rocm_c.h
+%{tpls_prefix}/include/openmpi/mpiext/*.h
 %{tpls_prefix}/include/pmix.h
-%{tpls_prefix}/include/pmix/src/class/pmix_bitmap.h
-%{tpls_prefix}/include/pmix/src/class/pmix_hash_table.h
-%{tpls_prefix}/include/pmix/src/class/pmix_hotel.h
-%{tpls_prefix}/include/pmix/src/class/pmix_list.h
-%{tpls_prefix}/include/pmix/src/class/pmix_object.h
-%{tpls_prefix}/include/pmix/src/class/pmix_pointer_array.h
-%{tpls_prefix}/include/pmix/src/class/pmix_ring_buffer.h
-%{tpls_prefix}/include/pmix/src/class/pmix_value_array.h
+%{tpls_prefix}/include/pmix/src/class/*.h
 %{tpls_prefix}/include/pmix/src/client/pmix_client_ops.h
 %{tpls_prefix}/include/pmix/src/common/pmix_attributes.h
 %{tpls_prefix}/include/pmix/src/common/pmix_iof.h
 %{tpls_prefix}/include/pmix/src/event/pmix_event.h
 %{tpls_prefix}/include/pmix/src/hwloc/pmix_hwloc.h
-%{tpls_prefix}/include/pmix/src/include/pmix_atomic.h
-%{tpls_prefix}/include/pmix/src/include/pmix_config.h
-%{tpls_prefix}/include/pmix/src/include/pmix_config_bottom.h
-%{tpls_prefix}/include/pmix/src/include/pmix_config_top.h
-%{tpls_prefix}/include/pmix/src/include/pmix_dictionary.h
-%{tpls_prefix}/include/pmix/src/include/pmix_event_strings.h
-%{tpls_prefix}/include/pmix/src/include/pmix_frameworks.h
-%{tpls_prefix}/include/pmix/src/include/pmix_globals.h
-%{tpls_prefix}/include/pmix/src/include/pmix_hash_string.h
-%{tpls_prefix}/include/pmix/src/include/pmix_portable_platform.h
-%{tpls_prefix}/include/pmix/src/include/pmix_portable_platform_real.h
-%{tpls_prefix}/include/pmix/src/include/pmix_prefetch.h
-%{tpls_prefix}/include/pmix/src/include/pmix_socket_errno.h
-%{tpls_prefix}/include/pmix/src/include/pmix_stdatomic.h
-%{tpls_prefix}/include/pmix/src/include/pmix_stdint.h
-%{tpls_prefix}/include/pmix/src/include/pmix_types.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_base.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_mca_base_alias.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_mca_base_component_repository.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_mca_base_framework.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_mca_base_var.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_mca_base_var_enum.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_mca_base_var_group.h
-%{tpls_prefix}/include/pmix/src/mca/base/pmix_mca_base_vari.h
+%{tpls_prefix}/include/pmix/src/include/*.h
+%{tpls_prefix}/include/pmix/src/mca/base/*.h
 %{tpls_prefix}/include/pmix/src/mca/bfrops/base/base.h
 %{tpls_prefix}/include/pmix/src/mca/bfrops/bfrops.h
 %{tpls_prefix}/include/pmix/src/mca/bfrops/bfrops_types.h
@@ -282,34 +234,7 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/include/pmix/src/threads/pmix_threads.h
 %{tpls_prefix}/include/pmix/src/threads/pmix_tsd.h
 %{tpls_prefix}/include/pmix/src/tool/pmix_tool_ops.h
-%{tpls_prefix}/include/pmix/src/util/pmix_alfg.h
-%{tpls_prefix}/include/pmix/src/util/pmix_argv.h
-%{tpls_prefix}/include/pmix/src/util/pmix_basename.h
-%{tpls_prefix}/include/pmix/src/util/pmix_cmd_line.h
-%{tpls_prefix}/include/pmix/src/util/pmix_context_fns.h
-%{tpls_prefix}/include/pmix/src/util/pmix_environ.h
-%{tpls_prefix}/include/pmix/src/util/pmix_error.h
-%{tpls_prefix}/include/pmix/src/util/pmix_fd.h
-%{tpls_prefix}/include/pmix/src/util/pmix_few.h
-%{tpls_prefix}/include/pmix/src/util/pmix_getcwd.h
-%{tpls_prefix}/include/pmix/src/util/pmix_getid.h
-%{tpls_prefix}/include/pmix/src/util/pmix_hash.h
-%{tpls_prefix}/include/pmix/src/util/pmix_if.h
-%{tpls_prefix}/include/pmix/src/util/pmix_keyval_parse.h
-%{tpls_prefix}/include/pmix/src/util/pmix_name_fns.h
-%{tpls_prefix}/include/pmix/src/util/pmix_net.h
-%{tpls_prefix}/include/pmix/src/util/pmix_os_dirpath.h
-%{tpls_prefix}/include/pmix/src/util/pmix_os_path.h
-%{tpls_prefix}/include/pmix/src/util/pmix_output.h
-%{tpls_prefix}/include/pmix/src/util/pmix_parse_options.h
-%{tpls_prefix}/include/pmix/src/util/pmix_path.h
-%{tpls_prefix}/include/pmix/src/util/pmix_printf.h
-%{tpls_prefix}/include/pmix/src/util/pmix_pty.h
-%{tpls_prefix}/include/pmix/src/util/pmix_show_help.h
-%{tpls_prefix}/include/pmix/src/util/pmix_string_copy.h
-%{tpls_prefix}/include/pmix/src/util/pmix_strnlen.h
-%{tpls_prefix}/include/pmix/src/util/pmix_timings.h
-%{tpls_prefix}/include/pmix/src/util/pmix_vmem.h
+%{tpls_prefix}/include/pmix/src/util/pmix*.h
 %{tpls_prefix}/include/pmix_common.h
 %{tpls_prefix}/include/pmix_deprecated.h
 %{tpls_prefix}/include/pmix_server.h
@@ -427,149 +352,15 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/share/bash-completion/completions/hwloc
 %{tpls_prefix}/share/openmpi/amca-param-sets/example.conf
 %{tpls_prefix}/share/openmpi/amca-param-sets/ft-mpi
-%{tpls_prefix}/share/openmpi/help-accelerator-base.txt
-%{tpls_prefix}/share/openmpi/help-coll-sync.txt
-%{tpls_prefix}/share/openmpi/help-comm.txt
-%{tpls_prefix}/share/openmpi/help-dpm.txt
-%{tpls_prefix}/share/openmpi/help-mca-allocator-bucket.txt
-%{tpls_prefix}/share/openmpi/help-mca-base.txt
-%{tpls_prefix}/share/openmpi/help-mca-bml-r2.txt
-%{tpls_prefix}/share/openmpi/help-mca-coll-base.txt
-%{tpls_prefix}/share/openmpi/help-mca-hook-base.txt
-%{tpls_prefix}/share/openmpi/help-mca-var.txt
-%{tpls_prefix}/share/openmpi/help-mpi-api.txt
-%{tpls_prefix}/share/openmpi/help-mpi-btl-base.txt
-%{tpls_prefix}/share/openmpi/help-mpi-btl-tcp.txt
-%{tpls_prefix}/share/openmpi/help-mpi-coll-sm.txt
-%{tpls_prefix}/share/openmpi/help-mpi-common-sm.txt
-%{tpls_prefix}/share/openmpi/help-mpi-errors.txt
-%{tpls_prefix}/share/openmpi/help-mpi-ft.txt
-%{tpls_prefix}/share/openmpi/help-mpi-pml-ob1.txt
-%{tpls_prefix}/share/openmpi/help-mpi-runtime.txt
-%{tpls_prefix}/share/openmpi/help-mpirun.txt
-%{tpls_prefix}/share/openmpi/help-mpool-base.txt
-%{tpls_prefix}/share/openmpi/help-opal-hwloc-base.txt
-%{tpls_prefix}/share/openmpi/help-opal-if-linux-ipv6.txt
-%{tpls_prefix}/share/openmpi/help-opal-runtime.txt
-%{tpls_prefix}/share/openmpi/help-opal-shmem-mmap.txt
-%{tpls_prefix}/share/openmpi/help-opal-shmem-posix.txt
-%{tpls_prefix}/share/openmpi/help-opal-shmem-sysv.txt
-%{tpls_prefix}/share/openmpi/help-opal-timer-linux.txt
-%{tpls_prefix}/share/openmpi/help-opal-util.txt
-%{tpls_prefix}/share/openmpi/help-opal-wrapper.txt
-%{tpls_prefix}/share/openmpi/help-opal_info.txt
-%{tpls_prefix}/share/openmpi/help-rcache-base.txt
-%{tpls_prefix}/share/openmpi/mpiCC-wrapper-data.txt
-%{tpls_prefix}/share/openmpi/mpic++-wrapper-data.txt
-%{tpls_prefix}/share/openmpi/mpicc-wrapper-data.txt
-%{tpls_prefix}/share/openmpi/mpicxx-wrapper-data.txt
-%{tpls_prefix}/share/openmpi/mpif77-wrapper-data.txt
-%{tpls_prefix}/share/openmpi/mpif90-wrapper-data.txt
-%{tpls_prefix}/share/openmpi/mpifort-wrapper-data.txt
+%{tpls_prefix}/share/openmpi/help*.txt
+%{tpls_prefix}/share/openmpi/mpi*.txt
 %{tpls_prefix}/share/openmpi/openmpi-valgrind.supp
-%{tpls_prefix}/share/pmix/help-cli.txt
-%{tpls_prefix}/share/pmix/help-pattrs.txt
-%{tpls_prefix}/share/pmix/help-pcompress.txt
-%{tpls_prefix}/share/pmix/help-pctrl.txt
-%{tpls_prefix}/share/pmix/help-pevent.txt
-%{tpls_prefix}/share/pmix/help-pfexec-base.txt
-%{tpls_prefix}/share/pmix/help-pfexec-linux.txt
-%{tpls_prefix}/share/pmix/help-ploc.txt
-%{tpls_prefix}/share/pmix/help-plookup.txt
-%{tpls_prefix}/share/pmix/help-pmdl.txt
-%{tpls_prefix}/share/pmix/help-pmix-info.txt
-%{tpls_prefix}/share/pmix/help-pmix-mca-base.txt
-%{tpls_prefix}/share/pmix/help-pmix-mca-var.txt
-%{tpls_prefix}/share/pmix/help-pmix-plog.txt
-%{tpls_prefix}/share/pmix/help-pmix-psensor-file.txt
-%{tpls_prefix}/share/pmix/help-pmix-psensor-heartbeat.txt
-%{tpls_prefix}/share/pmix/help-pmix-runtime.txt
-%{tpls_prefix}/share/pmix/help-pmix-server.txt
-%{tpls_prefix}/share/pmix/help-pmix-util.txt
-%{tpls_prefix}/share/pmix/help-pmixcc.txt
-%{tpls_prefix}/share/pmix/help-pps.txt
-%{tpls_prefix}/share/pmix/help-pquery.txt
-%{tpls_prefix}/share/pmix/help-prm.txt
-%{tpls_prefix}/share/pmix/help-ptl-base.txt
+%{tpls_prefix}/share/pmix/help-*.txt
 %{tpls_prefix}/share/pmix/pmix-valgrind.supp
 %{tpls_prefix}/share/pmix/pmixcc-wrapper-data.txt
 %{tpls_prefix}/share/prte/amca-param-sets/example.conf
-%{tpls_prefix}/share/prte/help-cli.txt
-%{tpls_prefix}/share/prte/help-dash-host.txt
-%{tpls_prefix}/share/prte/help-errmgr-base.txt
-%{tpls_prefix}/share/prte/help-ess-base.txt
-%{tpls_prefix}/share/prte/help-hostfile.txt
-%{tpls_prefix}/share/prte/help-iof-base.txt
-%{tpls_prefix}/share/prte/help-oob-base.txt
-%{tpls_prefix}/share/prte/help-oob-tcp.txt
-%{tpls_prefix}/share/prte/help-plm-base.txt
-%{tpls_prefix}/share/prte/help-plm-slurm.txt
-%{tpls_prefix}/share/prte/help-plm-ssh.txt
-%{tpls_prefix}/share/prte/help-prte-filem-raw.txt
-%{tpls_prefix}/share/prte/help-prte-hwloc-base.txt
-%{tpls_prefix}/share/prte/help-prte-info.txt
-%{tpls_prefix}/share/prte/help-prte-odls-base.txt
-%{tpls_prefix}/share/prte/help-prte-odls-default.txt
-%{tpls_prefix}/share/prte/help-prte-rmaps-base.txt
-%{tpls_prefix}/share/prte/help-prte-rmaps-ppr.txt
-%{tpls_prefix}/share/prte/help-prte-rmaps-rr.txt
-%{tpls_prefix}/share/prte/help-prte-rmaps-seq.txt
-%{tpls_prefix}/share/prte/help-prte-rtc-base.txt
-%{tpls_prefix}/share/prte/help-prte-rtc-hwloc.txt
-%{tpls_prefix}/share/prte/help-prte-runtime.txt
-%{tpls_prefix}/share/prte/help-prte-util.txt
-%{tpls_prefix}/share/prte/help-prte.txt
-%{tpls_prefix}/share/prte/help-prted.txt
-%{tpls_prefix}/share/prte/help-prterun.txt
-%{tpls_prefix}/share/prte/help-prun.txt
-%{tpls_prefix}/share/prte/help-pterm.txt
-%{tpls_prefix}/share/prte/help-ras-base.txt
-%{tpls_prefix}/share/prte/help-ras-pbs.txt
-%{tpls_prefix}/share/prte/help-ras-simulator.txt
-%{tpls_prefix}/share/prte/help-ras-slurm.txt
-%{tpls_prefix}/share/prte/help-regex.txt
-%{tpls_prefix}/share/prte/help-rmaps_rank_file.txt
-%{tpls_prefix}/share/prte/help-schizo-base.txt
-%{tpls_prefix}/share/prte/help-schizo-ompi.txt
-%{tpls_prefix}/share/prte/help-state-base.txt
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-allow-run-as-root.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-bind-to.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-dash-host.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-debug-daemons-file.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-debug-daemons.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-display.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-dvm-hostfile.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-dvm.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-forward-signals.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-launcher-hostfile.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-leave-session-attached.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-map-by.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-noprefix.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-output.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-personality.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-pmixmca.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-prefix.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-prtemca.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-rank-by.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-runtime-options.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-stream-buffering.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-tune.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/cli-x.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-bind-to-core.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-display-allocation.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-display-devel-allocation.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-display-devel-map.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-display-map.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-display-topo.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-gmca.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-mca.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-merge-stderr-to-stdout.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-output-directory.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-output-filename.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-report-bindings.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-tag-output.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-timestamp-output.rst
-%{tpls_prefix}/share/prte/rst/prrte-rst-content/deprecated-xml.rst
+%{tpls_prefix}/share/prte/help*.txt
+%{tpls_prefix}/share/prte/rst/prrte-rst-content/*.rst
 %{tpls_prefix}/share/prte/rst/prrte-rst-content/prterun-all-cli.rst
 %{tpls_prefix}/share/prte/rst/prrte-rst-content/prterun-all-deprecated.rst
 %{tpls_prefix}/share/prte/rst/schizo-ompi-rst-content/schizo-ompi-cli.rstxt

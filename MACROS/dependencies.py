@@ -20,7 +20,8 @@ packages = ["libevent",
 		 "lapack++",
 		 "metis",
 		 "scotch",
-		 "superlu" ]
+		 "superlu",
+		 "arpack" ]
 		 
 G.add_nodes_from(packages)
 
@@ -35,7 +36,8 @@ dependencies = [
 	("lapack++", "blas++"),
 	("metis", "openmpi"),
 	("scotch","openmpi"),
-	("superlu", "metis") ]
+	("superlu", "metis"),
+	("arpack", "openmpi") ]
 	
 G.add_edges_from(dependencies)
 

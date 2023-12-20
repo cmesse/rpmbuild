@@ -11,12 +11,15 @@ URL:            http://glaros.dtc.umn.edu/gkhome/views/metis
 Source0:        http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/metis-%{version}.tar.gz
 Source1:        http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/parmetis-%{parmetis_version}.tar.gz
 
+# patch for 64 bit integers
+Patch0: metis-width-datatype.patch 
+
 # patches for shared library
-Patch0:  metis-libmetis.patch
-Patch1:  metis-shared-GKlib.patch
+Patch1:  metis-libmetis.patch
+Patch2:  metis-shared-GKlib.patch
 
 # patches for static library
-Patch2:  metis-static-GKlib-fixincludes.patch
+Patch3:  metis-static-GKlib-fixincludes.patch
 
 
 
@@ -25,7 +28,7 @@ BuildRequires: help2man
 BuildRequires: chrpath
 BuildRequires:  pcre2-devel
 Requires:       pcre2
-
+AutoReqProv:   %{tpls_auto_req_prov}
 
 %description
 METIS is a set of serial programs for partitioning graphs, 
@@ -42,6 +45,7 @@ Version:        %{parmetis_version}
 License:        ASL 2.0 and BSD and LGPLv2+
 Summary:        ParMETIS - Parallel Graph Partitioning and Fill-reducing Matrix Ordering
 Requires:       tpls-%{tpls_flavor}-metis == %{metis_version}
+AutoReqProv:   %{tpls_auto_req_prov}
 
 %description  -n tpls-%{tpls_flavor}-parmetis
 ParMETIS is an MPI-based parallel library that implements a variety of
@@ -58,16 +62,21 @@ developed at the Karzpis Lab, University of Minesota.
 
 %setup -q -n metis-%{metis_version}
 tar xvf %{SOURCE1}
+%if "%{tpls_intsize}" == "64"
+%patch0 -p1
+%endif
+
 #%if "%{tpls_libs}" == "shared"
-#%patch0 -p1
 #%patch1 -p1
-#%else
 #%patch2 -p1
+#%else
+#%patch3 -p1
 #%endif
 
-%{expand: %setup_tpls_env}
 
-%{tpls_compilers} make config \
+%{setup_tpls_env}
+
+make config \
     prefix=%{tpls_prefix} \
     debug=0 \
     assert=0 \
@@ -81,33 +90,72 @@ tar xvf %{SOURCE1}
     shared=1 \
 %endif
 
+
 %build
-make %{?_smp_mflags}
 
-make install DESTDIR=%{buildoot}
+pushd build/Linux-x86_64
 
-cd parmetis-%{parmetis_version}
+%{tpls_compilers} cmake \
+%if "%{tpls_libs}" == "static"
+    -DCMAKE_C_FLAGS="%{tpls_coptflags} -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -DNDEBUG" \
+%else
+    -DCMAKE_C_FLAGS="%{tpls_coptflags} -fPIC -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags}  -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
+%endif
+	-DOPENMP=ON \
+	.
+popd
+
+pushd parmetis-%{parmetis_version}
+
 ln -s $(dirname $(pwd)) METIS
-CC=mpicc \
-CXX=mpicxx \
-CFLAGS="${tpls_coptflags} -I%{tpls_prefix}/include" \
-CXXFLAGS="${tpls_cxxoptflags} -I%{tpls_prefix}/include" \
+
+CC=%{tpls_prefix}/bin/mpicc \
+CXX=%{tpls_prefix}/bin/mpicxx \
+FC=%{tpls_prefix}/bin/mpifort \
 %if "%{tpls_libs}" == "static"
 LDFLAGS="%{tpls_prefix}/lib/libmpi.a" \
 %else
-LDFLAGS="%{tpls_prefix}/lib/libmpi.so %{tpls_ldflags} %{tpls_rpath}" \
+LDFLAGS="%{tpls_prefix}/lib/libmpi.so %{tpls_libpath}" \
 %endif
-%{tpls_compilers} cmake \
+cmake \
+%if "%{tpls_libs}" == "static"
+    -DCMAKE_C_FLAGS="%{tpls_coptflags} -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -DNDEBUG" \
+%else
+    -DCMAKE_C_FLAGS="%{tpls_coptflags} -fPIC -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags}  -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
+%endif
 	-DGKLIB_PATH=$(dirname $(pwd))/GKlib \
 	-DMETIS_PATH=$(dirname $(pwd)) \
 	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
 	-DOPENMP=ON \
 	.
+popd
 
 make %{?_smp_mflags}
 
+pushd parmetis-%{parmetis_version}
+make %{?_smp_mflags}
 # manually create the shared file
 %{tpls_cc} -shared -o ./libparmetis/libparmetis.so libparmetis/CMakeFiles/parmetis.dir/*.o
+popd
+
+make install DESTDIR=%{buildoot}
+
+pushd parmetis-%{parmetis_version}
+make install DESTDIR=%{buildoot}
+
+popd
 
 
 %install
@@ -152,6 +200,6 @@ rm -v %{buildroot}/%{tpls_prefix}/lib/libparmetis.a
 
 
 %changelog
-* Mon Dec 18 2023 Christian Messe <cmesse@lbl.gov> - 5.1.0-1
+* Tue Dec 19 2023 Christian Messe <cmesse@lbl.gov> - 5.1.0-1
 - Initial Package
 

@@ -7,6 +7,8 @@ License:        BSD
 URL:            https://github.com/opencollab/arpack-ng
 Source0:       https://src.fedoraproject.org/lookaside/pkgs/arpack/arpack-ng-3.9.1.tar.gz/sha512/1ca590a8c4f75aa74402f9bd62e63851039687f4cb11afa8acb05fce1f22a512bff5fd1709ea85fdbea90b344fbbc01e3944c770b5ddc4d1aabc98ac334f78d2/arpack-ng-3.9.1.tar.gz
 
+BuildRequires:  tpls-%{tpls_flavor}-openmpi
+Requires:       tpls-%{tpls_flavor}-openmpi
 
 %if "%{tpls_gpu}" == "lapack"
 BuildRequires:  tpls-%{tpls_flavor}-blas
@@ -35,6 +37,8 @@ Restarted Arnoldi Method (IRAM).
 # Compiler Settings
 %{expand: %setup_tpls_env}
 
+pwd
+
 CC=%{tpls_cc} \
 CXX=%{tpls_cxx} \
 FC=%{tpls_fc} \
@@ -58,8 +62,9 @@ cmake \
 %else
 	-DBLAS_LIBRARIES="%{tpls_mkl_shared}" \
 	-DLAPACK_LIBRARIES="%{tpls_mkl_shared}" \
-	-DCMAKE_INSTALL_LIBDIR=%{tpls_libdir}
 %endif
+	-DCMAKE_INSTALL_LIBDIR=lib \
+	-DMPI=ON
 %endif
 .
 

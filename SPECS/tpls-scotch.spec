@@ -27,6 +27,9 @@ BuildRequires: xz-devel
 BuildRequires:  tpls-%{tpls_flavor}-scalapack
 %endif
 
+
+AutoReqProv:   %{tpls_auto_req_prov}
+
 %description
 Scotch is a software package for graph and mesh/hypergraph partitioning and
 sparse matrix ordering. The parallel scotch libraries are packaged in the
@@ -63,20 +66,18 @@ echo "CAT		= cat" >> Makefile.inc
 echo "CCS		= %{tpls_cc }" >> Makefile.inc
 echo "CCP		= mpicc" >> Makefile.inc
 echo "CCD		= %{tpls_cc }" >> Makefile.inc
+
 %if "%{tpls_libs}" == "static"
-echo "CFLAGS	= %{tpls_coptflags} -I%{tpls_prefix}/include -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE32" >> Makefile.inc
+echo "CFLAGS	= %{tpls_coptflags} -I%{tpls_prefix}/include -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE%{tpls_intsize}" >> Makefile.inc
 %else
-echo "CFLAGS	= %{tpls_coptflags}  -I%{tpls_prefix}/include -fPIC -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE32" >> Makefile.inc
+echo "CFLAGS	= %{tpls_coptflags}  -I%{tpls_prefix}/include -fPIC -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE%{tpls_intsize}" >> Makefile.inc
 %endif
 
 echo "CLIBFLAGS	= " >> Makefile.inc
 
 
-%if "%{tpls_libs}" == "static"
-echo "LDFLAGS	= %{tpls_ldflags} -lz -lm -lrt -pthread" >> Makefile.inc
-%else
-echo "LDFLAGS	= %{tpls_ldflags} %{tpls_rpath} -lz -lm -lrt -pthread" >> Makefile.inc
-%endif
+
+echo "LDFLAGS	= %{tpls_libpath} -lz -lm -lrt -pthread" >> Makefile.inc
 echo "CP		= cp" >> Makefile.inc
 echo "FLEX		= flex" >> Makefile.inc
 echo "LN		= ln" >> Makefile.inc

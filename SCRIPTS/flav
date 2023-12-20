@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Define the directory where your MACROS files are stored
+MACROS_DIR=~/rpmbuild/MACROS
+
+# Check if a valid flavor is provided
+if [ $# -ne 1 ] || ([ "$1" != "gnu" ] && [ "$1" != "intel" ] && [ "$1" != "nvidia" ] && [ "$1" != "g" ] && [ "$1" != "i" ] && [ "$1" != "n" ]); then
+  echo "Usage: $0 {gnu|intel|nvidia|g|i|n}"
+  exit 1
+fi
+
+# Map shorthand versions to full names
+case "$1" in
+  "g") FLAVOR="gnu" ;;
+  "i") FLAVOR="intel" ;;
+  "n") FLAVOR="nvidia" ;;
+  *) FLAVOR="$1" ;;
+esac
+
+# Remove the current ~/.rpmmacros if it exists
+if [ -e ~/.tplsmacros ]; then
+  rm ~/.tplsmacros
+fi
+
+# Create a symlink to the corresponding MACROS file
+ln -s "$MACROS_DIR/rpmmacros_$FLAVOR" ~/.tplsmacros
+
+clear
+
+echo "--------------------------------------------------------------------------------"
+echo "Switched to the $FLAVOR RPM-flavor."
+echo "--------------------------------------------------------------------------------"

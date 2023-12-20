@@ -1,5 +1,6 @@
 %define  opensslversion 3.2.0
-%define  puthonversion  3.12.1
+%define  pythonversion  3.12.1
+%define          pybin /opt/python/%{pythonversion}/bin/python3
 
 %global pybasever 3.12
 
@@ -8,7 +9,7 @@
 Name:           tpls-%{tpls_host}-python
 Version:        3.12.1
 Release:        1%{?dist}
-Summary:        Summary: Python  %{version} interpreter compiled with icx
+Summary:        Summary: Python %{version} interpreter compiled with icx
 License:        Python-2.0.1
 URL:            https://www.python.org/
 
@@ -16,13 +17,12 @@ Source0:        https://www.python.org/ftp/python/%{version}/Python-%{version}.t
 
 Patch0:         python-3.12.1-shebang.patch
 
-# for openssl
-
 Requires:  intel-oneapi-mkl
 Requires:  tpls-%{tpls_host}-openssl == %{opensslversion}
 
 BuildRequires:  intel-oneapi-compiler-dpcpp-cpp
 BuildRequires:  intel-oneapi-compiler-fortran
+BuildRequires:  intel-oneapi-mkl
 BuildRequires:  intel-oneapi-mkl-devel
 
 %description

@@ -1,0 +1,169 @@
+
+########################################################################
+# BLAS and LAPACK                                                      #
+########################################################################
+
+%define tpls_linkdirs() %{lua: \
+local libs = rpm.expand("%{?tpls_libs}") \
+local prefix = rpm.expand("%{?tpls_prefix}") \
+if libs == "static" then \
+    return "-L" .. prefix .. "/lib" \
+else \
+    return "-L" .. prefix .. "/lib -Wl,-rpath," .. prefix .. "/lib" \
+end \
+}
+
+%define mkl_linkdirs() %{lua: \
+if rpm.expand("%{?tpls_libs}") == "static" then \
+    return "-L" .. rpm.expand("%{?tpls_mklroot}") .. "/lib" \
+else \
+    return "-L" .. rpm.expand("%{?tpls_mklroot}") .. "/lib -Wl,-rpath," .. rpm.expand("%{?tpls_mklroot}") .. "/lib" \
+end \
+}
+
+# error function for lapack
+%error_if_not_lapack() { \
+  if [ "%{tpls_gpu}" != "lapack" ] || [ "%{tpls_compiler}" != "gnu" ]; then \
+    echo "Error: We only want to compile this library for tpls-gnu-lapack-* flavors!"; \
+    exit 1; \
+  fi; \
+}
+
+# define the blas library
+%define tpls_blas() %{lua: \
+if rpm.expand("%{?tpls_intsize}") == "32" then
+    return rpm.expand("%{?tpls_prefix}") .. "/lib/libblas.a"
+else
+    return rpm.expand("%{?tpls_prefix}") .. "/lib/libblas.so"
+end
+}
+
+# define the blas library
+%define tpls_lapack() %{lua: \
+if rpm.expand("%{?tpls_intsize}") == "32" then
+    return rpm.expand("%{?tpls_prefix}") .. "/lib/liblapack.a"
+else
+    return rpm.expand("%{?tpls_prefix}") .. "/lib/liblapack.so"
+end
+}
+
+
+########################################################################
+# MKL                                                                  #
+########################################################################
+
+# Define the library to use for ScaLAPACK based on integer size
+%define _mkl_scalapack() %{lua: \
+if rpm.expand("%{?tpls_intsize}") == "32" then
+    return "mkl_scalapack_lp64"  -- Use LP64 version for 32-bit integer size
+else
+    return "mkl_scalapack_ilp64"  -- Use ILP64 version otherwise
+end
+}
+
+# Define the library for the MKL interface layer based on integer size
+%define _mkl_intel() %{lua: \
+if rpm.expand("%{?tpls_intsize}") == "32" then
+    return "mkl_intel_lp64"  -- Use LP64 version for 32-bit integer size
+else
+    return "mkl_intel_ilp64"  -- Use ILP64 version otherwise
+end
+}
+
+# Define the threading library based on the compiler used
+%define _mkl_thread() %{lua: \
+if rpm.expand("%{?tpls_compiler}") == "intel" then
+    return "mkl_intel_thread"  -- Use Intel threading library
+elseif rpm.expand("%{?tpls_compiler}") == "nvidia" then
+    return "mkl_pgi_thread"  -- Use PGI threading library for NVIDIA
+else
+    return "mkl_gnu_thread"  -- Default to GNU threading library
+end
+}
+
+# Define the library for BLACS based on MPI implementation and integer size
+%define _mkl_blacs() %{lua: \
+if rpm.expand("%{?tpls_mpi}") == "openmpi" then
+    if rpm.expand("%{?tpls_intsize}") == "32" then
+        return "mkl_blacs_openmpi_lp64"  -- Use LP64 version for OpenMPI
+    else
+        return "mkl_blacs_openmpi_ilp64"  -- Use ILP64 version for OpenMPI
+    end
+else
+    if rpm.expand("%{?tpls_intsize}") == "32" then
+        return "mkl_blacs_intelmpi_lp64"  -- Use LP64 version for Intel MPI
+    else
+        return "mkl_blacs_intelmpi_ilp64"  -- Use ILP64 version for Intel MPI
+    end
+end
+}
+
+# Define the OpenMP library based on the compiler and linking preference
+%define _omplib() %{lua: \
+if rpm.expand("%{?tpls_compiler}") == "intel" then
+    local comproot = rpm.expand("%{?tpls_comproot}")
+    if rpm.expand("%{?tpls_libs}") == "static" then
+        return comproot .. "lib/liomp5.a"  -- Static Intel OpenMP library
+    else
+        return comproot .. "lib/liomp5.so"  -- Shared Intel OpenMP library
+    end
+elseif rpm.expand("%{?tpls_compiler}") == "nvidia" then
+    return "-mp"  -- NVIDIA compiler flag for OpenMP
+else
+    return "-lgomp"  -- GNU OpenMP library
+end
+}
+
+# Define linker flags for MKL based on static or dynamic linking preference
+%define mkl_linker_flags() %{lua: \
+local libs = rpm.expand("%{?tpls_libs}")
+local mklroot = rpm.expand("%{?tpls_mklroot}")
+local omplib = rpm.expand("%{_omplib}")
+if libs == "static" then
+    local libprefix = " " .. mklroot .. "/lib/lib"
+    local mkl_intel = libprefix .. rpm.expand("%{_mkl_intel}") .. ".a"
+    local mkl_core = libprefix .. "mkl_core.a"
+    local mkl_thread = libprefix .. rpm.expand("%{_mkl_thread}") .. ".a"
+    return "-Wl,--start-group" .. mkl_intel .. mkl_thread .. mkl_core .. " -Wl,--end-group " .. omplib .. " -lpthread -lm -ldl"  -- Static linking flags
+else
+    local libdir = mklroot .. "/lib"
+    local mkl_intel = " -l" .. rpm.expand("%{_mkl_intel}")
+    local mkl_core = " -lmkl_core"
+    local mkl_thread = " -l" .. rpm.expand("%{_mkl_thread}")
+    return "-L" .. libdir .. " -Wl,-rpath," .. libdir .. mkl_intel .. mkl_thread .. mkl_core .. " " .. omplib .. " -lpthread -lm -ldl"  -- Dynamic linking flags
+end
+}
+
+# Define MPI-specific linker flags for MKL
+%define mkl_mpi_linker_flags() %{lua: \
+local libs = rpm.expand("%{?tpls_libs}")
+local mklroot = rpm.expand("%{?tpls_mklroot}")
+local omplib = rpm.expand("%{_omplib}")
+if libs == "static" then
+    local libprefix = " " .. mklroot .. "/lib/lib"
+    local mkl_scalapack = libprefix .. rpm.expand("%{_mkl_scalapack}") .. ".a"
+    local mkl_intel = libprefix .. rpm.expand("%{_mkl_intel}") .. ".a"
+    local mkl_core = libprefix .. "mkl_core.a"
+    local mkl_thread = libprefix .. rpm.expand("%{_mkl_thread}") .. ".a"
+    local mkl_blacs = libprefix .. rpm.expand("%{_mkl_blacs}") .. ".a"
+    return mkl_scalapack .. " -Wl,--start-group" .. mkl_intel .. " " .. mkl_core .. " " .. mkl_thread .. " " .. mkl_blacs .. " -Wl,--end-group " .. omplib .. " -lpthread -lm -ldl"  -- Static MPI linking flags
+else
+    local libdir = mklroot .. "/lib"
+    local mkl_scalapack = " -l" .. rpm.expand("%{_mkl_scalapack}")
+    local mkl_intel = " -l" .. rpm.expand("%{_mkl_intel}")
+    local mkl_core = " -lmkl_core"
+    local mkl_thread = " -l" .. rpm.expand("%{_mkl_thread}")
+    local mkl_blacs = " -l" .. rpm.expand("%{_mkl_blacs}")
+    return "-L" .. libdir .. " -Wl,-rpath," .. libdir .. mkl_scalapack .. mkl_intel .. mkl_thread .. mkl_core .. mkl_blacs .. " " .. omplib .. " -lpthread -lm -ldl"  -- Dynamic MPI linking flags
+end
+}
+
+# Define compiler flags for MKL based on integer size
+%define mkl_compiler_flags() %{lua: \
+local mklroot = rpm.expand("%{?tpls_mklroot}")
+if rpm.expand("%{?tpls_intsize}") == "32" then
+    return " -I" .. mklroot .. "/include"  -- Include path for 32-bit integer size
+else
+    return " -DMKL_ILP64 -I" .. mklroot .. "/include"  -- Define MKL_ILP64 and include path for 64-bit integer size
+end
+}

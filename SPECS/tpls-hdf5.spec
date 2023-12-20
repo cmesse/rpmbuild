@@ -15,6 +15,7 @@ Source0:        https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manu
 
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
+AutoReqProv:    %{tpls_auto_req_prov}
 
 %description
 HDF5 is a general purpose library and file format for storing scientific data.
@@ -50,8 +51,8 @@ prefix=%{tpls_prefix} to use h5cc, h5fc, etc. in %{tpls_prefix}/bin.
 sed -i 's| -V -qversion -version||g' ./configure
 
 %build
-%{expand: %setup_tpls_env}
 
+%{setup_tpls_env}
 
     CC=%{tpls_prefix}/bin/mpicc \
     CXX=%{tpls_prefix}/bin/mpicxx  \

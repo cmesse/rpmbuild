@@ -12,6 +12,11 @@ Source0:        https://github.com/libevent/libevent/releases/download/release-%
 BuildRequires: openssl-devel
 BuildRequires: python3-devel
 
+Requires:      %{tpls_rpm_cc}  >= %{tpls_comp_minver}
+Requires:      %{tpls_rpm_cxx} >= %{tpls_comp_minver}
+Requires:      %{tpls_rpm_fc}  >= %{tpls_comp_minver}
+AutoReqProv:   %{tpls_auto_req_prov}
+
 # Fix Python shebang
 Patch00 :        libevent_fix_python_shebang.patch
 # Disable network tests
@@ -43,7 +48,8 @@ without having to change the event loop.
 #%patch04 -p1 -b .revert-problematic-change
 
 %build
-%{expand: %setup_tpls_env}
+
+%{setup_tpls_env}
 
 ./configure \
     --prefix=%{tpls_prefix} \

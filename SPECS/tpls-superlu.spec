@@ -23,22 +23,18 @@ preordering for sparsity is completely separate from the factorization.
 %setup -q -n superlu-%{version}
 
 %build
-%{expand: %setup_tpls_env}
+
+%{setup_tpls_env}
+
 cmake \
 	-DCMAKE-INSTALL-PREFIX=%{tpls_prefix} \
 	-DCMAKE_BUILD_TYPE="Release" \
 if "%{tpls_gpu} == "lapack"
-if "%{tpls-libs} == "static"
-	-DTPL_BLAS_LIBRARIES=%{tpls_blas_static} \
+	-DTPL_BLAS_LIBRARIES=%{tpls_blas} \
+	-DTPL_BLAS_LIBRARIES=%{tpls_lapack} \
 %else
-	-DTPL_BLAS_LIBRARIES=%{tpls_blas_shared} \
-%endif
-%else
-if "%{tpls-libs} == "static"
-	-DTPL_BLAS_LIBRARIES=%{tpls_mkl_static} \
-%else
-	-DTPL_BLAS_LIBRARIES=%{tpls_mkl_shared} \
-%endif
+	-DTPL_BLAS_LIBRARIES=%{mkl_linker_flags} \
+	-DTPL_BLAS_LIBRARIES=%{mkl_linker_flags} \
 %endif
 	-DTPL_ENABLE_METISLIB=ON
 	-DTPL_METIS_INCLUDE_DIRS=%{tpls_prefix}/include \
@@ -47,8 +43,9 @@ if "%{tpls-libs} == "static"
 %else
 	-DTPL_METIS_LIBRARIES=%{tpls_prefix}/lib/libmetis.so \
 %endif
-	-Denable_fortran=ON
-	-Denable_internal_blaslib=OFF
+	-Denable_fortran=ON \
+	-Denable_internal_blaslib=OFF \
+	.
 	
 %install
 
