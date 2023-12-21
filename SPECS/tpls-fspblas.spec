@@ -59,15 +59,15 @@ echo 'ARCHFLAGS     = %{tpls_arflags}'  >> Makefile
 echo 'RANLIB        = ranlib' >> Makefile
 echo 'FC            = %{tpls_fc}' >> Makefile
 %if "%{tpls_compiler}" == "intel"
-echo 'FCFLAGS       = %{tpls_foptflags} -diag-disable 8291' >> Makefile
+echo 'FCFLAGS       = %{tpls_fcflags} -diag-disable 8291' >> Makefile
 %else
-echo 'FCFLAGS       = %{tpls_foptflags}' >> Makefile
+echo 'FCFLAGS       = %{tpls_fcflags}' >> Makefile
 %endif
 echo 'LDFLAGS       = %{tpls_ldflags} -lblas' >> Makefile
 echo 'FSPBLASLIB    = libfspblas.a' >> Makefile
 %else
 echo 'FC            = %{tpls_fc}' >> Makefile
-echo 'FCFLAGS       = %{tpls_foptflags} -fPIC' >> Makefile
+echo 'FCFLAGS       = %{tpls_fcflags} -fPIC' >> Makefile
 echo 'LDFLAGS       = %{tpls_ldflags} %{tpls_rpath} -lblas' >> Makefile
 echo 'FSPBLASLIB    = libfspblas.so' >> Makefile
 %endif

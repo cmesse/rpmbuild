@@ -1,11 +1,16 @@
 Name:           tpls-%{tpls_flavor}-mumps
 Version:        5.6.2
 Release:        1%{?dist}
-Summary:        MUMPS libraries compiled against openmpi
+Summary:        A MUltifrontal Massively Parallel sparse direct Solver
 
-License:        [license]
-URL:            [URL to project homepage]
-Source0:        [URL to source archive]
+License:        CeCILL-C
+URL:            http://mumps.enseeiht.fr/
+Source0:        http://mumps.enseeiht.fr/MUMPS_%{version}.tar.gz
+
+#Patch0:         MUMPS-examples-mpilibs.patch
+#Patch1:         MUMPS-shared-pord.patch
+#Patch2:         MUMPS-shared.patch
+
 
 BuildRequires:  %{tpls_rpm_cc}  >= %{tpls_comp_minver}
 BuildRequires:  %{tpls_rpm_fc}  >= %{tpls_comp_minver}
@@ -39,30 +44,83 @@ C interfaces, and can interface with ordering tools such as Scotch.
 %prep
 %setup -q -n MUMPS_%{version}
 
-echo "# SCOTCH" > Makefile.inc
-echo "SCOTCHDIR  = %{tpls_prefix}" >> Makefile.inc
-echo "ISCOTCH    = -I$(SCOTCHDIR)/include" >> Makefile.inc
-echo "LSCOTCH    = -lptesmumps -lptscotch -lptscotcherr -lscotch" >> Makefile.inc
-echo >> Makefile.inc
-echo "# PROD" >> Makefile.inc
-echo "LPORDDIR = $(topdir)/PORD/lib/" >> Makefile.inc
-echo "IPORD    = -I$(topdir)/PORD/include/" >> Makefile.inc
-echo "LPORD    = -lpord" >> Makefile.inc
-echo >> Makefile.inc
-echo "# METIS" >> Makefile.inc
+#%patch0 -p1
+#%patch1 -p1
+#%patch2 -p1
 
-
-#-L$(LPORDDIR) 
 
 %build
-[build commands, e.g., ./configure, make]
+
+%{expand: %setup_tpls_env}
+
+echo "########################################################################" > Makefile.inc
+echo "#              TPLS Makefile.inc created by cmesse@lbl.gov             #" >> Makefile.inc
+echo "########################################################################" >> Makefile.inc
+echo >> Makefile.inc
+echo "# Compiler and Archiver Settings" >> Makefile.inc
+echo >> Makefile.inc
+echo "CC  = %{tpls_mpicc}"   >> Makefile.inc
+echo "CXX = %{tpls_mpicxx}"  >> Makefile.inc
+echo "FC  = %{tpls_mpifort}" >> Makefile.inc
+echo "CXXCPP = %{tpls_cxxcpp}" >> Makefile.inc
+echo "AR = %{tpls_ar} %{tpls_arflags} " >> Makefile.inc
+echo "RANLIB = ranlib" >> Makefile.inc
+echo >> Makefile.inc
+echo "# Optimization Flags" >> Makefile.inc
+echo >> Makefile.inc
+%if "%{tpls_compiler}" == "gnu"
+echo "OPTF = %{tpls_fcflags} %{tpls_ompflag} -fallow-argument-mismatch" >> Makefile.inc
+echo "OPTC = %{tpls_cflags} %{tpls_ompflag}" >> Makefile.inc
+echo "OPTL = %{tpls_fcflags} %{tpls_ompflag} -fallow-argument-mismatch" >> Makefile.inc
+%else
+echo "OPTF = %{tpls_fcflags} %{tpls_ompflag}" >> Makefile.inc
+echo "OPTC = %{tpls_cflags} %{tpls_ompflag}" >> Makefile.inc
+echo "OPTL = %{tpls_fcflags} %{tpls_ompflag}" >> Makefile.inc
+%endif
+echo >> Makefile.inc
+echo "# Library Paths" >> Makefile.inc
+echo "LPORDDIR = %{_builddir}/MUMPS_%{version}/PORD/lib/" >> Makefile.inc
+echo "LPORD    = -L$(LPORDDIR) -lpord" >> Makefile.inc
+
+
+echo >> Makefile.inc
+echo "# ORDERINGS" >> Makefile.inc
+echo "ORDERINGSF = -Dscotch -Dmetis -Dpord -Dptscotch -Dparmetis" >> Makefile.inc
+echo "ORDERINGSC = -Dscotch -Dmetis -Dpord -Dptscotch -Dparmetis" >> Makefile.inc
+echo "IORDERINGSF = -I%{tpls_prefix}/include -I%{_builddir}/MUMPS_%{version}/PORD/include" >> Makefile.inc
+echo "IORDERINGSC = -I%{tpls_prefix}/include -I%{_builddir}/MUMPS_%{version}/PORD/include" >> Makefile.inc
+echo "LORDERINGS  = -lparmetis -lmetis -lpord -lptesmumps -lptscotch -lptscotcherr" >> Makefile.inc
+echo >> Makefile.inc
+echo "# Library Settings" >> Makefile.inc
+echo "LIBEXT = .a" >> Makefile.inc
+echo "LIBEXT_SHARED = .so" >> Makefile.inc
+echo >> Makefile.inc
+%if "%{tpls_gpu}" == "lapack"
+echo "LIBPAR = %{tpls_scalapack} %{tpls_lapack} %{tpls_blas}" >> Makefile.inc
+echo "LIBSEQ = %{tpls_lapack} %{tpls_blas} -L$(topdir)/libseq -lmpiseq" >> Makefile.inc
+%else
+echo "LIBPAR = %{mkl_mpi_linker_flags}" >> Makefile.inc
+echo "LIBSEQ = %{mkl_linker_flags} -L$(topdir)/libseq -lmpiseq" >> Makefile.inc
+%endif
+echo "LIBOTHERS = -lpthread" >> Makefile.inc
+echo >> Makefile.inc
+echo "# Preprocessor Definitions" >> Makefile.inc
+echo "CDEFS = -DAdd_" >> Makefile.inc
+echo >> Makefile.inc
+echo "# Include and Library Settings for Parallel and Sequential Versions" >> Makefile.inc
+echo >> Makefile.inc
+echo "INCS = -I%{tpls_prefix}/include -I%{_builddir}/MUMPS_%{version}/PORD/include" >> Makefile.inc
+echo "LIBS = $(LIBPAR)" >> Makefile.inc
+echo "LIBSEQNEEDED =" >> Makefile.inc
+
+%make_build
 
 %install
-[install commands, e.g., make install DESTDIR=%{buildroot}]
+%make_install
 
 %files
-[files to include in the package, e.g., /usr/bin/myapp]
+
 
 %changelog
-* [date] [packager] - [version]-1
-- Initial package.
+* Wed Dec 20 2023 Christian Messe <cmesse@lbl.gov> - 5.6.2-1
+- Initial Package

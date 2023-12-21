@@ -66,8 +66,8 @@ FC=%{tpls_prefix}/bin/mpifort \
  cmake \
 	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
 	-DMPI_BASE_DIR=%{tpls_prefix} \
-    -DCMAKE_C_FLAGS="%{tpls_coptflags}" \
-	-DCMAKE_Fortran_FLAGS="%{tpls_foptflags} -fallow-argument-mismatch" \
+    -DCMAKE_C_FLAGS="%{tpls_cflags}" \
+	-DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -fallow-argument-mismatch" \
 %if "%{tpls_libs}" == "static"
 	-DBUILD_STATIC_LIBS=ON \	
 	-DBUILD_SHARED_LIBS=OFF \

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Define the directory where your MACROS files are stored
 MACROS_DIR=~/rpmbuild/MACROS
@@ -22,8 +22,13 @@ if [ -e ~/.tplsmacros ]; then
   rm ~/.tplsmacros
 fi
 
-# Create a symlink to the corresponding MACROS file
-ln -s "$MACROS_DIR/rpmmacros_$FLAVOR" ~/.tplsmacros
+# Create the macro file
+pushd ~/rpmbuild/PYTHON/
+python3 select.py $FLAVOR
+cat ~/rpmbuild/MACROS/rpmmacros_${FLAVOR} >> .tplsmacros
+cat ~/rpmbuild/MACROS/rpmmacros_common >> .tplsmacros
+mv .tplsmacros ~/
+popd
 
 clear
 

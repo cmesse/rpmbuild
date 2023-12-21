@@ -96,16 +96,16 @@ mkdir -p build && cd build && LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" 
 %if "%{tpls_compiler}" == "intel"
 -DCMAKE_Fortran_COMPILER_ID="Intel" \
 %if "%{tpls_libs}" == "static"
--DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -assume protect_parens -recursive -diag-disable 10121" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -assume protect_parens -recursive -diag-disable 10121" \
 %else
--DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -assume protect_parens -recursive  -fPIC -diag-disable 10121" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -assume protect_parens -recursive  -fPIC -diag-disable 10121" \
 %endif
 %else
 -DCMAKE_Fortran_COMPILER_ID="GNU" \
 %if "%{tpls_libs}" == "static"
--DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -frecursive" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -frecursive" \
 %else
--DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -frecursive -fPIC " \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -frecursive -fPIC " \
 %endif
 %endif
 -DCBLAS=ON \

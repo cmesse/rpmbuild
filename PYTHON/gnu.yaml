@@ -1,0 +1,33 @@
+flavor:
+  host: skylake
+  compiler: gnu
+  mpi: openmpi
+  gpu: cuda
+  libs: shared
+  int: 32
+
+flags:
+  cc: "-O2 -m64 -fno-fast-math"
+  cxx: "-O2 -m64 -fno-fast-math"
+  fc: "-O2 -m64 -fno-fast-math"
+  ar: "-cru"
+
+rpm:
+  version: 11.4.1
+  cc: gcc
+  cxx: gcc-c++
+  fc: gfortran
+  auto_req_prov: yes
+
+system:
+  comp: /usr
+  mkl: /opt/intel/oneapi/mkl/latest
+  cuda: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
+  rocm: /opt/rocm
+
+binaries:
+  cc: gcc
+  cxx: g++
+  fc: gfortran
+  ar: ar
+  ld: ld

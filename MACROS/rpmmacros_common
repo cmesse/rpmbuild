@@ -1,0 +1,19 @@
+
+########################################################################
+# AUTOMATIC MACROS                                                     #
+########################################################################
+
+%define tpls_compilers     \
+	LD=%{tpls_ld}   \
+	AR=%{tpls_ar}   \
+	CC=%{tpls_cc}   \
+	CXX=%{tpls_cxx} \
+	FC=%{tpls_fc}   \
+	FF=%{tpls_fc}   \
+	F77=%{tpls_fc}
+
+# fix the qversion bug in configure
+%define tpls_remove_qversion    sed -i 's| -qversion||'g ./configure ;
+
+# delete-la-tool
+%define tpls_remove_la_files    find %{buildroot} -name '*.la' -delete

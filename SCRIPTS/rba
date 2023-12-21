@@ -1,6 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 cat ~/.tplsmacros > ~/rpmbuild/SPECS/.tempspec.spec
-cat ~/rpmbuild/MACROS/rpmmacros_mkl >> ~/rpmbuild/SPECS/.tempspec.spec
 cat ~/rpmbuild/SPECS/tpls-$1.spec >> .tempspec.spec
 rpmbuild -ba ~/rpmbuild/SPECS/.tempspec.spec

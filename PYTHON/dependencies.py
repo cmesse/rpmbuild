@@ -21,7 +21,9 @@ packages = ["libevent",
 		 "metis",
 		 "scotch",
 		 "superlu",
-		 "arpack" ]
+		 "arpack",
+		 "mumps",
+		 "suitesparse" ]
 		 
 G.add_nodes_from(packages)
 
@@ -37,7 +39,10 @@ dependencies = [
 	("metis", "openmpi"),
 	("scotch","openmpi"),
 	("superlu", "metis"),
-	("arpack", "openmpi") ]
+	("mumps", "metis"),
+    ("mumps", "scotch"),
+	("arpack", "openmpi"),
+	("suitesparse","metis") ]
 	
 G.add_edges_from(dependencies)
 
@@ -45,8 +50,8 @@ lapack_dependencies = [
 	("blas++", "blas"),
 	("lapack++", "lapack"), 
 	("scotch", "scalapack"),
-	("superlu", "blas")]
-	
+	("superlu", "blas"),
+	("mumps", "scalapack")]
 # Optional: Visualize the graph (requires matplotlib)
 pos = nx.spring_layout(G, seed=42)  # Adjust layout as needed
 nx.draw(G, pos, with_labels=True, node_size=800, node_color="skyblue")

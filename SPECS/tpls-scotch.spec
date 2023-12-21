@@ -23,6 +23,18 @@ BuildRequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: xz-devel
 
+%if   "%{tpls_mpi}" == "openempi"
+BuildRequires:  tpls-%{tpls_flavor}-openmpi
+Requires:       tpls-%{tpls_flavor}-openmpi
+%elif "%{tpls_mpi}" == "mpich"
+BuildRequires:  tpls-%{tpls_flavor}-mpich
+Requires:       tpls-%{tpls_flavor}-mpich
+%elif "%{tpls_mpi}" == "intelmpi"
+BuildRequires:  intel-oneapi-mpi
+BuildRequires:  intel-oneapi-mpi-devel
+BuildRequires:  intel-oneapi-mpi
+%endif
+
 %if "%{tpls_gpu}" == "lapack"
 BuildRequires:  tpls-%{tpls_flavor}-scalapack
 %endif
@@ -63,21 +75,20 @@ echo "AR		= %{tpls_cc}" >> Makefile.inc
 echo "ARFLAGS	= -shared -o " >> Makefile.inc
 %endif
 echo "CAT		= cat" >> Makefile.inc
-echo "CCS		= %{tpls_cc }" >> Makefile.inc
+echo "CCS		= %{tpls_cc}" >> Makefile.inc
 echo "CCP		= mpicc" >> Makefile.inc
-echo "CCD		= %{tpls_cc }" >> Makefile.inc
+echo "CCD		= %{tpls_cc}" >> Makefile.inc
 
-%if "%{tpls_libs}" == "static"
-echo "CFLAGS	= %{tpls_coptflags} -I%{tpls_prefix}/include -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE%{tpls_intsize}" >> Makefile.inc
-%else
-echo "CFLAGS	= %{tpls_coptflags}  -I%{tpls_prefix}/include -fPIC -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE%{tpls_intsize}" >> Makefile.inc
-%endif
+
+echo "CFLAGS	= %{tpls_cflags} -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE%{tpls_int}" >> Makefile.inc
+
+
 
 echo "CLIBFLAGS	= " >> Makefile.inc
 
 
 
-echo "LDFLAGS	= %{tpls_libpath} -lz -lm -lrt -pthread" >> Makefile.inc
+echo "LDFLAGS	= %{tpls_ldflags} -lz -lm -lrt -pthread" >> Makefile.inc
 echo "CP		= cp" >> Makefile.inc
 echo "FLEX		= flex" >> Makefile.inc
 echo "LN		= ln" >> Makefile.inc

@@ -13,8 +13,18 @@ URL:            https://portal.hdfgroup.org/display/HDF5/HDF5
 %global         version_main %(echo %version | cut -d. -f-2)
 Source0:        https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_%{major}_.%{minor}_%{ptch}/src/hdf5-%{version}.tar.gz
 
+%if   "%{tpls_mpi}" == "openempi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
+%elif "%{tpls_mpi}" == "mpich"
+BuildRequires:  tpls-%{tpls_flavor}-mpich
+Requires:       tpls-%{tpls_flavor}-mpich
+%elif "%{tpls_mpi}" == "intelmpi"
+BuildRequires:  intel-oneapi-mpi
+BuildRequires:  intel-oneapi-mpi-devel
+BuildRequires:  intel-oneapi-mpi
+%end
+
 AutoReqProv:    %{tpls_auto_req_prov}
 
 %description
@@ -54,19 +64,19 @@ sed -i 's| -V -qversion -version||g' ./configure
 
 %{setup_tpls_env}
 
-    CC=%{tpls_prefix}/bin/mpicc \
-    CXX=%{tpls_prefix}/bin/mpicxx  \
-    FC=%{tpls_prefix}/bin/mpifort \
+    CC=%{tpls_mpicc} \
+    CXX=%{tpls_mpicxx} \
+    FC=%{tpls_mpifort} \
     AR=%{tpls_ar} \
     AR_FLAGS=AR=%{tpls_arflags}  \
 %if "%{tpls_libs}" == "static"
-    CFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include" \
-    CXXFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include" \
-    FCFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include" \
+    CFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include" \
+    CXXFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include" \
+    FCFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include" \
 %else
-    CFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include -fPIC" \
-    CXXFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include -fPIC" \
-    FCFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include  -fPIC" \
+    CFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include -fPIC" \
+    CXXFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include -fPIC" \
+    FCFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include  -fPIC" \
 %endif
     LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" \
     ./configure \

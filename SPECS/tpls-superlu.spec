@@ -25,25 +25,23 @@ preordering for sparsity is completely separate from the factorization.
 
 %build
 
-%{setup_tpls_env}
-
 cmake \
 	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
 	-DCMAKE_BUILD_TYPE="Release" \
 %if "%{tpls_libs}" == "static"
-    -DCMAKE_C_FLAGS="%{tpls_coptflags} -DNDEBUG" \
-    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -DNDEBUG" \
-    -DCMAKE_Fortran_FLAGS="%{tpls_foptflags} -DNDEBUG" \
-    -DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -DNDEBUG" \
+    -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -DNDEBUG" \
+    -DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -DNDEBUG" \
+    -DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -DNDEBUG" \
 %else
-    -DCMAKE_C_FLAGS="%{tpls_coptflags} -fPIC -DNDEBUG" \
-    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags}  -fPIC -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
-        -DCMAKE_Fortran_FLAGS="%{tpls_foptflags} -fPIC -DNDEBUG" \
-    -DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_foptflags} -fPIC -DNDEBUG" \
+    -DCMAKE_C_FLAGS="%{tpls_cflags} -fPIC -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags}  -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -fPIC -DNDEBUG" \
+        -DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -fPIC -DNDEBUG" \
+    -DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -fPIC -DNDEBUG" \
 %endif
 	-DCMAKE_INSTALL_LIBDIR=lib \
 %if "%{tpls_gpu}" == "lapack"

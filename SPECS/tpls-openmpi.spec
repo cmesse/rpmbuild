@@ -81,12 +81,12 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
 %endif
 %if "%{tpls_gpu}" == "cuda"
    --enable-mpi-ext=cuda \
-   --with-cuda=%{tpls_cudaroot} \
-   --with-cuda-libdir=%{tpls_cudaroot}/lib64 \
+   --with-cuda=%{tpls_cuda} \
+   --with-cuda-libdir=%{tpls_cuda}/lib64 \
 %endif
 %if "%{tpls_gpu}" == "rocm"
    --enable-mpi-ext=rocm \
-   --with-rocm=%{tpls_rocmroot} \
+   --with-rocm=%{tpls_rocm} \
 %endif
    --enable-mpi1-compatibility \
    --with-libevent-libdir=%{tpls_prefix}

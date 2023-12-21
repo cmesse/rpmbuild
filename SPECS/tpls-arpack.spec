@@ -7,8 +7,18 @@ License:        BSD
 URL:            https://github.com/opencollab/arpack-ng
 Source0:       https://src.fedoraproject.org/lookaside/pkgs/arpack/arpack-ng-3.9.1.tar.gz/sha512/1ca590a8c4f75aa74402f9bd62e63851039687f4cb11afa8acb05fce1f22a512bff5fd1709ea85fdbea90b344fbbc01e3944c770b5ddc4d1aabc98ac334f78d2/arpack-ng-3.9.1.tar.gz
 
+%if   "%{tpls_mpi}" == "openempi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
+%elif "%{tpls_mpi}" == "mpich"
+BuildRequires:  tpls-%{tpls_flavor}-mpich
+Requires:       tpls-%{tpls_flavor}-mpich
+%elif "%{tpls_mpi}" == "intelmpi"
+BuildRequires:  intel-oneapi-mpi
+BuildRequires:  intel-oneapi-mpi-devel
+BuildRequires:  intel-oneapi-mpi
+%end
+
 
 %if "%{tpls_gpu}" == "lapack"
 BuildRequires:  tpls-%{tpls_flavor}-blas
@@ -16,6 +26,9 @@ BuildRequires:  tpls-%{tpls_flavor}-lapack
 Requires:       tpls-%{tpls_flavor}-blas
 Requires:       tpls-%{tpls_flavor}-lapack
 %endif
+
+
+AutoReqProv:    %{tpls_auto_req_prov}
 
 %description
 ARPACK is a collection of Fortran 77 subroutines designed to solve large
@@ -39,12 +52,12 @@ Restarted Arnoldi Method (IRAM).
 
 pwd
 
-CC=%{tpls_cc} \
-CXX=%{tpls_cxx} \
-FC=%{tpls_fc} \
-CFLAGS="%{tpls_coptflags}" \
-CXXFLAGS="%{tpls_coptflags}" \
-FCFLAGS="%{tpls_coptflags}" \
+CC=%{tpls_mpicc} \
+CXX=%{tpls_mpicxx} \
+FC=%{tpls_mpifort} \
+CFLAGS="%{tpls_cflags}" \
+CXXFLAGS="%{tpls_cflags}" \
+FCFLAGS="%{tpls_cflags}" \
 cmake \
 	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
 %if "%{tpls_gpu}" == "lapack"

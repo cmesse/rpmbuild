@@ -29,12 +29,12 @@ emphasizes speed over simplicity/elegance in its operations.
 
 
 %build
-sed -i 's/-O2/%{tpls_coptflags}/g'  ./configure
+sed -i 's/-O2/%{tpls_cflags}/g'  ./configure
 sed -i 's/skylake/%{tpls_host}/g'  ./configure
 sed -i 's/broadwell/%{tpls_host}/g' ./configure
 
-CFLAGS="%{tpls_coptflags}" \
-CXXFLAGS="%{tpls_cxxoptflags}" \
+CFLAGS="%{tpls_cflags}" \
+CXXFLAGS="%{tpls_cxxflags}" \
 %tpls_configure_noprefixdir \
 	--enable-cxx \
 %if "%{tpls_libs}" == "static"

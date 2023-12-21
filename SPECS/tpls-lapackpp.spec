@@ -48,7 +48,7 @@ The objective of LAPACK++ is to provide a convenient, performance oriented API f
 %endif
 
 sed -i 's|-O2||g' make.inc.in 
-sed -i 's|@CXXFLAGS@|@CXXFLAGS@ %{tpls_cxxoptflags} -I%{tpls_prefix}/include|g' make.inc.in 
+sed -i 's|@CXXFLAGS@|@CXXFLAGS@ %{tpls_cxxflags} -I%{tpls_prefix}/include|g' make.inc.in 
 sed -i 's|@prefix@|%{tpls_prefix}|g' make.inc.in 
 sed -i 's|@CXX@|%{tpls_cxx}|g' make.inc.in 
 sed -i 's|@LDFLAGS@| @LDFLAGS@ %{tpls_ldflags}|g'  make.inc.in 

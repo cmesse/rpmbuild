@@ -30,6 +30,20 @@ BuildRequires:  pcre2-devel
 Requires:       pcre2
 AutoReqProv:   %{tpls_auto_req_prov}
 
+%if   "%{tpls_mpi}" == "openempi"
+BuildRequires:  tpls-%{tpls_flavor}-openmpi
+Requires:       tpls-%{tpls_flavor}-openmpi
+%elif "%{tpls_mpi}" == "mpich"
+BuildRequires:  tpls-%{tpls_flavor}-mpich
+Requires:       tpls-%{tpls_flavor}-mpich
+%elif "%{tpls_mpi}" == "intelmpi"
+BuildRequires:  intel-oneapi-mpi
+BuildRequires:  intel-oneapi-mpi-devel
+BuildRequires:  intel-oneapi-mpi
+%endif
+
+AutoReqProv:    %{tpls_auto_req_prov}
+
 %description
 METIS is a set of serial programs for partitioning graphs, 
 partitioning finite element meshes, and producing fill reducing 
@@ -97,15 +111,15 @@ pushd build/Linux-x86_64
 
 %{tpls_compilers} cmake \
 %if "%{tpls_libs}" == "static"
-    -DCMAKE_C_FLAGS="%{tpls_coptflags} -DNDEBUG" \
-    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -DNDEBUG" \
+    -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -DNDEBUG" \
 %else
-    -DCMAKE_C_FLAGS="%{tpls_coptflags} -fPIC -DNDEBUG" \
-    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags}  -fPIC -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
+    -DCMAKE_C_FLAGS="%{tpls_cflags} -fPIC -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags}  -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -fPIC -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -fPIC -DNDEBUG" \
 %endif
 	-DOPENMP=ON \
 	.
@@ -115,26 +129,19 @@ pushd parmetis-%{parmetis_version}
 
 ln -s $(dirname $(pwd)) METIS
 
-CC=%{tpls_prefix}/bin/mpicc \
-CXX=%{tpls_prefix}/bin/mpicxx \
-FC=%{tpls_prefix}/bin/mpifort \
+CC=%{tpls_mpicc} \
+CXX=%{tpls_mpicxx} \
+FC=%{tpls_mpifort} \
 %if "%{tpls_libs}" == "static"
 LDFLAGS="%{tpls_prefix}/lib/libmpi.a" \
 %else
-LDFLAGS="%{tpls_prefix}/lib/libmpi.so %{tpls_libpath}" \
+LDFLAGS="%{tpls_prefix}/lib/libmpi.so %{tpls_ldflags}" \
 %endif
 cmake \
-%if "%{tpls_libs}" == "static"
-    -DCMAKE_C_FLAGS="%{tpls_coptflags} -DNDEBUG" \
-    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -DNDEBUG" \
-%else
-    -DCMAKE_C_FLAGS="%{tpls_coptflags} -fPIC -DNDEBUG" \
-    -DCMAKE_C_FLAGS_RELEASE="%{tpls_coptflags}  -fPIC -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxoptflags} -fPIC -DNDEBUG" \
-%endif
+    -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
+    -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -DNDEBUG" \
 	-DGKLIB_PATH=$(dirname $(pwd))/GKlib \
 	-DMETIS_PATH=$(dirname $(pwd)) \
 	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
@@ -146,23 +153,18 @@ make %{?_smp_mflags}
 
 pushd parmetis-%{parmetis_version}
 make %{?_smp_mflags}
+
 # manually create the shared file
 %{tpls_cc} -shared -o ./libparmetis/libparmetis.so libparmetis/CMakeFiles/parmetis.dir/*.o
 popd
 
-make install DESTDIR=%{buildoot}
-
-pushd parmetis-%{parmetis_version}
-make install DESTDIR=%{buildoot}
-
-popd
 
 
 %install
+
 %make_install
 
-
-cd parmetis-%{parmetis_version}
+pushd parmetis-%{parmetis_version}
 %make_install
 
 %if "%{tpls_libs}" == "shared"
@@ -193,7 +195,7 @@ rm -v %{buildroot}/%{tpls_prefix}/lib/libparmetis.a
 %{tpls_prefix}/bin/ptest
 %{tpls_prefix}/include/parmetis.h
 %if "%{tpls_libs}" == "static"
-%{tpls_prefix}/libparmetis.a
+%{tpls_prefix}/lib/libparmetis.a
 %else
 %{tpls_prefix}/lib/libparmetis.so
 %endif

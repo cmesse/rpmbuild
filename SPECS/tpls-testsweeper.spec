@@ -36,9 +36,9 @@ mkdir -p build && cd build && LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_com
 -Dbuild_tests=ON \
 %if "%{tpls_libs}" == "static"
 -DBUILD_SHARED_LIBS=OFF \
--DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags}" \
+-DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
 %else
--DCMAKE_CXX_FLAGS="%{tpls_cxxoptflags} -fPIC" \
+-DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -fPIC" \
 -DBUILD_SHARED_LIBS=ON \
 %endif
 ..

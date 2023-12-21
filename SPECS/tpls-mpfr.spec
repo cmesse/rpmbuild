@@ -26,8 +26,8 @@ ANSI/IEEE-754 standard for double-precision floating-point arithmetic
 %setup -q -n mpfr-%{version}
 
 %build
-CFLAGS="%{tpls_coptflags}" \
-CXXFLAGS="%{tpls_cxxoptflags}" \
+CFLAGS="%{tpls_cflags}" \
+CXXFLAGS="%{tpls_cxxflags}" \
 %tpls_configure \
     --with-gmp=%{tpls_prefix} \
 	--enable-thread-safe \

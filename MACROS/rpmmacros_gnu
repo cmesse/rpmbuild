@@ -1,200 +1,9 @@
-%debug_package %{nil}
 
 ########################################################################
-# SET THE FLAVOR                                                       #
+# ENVIRONMENT SETUP                                                    #
 ########################################################################
 
-%define tpls_compiler       gnu
-%define tpls_libs           shared
-%define tpls_host           skylake
-%define tpls_gpu            cuda
-%define tpls_intsize        32
-%define tpls_mpi            openmpi
 
-# set the flavor
-%define tpls_flavor       %{tpls_compiler}-%{tpls_mpi}-%{tpls_host}-%{tpls_gpu}-%{tpls_libs}-%{tpls_intsize}
-
-# set the perfix
-%define tpls_prefix       /opt/tpls/%{tpls_flavor}
-
-# where MKL is
-%define tpls_mklroot     /opt/intel/oneapi/mkl/latest
-
-# where CUDA is
-%define tpls_cudaroot     /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
-
-# where MKL is
-%define tpls_mklroot     /opt/intel/oneapi/mkl/latest
-
-# where ROCM is
-%define tpls_rocmroot     /opt/rocm
-
-########################################################################
-# COMPILER DEPENDENCIES                                                #
-########################################################################
-
-# package names
-%define tpls_comp_minver    11.4.1
-%define tpls_rpm_cc         gcc
-%define tpls_rpm_cxx        gcc-c++
-%define tpls_rpm_fc         gfortran
-%define tpls_auto_req_prov  yes
-
-########################################################################
-# COMPILER SETTINGS                                                    #
-########################################################################
-
-%define tpls_ld            ld
-%define tpls_ar            ar
-%define tpls_cc            gcc
-%define tpls_cxx           g++
-%define tpls_fc            gfortran
-%define tpls_cpp			gcc -E
-%define tpls_cxxcpp		g++ -E
-%define tpls_arflags        -cru
-%define tpls_coptflags_      -O2 -mtune=%{tpls_host} -m64 -fno-fast-math
-%define tpls_cxxoptflags_    -O2 -mtune=%{tpls_host} -m64 -fno-fast-math
-%define tpls_foptflags_     -O2 -mtune=%{tpls_host} -fno-fast-math
-%define tpls_includes      -I%{tpls_prefix}/include
-
-########################################################################
-# AUTOMATIC MACROS                                                     #
-########################################################################
-
-%define tpls_compilers     \
-	LD=%{tpls_ld}   \
-	AR=%{tpls_ar}   \
-	CC=%{tpls_cc}   \
-	CXX=%{tpls_cxx} \
-	FC=%{tpls_fc}   \
-	FF=%{tpls_fc}   \
-	F77=%{tpls_fc}
-
-%global tpls_libpath %{lua: \
-local prefix = rpm.expand("%{?tpls_prefix}") \
-local mklroot = rpm.expand("%{?tpls_mklroot}") \
-local cudaroot = rpm.expand("%{?tpls_cudaroot}") \
-local rocmroot = rpm.expand("%{?tpls_rocmroot}") \
-if rpm.expand("%{?tpls_gpu}") == "lapack" then \
-    if rpm.expand("%{?tpls_libs}") == "static" then \
-        rpm.define("tpls_libpath -L" .. prefix .. "/lib") \
-    else \
-        rpm.define("tpls_libpath -L" .. prefix .. "/lib -Wl,-rpath," .. prefix .. "/lib") \
-    end \
-elseif rpm.expand("%{?tpls_gpu}") == "cuda" then \
-    if rpm.expand("%{?tpls_libs}") == "static" then \
-        rpm.define("tpls_libpath -L" .. prefix .. "/lib -L" .. mklroot .. "/lib -L" .. cudaroot .. "/lib64") \
-    else \
-        rpm.define("tpls_libpath -L" .. prefix .. "/lib -L" .. mklroot .. "/lib -L" .. cudaroot .. "/lib64 -Wl,-rpath," .. prefix .. "/lib -Wl,-rpath," .. mklroot .. "/lib -Wl,-rpath," .. cudaroot .. "/lib64") \
-    end \
-elseif rpm.expand("%{?tpls_gpu}") == "rocm" then \
-    if rpm.expand("%{?tpls_libs}") == "static" then \
-        rpm.define("tpls_libpath -L" .. prefix .. "/lib -L" .. mklroot .. "/lib -L" .. rocmroot .. "/lib") \
-    else \
-        rpm.define("tpls_libpath -L" .. prefix .. "/lib -L" .. mklroot .. "/lib -L" .. rocmroot .. "/lib -Wl,-rpath," .. prefix .. "/lib -Wl,-rpath," .. mklroot .. "/lib -Wl,-rpath," .. rocmroot .. "/lib") \
-    end \
-end \
-}
-
-
-
-%global tpls_coptflags %{lua: \
-local libs    = rpm.expand("%{?tpls_libs}") \
-local intsize = rpm.expand("%{?tpls_intsize}") \
-local mklroot = rpm.expand("%{?tpls_mklroot}") \
-local prefix  = rpm.expand("%{?tpls_prefix}") \
-local base_coptflags = rpm.expand("%{?tpls_coptflags_}") \
-local gpu = rpm.expand("%{?tpls_gpu}") \
-if libs == "static" then \
-if gpu == "lapack" then \
-rpm.define("tpls_foptflags " .. base_coptflags .. " -I" .. prefix .. "/include" ) \
-else \
-if intsize == "32" then \
-rpm.define("tpls_foptflags " .. base_coptflags .. " -I" .. prefix .. "/include" .. " -I" .. mklroot .. "/include" ) \
-else \
-rpm.define("tpls_foptflags " .. base_coptflags .. " -DMKL_ILP64 -I" .. prefix .. "/include" .. " -I" .. mklroot .. "/include" ) \
-end \
-end \
-else \
-if gpu == "lapack" then \
-rpm.define("tpls_foptflags " .. base_coptflags .. " -fPIC -I" .. prefix .. "/include" ) \
-else \
-if intsize == "32" then \
-rpm.define("tpls_foptflags " .. base_coptflags .. " -fPIC -I" .. prefix .. "/include" .. " -I" .. mklroot .. "/include" ) \
-else \
-rpm.define("tpls_foptflags " .. base_coptflags .. " -fPIC -DMKL_ILP64 -I" .. prefix .. "/include" .. " -I" .. mklroot .. "/include" ) \
-end \
-end \
-end \
-}
-
-%global tpls_cxxoptflags %{lua: \
-local libs    = rpm.expand("%{?tpls_libs}") \
-local intsize = rpm.expand("%{?tpls_intsize}") \
-local mklroot = rpm.expand("%{?tpls_mklroot}") \
-local prefix  = rpm.expand("%{?tpls_prefix}") \
-local base_cxxoptflags = rpm.expand("%{?tpls_cxxoptflags_}") \
-local gpu = rpm.expand("%{?tpls_gpu}") \
-if libs == "static" then \
-if gpu == "lapack" then \
-rpm.define("tpls_foptflags " .. base_cxxoptflags .. " -I" .. prefix .. "/include" ) \
-else \
-if intsize == "32" then \
-rpm.define("tpls_foptflags " .. base_cxxoptflags .. " -I" .. prefix .. "/include -I" .. mklroot .. "/include" ) \
-else \
-rpm.define("tpls_foptflags " .. base_cxxoptflags .. " -DMKL_ILP64 -I" .. prefix .. "/include -I" .. mklroot .. "/include" ) \
-end \
-end \
-else \
-if gpu == "lapack" then \
-rpm.define("tpls_foptflags " .. base_cxxoptflags .. " -fPIC -I" .. prefix .. "/include" ) \
-else \
-if intsize == "32" then \
-rpm.define("tpls_foptflags " .. base_cxxoptflags .. " -fPIC -I" .. prefix .. "/include -I" .. mklroot .. "/include" ) \
-else \
-rpm.define("tpls_foptflags " .. base_cxxoptflags .. " -fPIC -DMKL_ILP64 -I" .. prefix .. "/include -I" .. mklroot .. "/include" ) \
-end \
-end \
-end \
-}
-
-%global tpls_foptflags %{lua: \
-local libs    = rpm.expand("%{?tpls_libs}") \
-local intsize = rpm.expand("%{?tpls_intsize}") \
-local base_foptflags = rpm.expand("%{?tpls_foptflags_}") \
-local gpu = rpm.expand("%{?tpls_gpu}") \
-if libs == "static" then \
-if gpu == "lapack" then \
-    rpm.define("tpls_foptflags " .. base_foptflags .. " -i4 -I" .. prefix .. "/include" ) \
-if intsize == "32" then \
-    rpm.define("tpls_foptflags " .. base_foptflags .. " -i4 -I" .. prefix .. "/include -I" .. mklroot .. "/include") \
-else \
-    rpm.define("tpls_foptflags " .. base_foptflags .. " -i8 -DMKL_ILP64 -I" .. prefix .. "/include -I" .. mklroot .. "/include") \
-end \
-else \
-if gpu == "lapack" then \
-    rpm.define("tpls_foptflags " .. base_foptflags .. " -fPIC -i4 -I" .. prefix .. "/include" ) \
-if intsize == "32" then \
-    rpm.define("tpls_foptflags " .. base_foptflags .. " -fPIC -i4 -I" .. prefix .. "/include -I" .. mklroot .. "/include") \
-else \
-    rpm.define("tpls_foptflags " .. base_foptflags .. " -fPIC -i8 -DMKL_ILP64 -I" .. prefix .. "/include -I" .. mklroot .. "/include") \
-end \
-else \
-end \
-}
-
-
-########################################################################
-# IMPORTANT SCRIPTS                                                    #
-########################################################################
-
-# fix the qversion bug in configure
-%define tpls_remove_qversion    sed -i 's| -qversion||'g ./configure ;
-
-# delete-la-tool
-%define tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
-
-# setup the environment
 %global setup_tpls_env \
 # setup the Intel OneAPI \
 if [ "%{tpls_gpu}" != "lapack" ]; then \
@@ -211,24 +20,24 @@ export CXX=%{tpls_cxx} \
 export FC=%{tpls_fc} \
 export F77=%{tpls_fc} \
 export FF=%{tpls_fc} \
-export CFLAGS="%{tpls_coptflags} -I%{tpls_prefix}/include" \
-export CXXFLAGS="%{tpls_cxxoptflags} -I%{tpls_prefix}/include" \
-export FFLAGS="%{tpls_foptflags}" \
-export FCLAGS="%{tpls_foptflags}" \
+export CFLAGS="%{tpls_cflags}" \
+export CXXFLAGS="%{tpls_cxxflags}" \
+export FFLAGS="%{tpls_fcflags}" \
+export FCLAGS="%{tpls_fcflags}" \
 # check if the compilers are in the path \
 if [[ ":$PATH:" != *:%{tpls_comproot}/bin* ]]; then \
   export PATH="%{tpls_comproot}/bin:$PATH"; \
 fi; \
 # check if CUDA is used and in the path \
 if [ "%{tpls_gpu}" == "cuda" ]; then \
-  if [[ ":$PATH:" != *:%{tpls_cudaroot}/bin* ]]; then \
-    export PATH="%{tpls_cudaroot}/bin:$PATH"; \
+  if [[ ":$PATH:" != *:%{tpls_cuda}/bin* ]]; then \
+    export PATH="%{tpls_cuda}/bin:$PATH"; \
   fi; \
 fi; \
 # check if ROCM is used and in the path \
 if [ "%{tpls_gpu}" == "rocm" ]; then \
-  if [[ ":$PATH:" != *:%{tpls_rocmroot}/bin* ]]; then \
-    export PATH="%{tpls_rocmroot}/bin:$PATH"; \
+  if [[ ":$PATH:" != *:%{tpls_rocm}/bin* ]]; then \
+    export PATH="%{tpls_rocm}/bin:$PATH"; \
   fi; \
 fi; \
 # add the TPLS binary directory \
