@@ -8,7 +8,6 @@ URL:            https://www.labri.fr/perso/pelegrin/scotch/
 Source0:        https://gitlab.inria.fr/scotch/scotch/-/archive/v%{version}/scotch-v%{version}.tar.bz2
 
 # taken from debian
-Patch0:         build-shared-library-soname.patch
 Patch1:         metis-header.patch
 Patch2:         include_headers.patch
 Patch3:         default_metis_v5.patch     
@@ -49,70 +48,72 @@ sparse matrix ordering. The parallel scotch libraries are packaged in the
 
 %prep
 %setup -q -n scotch-v%{version}
-%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+
 %build
 
 %{expand: %setup_tpls_env}
 
-cd src
-echo "EXE		=" >> Makefile.inc
-%if "%{tpls_libs}" == "static"
-echo "LIB		= .a" >> Makefile.inc
-%else
-echo "LIB		= .so" >> Makefile.inc
+pwd
+
+cmake \
+ 	 -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
+ 	 -DBUILD_LIBESMUMPS=ON \
+ 	 -DBUILD_LIBSCOTCHMETIS=ON \
+ 	 -DBUILD_PTSCOTCH=ON \
+ 	 -DCMAKE_BUILD_TYPE=Release \
+ 	 -DINTSIZE=%{tpls_int} \
+ 	 -DCMAKE_C_COMPILER=%{tpls_mpicc} \
+ 	 -DCMAKE_C_FLAGS="%{tpls_cflags}" \
+ 	 -DCMAKE_C_FLAGS_RELEASE=-DNDEBUG \
+ 	 -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
+ 	 -DCMAKE_CXX_COMPILER=%{tpls_mpicxx} \
+ 	 -DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
+ 	 -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
+ 	 -DCMAKE_Fortran_COMPILER="%{tpls_mpifort}" \
+ 	 -DCMAKE_Fortran_FLAGS="%{tpls_fcflags}" \
+ 	 -DCMAKE_Fortran_FLAGS_RELEASE=-DNDEBUG \
+ 	 -DINSTALL_METIS_HEADERS=OFF \
+ 	 -DMPIEXEC_MAX_NUMPROCS=%{tpls_maxprocs}
+	
+#%make_build
+%make_build
+
+# build the static libraries
+%if "%{tpls_libs}" == "shared"
+echo "Building shared libraries"
+
+for l in esmumps ptesmumps; do
+    %{tpls_mpicc} -shared -o ./lib/lib${l}.so ./src/esmumps/CMakeFiles/${l}.dir/*.o
+done
+
+for l in ptscotch ptscotcherr ptscotcherrexit scotch scotcherr scotcherrexit; do
+    echo $l 
+    %{tpls_mpicc} -shared -o ./lib/lib${l}.so ./src/libscotch/CMakeFiles/${l}.dir/*.o
+done
+
+for l in ptscotchparmetisv3 scotchmetisv3 scotchmetisv5; do
+    %{tpls_mpicc} -shared -o ./lib/lib${l}.so ./src/libscotchmetis/CMakeFiles/${l}.dir/*.o
+done
+
 %endif
-echo "OBJ		= .o" >> Makefile.inc
-echo "" >> Makefile.inc
-echo "MAKE		= make" >> Makefile.inc
-%if "%{tpls_libs}" == "static"
-echo "AR		= %{tpls_ar}" >> Makefile.inc
-echo "ARFLAGS	= %{tpls_arflags}" >> Makefile.inc
-%else
-echo "AR		= %{tpls_cc}" >> Makefile.inc
-echo "ARFLAGS	= -shared -o " >> Makefile.inc
-%endif
-echo "CAT		= cat" >> Makefile.inc
-echo "CCS		= %{tpls_cc}" >> Makefile.inc
-echo "CCP		= mpicc" >> Makefile.inc
-echo "CCD		= %{tpls_cc}" >> Makefile.inc
 
 
-echo "CFLAGS	= %{tpls_cflags} -DCOMMON_FILE_COMPRESS_GZ -DCOMMON_PTHREAD -DCOMMON_PTHREAD_AFFINITY_LINUX -DCOMMON_RANDOM_FIXED_SEED -DSCOTCH_MPI_ASYNC_COLL -DSCOTCH_PTHREAD -DSCOTCH_PTHREAD_MPI -DSCOTCH_RENAME -Drestrict=__restrict -DIDXSIZE%{tpls_int}" >> Makefile.inc
-
-
-
-echo "CLIBFLAGS	= " >> Makefile.inc
-
-
-
-echo "LDFLAGS	= %{tpls_ldflags} -lz -lm -lrt -pthread" >> Makefile.inc
-echo "CP		= cp" >> Makefile.inc
-echo "FLEX		= flex" >> Makefile.inc
-echo "LN		= ln" >> Makefile.inc
-echo "MKDIR		= mkdir -p" >> Makefile.inc
-echo "MV		= mv" >> Makefile.inc
-%if "%{tpls_libs}" == "static"
-echo "RANLIB    = ranlib" >> Makefile.inc
-%else
-echo "RANLIB    = echo" >> Makefile.inc
-%endif
-echo "BISON		= bison" >> Makefile.inc
-
-sed -i "s|?= /usr/local|= %{buildroot}/%{tpls_prefix}|g" Makefile
-
-make %{?_smp_mflags}
-
-%check
+#%check
 cd src
 LD_LIBRARY_PATH=$(dirname $(pwd))/lib  FC=%{tpls_fc}  make %{?_smp_mflags} check
 
 
 %install
+%if "%{tpls_libs}" == "shared"
+mkdir -p %{buildroot}/%{tpls_prefix}/lib/
+install -m 755 ./lib/*.so %{buildroot}/%{tpls_prefix}/lib/
+%endif
+
 cd src
-make install
+%make_install
 
 %files
 %{tpls_prefix}/bin/acpl
@@ -126,12 +127,10 @@ make install
 %{tpls_prefix}/bin/dggath
 %{tpls_prefix}/bin/dgmap
 %{tpls_prefix}/bin/dgord
-%{tpls_prefix}/bin/dgpart
 %{tpls_prefix}/bin/dgscat
 %{tpls_prefix}/bin/dgtst
 %{tpls_prefix}/bin/gbase
 %{tpls_prefix}/bin/gcv
-%{tpls_prefix}/bin/gdump
 %{tpls_prefix}/bin/gmap
 %{tpls_prefix}/bin/gmk_hy
 %{tpls_prefix}/bin/gmk_m2
@@ -141,8 +140,6 @@ make install
 %{tpls_prefix}/bin/gmtst
 %{tpls_prefix}/bin/gord
 %{tpls_prefix}/bin/gotst
-%{tpls_prefix}/bin/gout
-%{tpls_prefix}/bin/gpart
 %{tpls_prefix}/bin/gscat
 %{tpls_prefix}/bin/gtst
 %{tpls_prefix}/bin/mcv
@@ -150,14 +147,36 @@ make install
 %{tpls_prefix}/bin/mmk_m3
 %{tpls_prefix}/bin/mord
 %{tpls_prefix}/bin/mtst
-%exclude %{tpls_prefix}/include/metis.h
-%exclude %{tpls_prefix}/include/metisf.h
-%exclude %{tpls_prefix}/include/parmetis.h
+%{tpls_prefix}/include/esmumps.h
 %{tpls_prefix}/include/ptscotch.h
 %{tpls_prefix}/include/ptscotchf.h
 %{tpls_prefix}/include/scotch.h
 %{tpls_prefix}/include/scotchf.h
+%{tpls_prefix}/lib/cmake/scotch/SCOTCHConfig.cmake
+%{tpls_prefix}/lib/cmake/scotch/SCOTCHConfigVersion.cmake
+%{tpls_prefix}/lib/cmake/scotch/esmumpsTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/esmumpsTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptesmumpsTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptesmumpsTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotchTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotchTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotcherrTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotcherrTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotcherrexitTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotcherrexitTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotchparmetisTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/ptscotchparmetisTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotchTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotchTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotcherrTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotcherrTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotcherrexitTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotcherrexitTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotchmetisTargets-release.cmake
+%{tpls_prefix}/lib/cmake/scotch/scotchmetisTargets.cmake
 %if "%{tpls_libs}" == "static"
+%{tpls_prefix}/lib/libesmumps.a
+%{tpls_prefix}/lib/libptesmumps.a
 %{tpls_prefix}/lib/libptscotch.a
 %{tpls_prefix}/lib/libptscotcherr.a
 %{tpls_prefix}/lib/libptscotcherrexit.a
@@ -165,87 +184,32 @@ make install
 %{tpls_prefix}/lib/libscotch.a
 %{tpls_prefix}/lib/libscotcherr.a
 %{tpls_prefix}/lib/libscotcherrexit.a
+%{tpls_prefix}/lib/libscotchmetisv3.a
+%{tpls_prefix}/lib/libscotchmetisv5.a
+%else
+%exclude %{tpls_prefix}/lib/libesmumps.a
+%exclude %{tpls_prefix}/lib/libptesmumps.a
+%exclude %{tpls_prefix}/lib/libptscotch.a
+%exclude %{tpls_prefix}/lib/libptscotcherr.a
+%exclude %{tpls_prefix}/lib/libptscotcherrexit.a
+%exclude %{tpls_prefix}/lib/libptscotchparmetisv3.a
+%exclude %{tpls_prefix}/lib/libscotch.a
+%exclude %{tpls_prefix}/lib/libscotcherr.a
+%exclude %{tpls_prefix}/lib/libscotcherrexit.a
 %exclude %{tpls_prefix}/lib/libscotchmetisv3.a
 %exclude %{tpls_prefix}/lib/libscotchmetisv5.a
-%else
-%{tpls_prefix}/lib/libptscotch-7.0.4.so
-%{tpls_prefix}/lib/libptscotch-7.0.so
+%{tpls_prefix}/lib/libesmumps.so
+%{tpls_prefix}/lib/libptesmumps.so
 %{tpls_prefix}/lib/libptscotch.so
-%{tpls_prefix}/lib/libptscotcherr-7.0.4.so
-%{tpls_prefix}/lib/libptscotcherr-7.0.so
 %{tpls_prefix}/lib/libptscotcherr.so
-%{tpls_prefix}/lib/libptscotcherrexit-7.0.4.so
-%{tpls_prefix}/lib/libptscotcherrexit-7.0.so
 %{tpls_prefix}/lib/libptscotcherrexit.so
-%{tpls_prefix}/lib/libptscotchparmetisv3-7.0.4.so
-%{tpls_prefix}/lib/libptscotchparmetisv3-7.0.so
 %{tpls_prefix}/lib/libptscotchparmetisv3.so
-%{tpls_prefix}/lib/libscotch-7.0.4.so
-%{tpls_prefix}/lib/libscotch-7.0.so
 %{tpls_prefix}/lib/libscotch.so
-%{tpls_prefix}/lib/libscotcherr-7.0.4.so
-%{tpls_prefix}/lib/libscotcherr-7.0.so
 %{tpls_prefix}/lib/libscotcherr.so
-%{tpls_prefix}/lib/libscotcherrexit-7.0.4.so
-%{tpls_prefix}/lib/libscotcherrexit-7.0.so
 %{tpls_prefix}/lib/libscotcherrexit.so
-%exclude %{tpls_prefix}/lib/libscotchmetisv3-7.0.4.so
-%exclude %{tpls_prefix}/lib/libscotchmetisv3-7.0.so
-%exclude %{tpls_prefix}/lib/libscotchmetisv3.so
-%exclude %{tpls_prefix}/lib/libscotchmetisv5-7.0.4.so
-%exclude %{tpls_prefix}/lib/libscotchmetisv5-7.0.so
-%exclude %{tpls_prefix}/lib/libscotchmetisv5.so
+%{tpls_prefix}/lib/libscotchmetisv3.so
+%{tpls_prefix}/lib/libscotchmetisv5.so
 %endif
-%{tpls_prefix}/share/man/man1/Makefile
-%{tpls_prefix}/share/man/man1/acpl.1
-%{tpls_prefix}/share/man/man1/acpl.1.txt
-%{tpls_prefix}/share/man/man1/amk_ccc.1
-%{tpls_prefix}/share/man/man1/amk_ccc.1.txt
-%{tpls_prefix}/share/man/man1/amk_grf.1
-%{tpls_prefix}/share/man/man1/amk_grf.1.txt
-%{tpls_prefix}/share/man/man1/atst.1
-%{tpls_prefix}/share/man/man1/atst.1.txt
-%{tpls_prefix}/share/man/man1/dgmap.1
-%{tpls_prefix}/share/man/man1/dgmap.1.txt
-%{tpls_prefix}/share/man/man1/dgord.1
-%{tpls_prefix}/share/man/man1/dgord.1.txt
-%{tpls_prefix}/share/man/man1/dgscat.1
-%{tpls_prefix}/share/man/man1/dgscat.1.txt
-%{tpls_prefix}/share/man/man1/dgtst.1
-%{tpls_prefix}/share/man/man1/dgtst.1.txt
-%{tpls_prefix}/share/man/man1/gbase.1
-%{tpls_prefix}/share/man/man1/gbase.1.txt
-%{tpls_prefix}/share/man/man1/gcv.1
-%{tpls_prefix}/share/man/man1/gcv.1.txt
-%{tpls_prefix}/share/man/man1/gdump.1
-%{tpls_prefix}/share/man/man1/gdump.1.txt
-%{tpls_prefix}/share/man/man1/gmap.1
-%{tpls_prefix}/share/man/man1/gmap.1.txt
-%{tpls_prefix}/share/man/man1/gmk_hy.1
-%{tpls_prefix}/share/man/man1/gmk_hy.1.txt
-%{tpls_prefix}/share/man/man1/gmk_m2.1
-%{tpls_prefix}/share/man/man1/gmk_m2.1.txt
-%{tpls_prefix}/share/man/man1/gmk_msh.1
-%{tpls_prefix}/share/man/man1/gmk_msh.1.txt
-%{tpls_prefix}/share/man/man1/gmtst.1
-%{tpls_prefix}/share/man/man1/gmtst.1.txt
-%{tpls_prefix}/share/man/man1/gord.1
-%{tpls_prefix}/share/man/man1/gord.1.txt
-%{tpls_prefix}/share/man/man1/gotst.1
-%{tpls_prefix}/share/man/man1/gotst.1.txt
-%{tpls_prefix}/share/man/man1/gout.1
-%{tpls_prefix}/share/man/man1/gout.1.txt
-%{tpls_prefix}/share/man/man1/gtst.1
-%{tpls_prefix}/share/man/man1/gtst.1.txt
-%{tpls_prefix}/share/man/man1/mcv.1
-%{tpls_prefix}/share/man/man1/mcv.1.txt
-%{tpls_prefix}/share/man/man1/mmk_m2.1
-%{tpls_prefix}/share/man/man1/mmk_m2.1.txt
-%{tpls_prefix}/share/man/man1/mord.1
-%{tpls_prefix}/share/man/man1/mord.1.txt
-%{tpls_prefix}/share/man/man1/mtst.1
-%{tpls_prefix}/share/man/man1/mtst.1.txt
-
 %changelog
 * Mon Dec 18 2023 Christian Messe <cmesse@lbl.gov> - 7.0.4-1
 - Initial Package

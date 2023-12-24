@@ -3,6 +3,8 @@
 # AUTOMATIC MACROS                                                     #
 ########################################################################
 
+%define tpls_maxprocs 64
+
 %define tpls_compilers     \
 	LD=%{tpls_ld}   \
 	AR=%{tpls_ar}   \

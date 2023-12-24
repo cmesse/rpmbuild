@@ -1,5 +1,9 @@
 Name:           tpls-%{tpls_flavor}-mumps
-Version:        5.6.2
+
+%define major_version 5
+%define minor_version 6
+%define patch_version 2
+Version:        %{major_version}.%{minor_version}.%{patch_version}
 Release:        1%{?dist}
 Summary:        A MUltifrontal Massively Parallel sparse direct Solver
 
@@ -7,9 +11,11 @@ License:        CeCILL-C
 URL:            http://mumps.enseeiht.fr/
 Source0:        http://mumps.enseeiht.fr/MUMPS_%{version}.tar.gz
 
-#Patch0:         MUMPS-examples-mpilibs.patch
-#Patch1:         MUMPS-shared-pord.patch
-#Patch2:         MUMPS-shared.patch
+# borrowed from debian
+Patch0:          mumps_shared_prod.patch
+Patch1:          mumps_shared.patch
+
+Patch2:          mumps_fix_mumps_c.patch
 
 
 BuildRequires:  %{tpls_rpm_cc}  >= %{tpls_comp_minver}
@@ -44,10 +50,9 @@ C interfaces, and can interface with ordering tools such as Scotch.
 %prep
 %setup -q -n MUMPS_%{version}
 
-#%patch0 -p1
-#%patch1 -p1
-#%patch2 -p1
-
+%patch0 -p1
+%patch1 -p1
+%patch2 -p1
 
 %build
 
@@ -57,14 +62,22 @@ echo "########################################################################" 
 echo "#              TPLS Makefile.inc created by cmesse@lbl.gov             #" >> Makefile.inc
 echo "########################################################################" >> Makefile.inc
 echo >> Makefile.inc
+echo VERSION = %{version} >> Makefile.inc
+echo SOVERSION = %{major_version}.%{minor_version} >> Makefile.inc
+echo >> Makefile.inc
 echo "# Compiler and Archiver Settings" >> Makefile.inc
 echo >> Makefile.inc
 echo "CC  = %{tpls_mpicc}"   >> Makefile.inc
 echo "CXX = %{tpls_mpicxx}"  >> Makefile.inc
 echo "FC  = %{tpls_mpifort}" >> Makefile.inc
 echo "CXXCPP = %{tpls_cxxcpp}" >> Makefile.inc
+%if "%{tpls_libs}" == "static"
 echo "AR = %{tpls_ar} %{tpls_arflags} " >> Makefile.inc
 echo "RANLIB = ranlib" >> Makefile.inc
+%else
+echo "AR = %{tpls_mpifort} -shared -o " >> Makefile.inc
+echo "RANLIB = echo" >> Makefile.inc 
+%endif
 echo >> Makefile.inc
 echo "# Optimization Flags" >> Makefile.inc
 echo >> Makefile.inc
@@ -92,7 +105,12 @@ echo "IORDERINGSC = -I%{tpls_prefix}/include -I%{_builddir}/MUMPS_%{version}/POR
 echo "LORDERINGS  = -lparmetis -lmetis -lpord -lptesmumps -lptscotch -lptscotcherr" >> Makefile.inc
 echo >> Makefile.inc
 echo "# Library Settings" >> Makefile.inc
+%if "%{tpls_libs}" == "static"
 echo "LIBEXT = .a" >> Makefile.inc
+%else
+echo "LIBEXT = .so" >> Makefile.inc
+%endif
+
 echo "LIBEXT_SHARED = .so" >> Makefile.inc
 echo >> Makefile.inc
 %if "%{tpls_gpu}" == "lapack"
@@ -114,9 +132,9 @@ echo "LIBS = $(LIBPAR)" >> Makefile.inc
 echo "LIBSEQNEEDED =" >> Makefile.inc
 
 %make_build
+LDFLAGS="%{tpls_ldflags}" make allshared
 
 %install
-%make_install
 
 %files
 
