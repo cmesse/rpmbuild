@@ -29,6 +29,7 @@ def ld_library_path(config):
         path += ':{:s}/lib'.format(config['system']['rocm'])
 
     return path
+
 def omplib(config):
     compiler = str(config['flavor']['compiler'])
     comproot = str(config['system']['comp'])
@@ -159,6 +160,9 @@ def write_binaries(file,config):
     binaries = ['cc', 'cxx', 'fc', 'ar', 'ld' ]
     for key in binaries:
         file.write('%define tpls_{:s} {:s} \n'.format( key, str(config['binaries'][key] ) ) )
+
+    file.write('%define tpls_cpp {:s} -E \n'.format( key, str(config['binaries']['cc'] ) ) )
+    file.write('%define tpls_cxxcpp {:s} -E \n'.format( key, str(config['binaries']['cxx'] ) ) )
 
 def write_mpi_binaries(file,config):
     file.write('\n# MPI wrappers\n')

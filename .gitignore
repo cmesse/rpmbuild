@@ -1,4 +1,5 @@
 .DS_Store
+SPECS/
 BUILD/
 BUILDROOT/
 RPMS/x86_64/repodata/

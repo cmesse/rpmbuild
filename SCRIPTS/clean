@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+pushd ~/rpmbuild/RPMS/x86_64
+rm -vf *.rpm
+popd
+pushd ~/rpmbuild/SRPMS
+rm -vf *.rpm
+popd
+rm -rvf ~/rpmbuild/BUILD
+mkdir ~/rpmbuild/BUILD
+rm -rvf ~/rpmbuild/BUILDROOT
+mkdir ~/rpmbuild/BUILDROOT

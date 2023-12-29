@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+createrepo --update /home/christian/rpmbuild/RPMS/x86_64
+sudo dnf update

@@ -12,10 +12,7 @@ URL:            http://mumps.enseeiht.fr/
 Source0:        http://mumps.enseeiht.fr/MUMPS_%{version}.tar.gz
 
 # borrowed from debian
-Patch0:          mumps_shared_prod.patch
-Patch1:          mumps_shared.patch
-
-Patch2:          mumps_fix_mumps_c.patch
+Patch0:          mumps_fix_mumps_c.patch
 
 
 BuildRequires:  %{tpls_rpm_cc}  >= %{tpls_comp_minver}
@@ -51,8 +48,6 @@ C interfaces, and can interface with ordering tools such as Scotch.
 %setup -q -n MUMPS_%{version}
 
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
 
 %build
 
@@ -94,8 +89,6 @@ echo >> Makefile.inc
 echo "# Library Paths" >> Makefile.inc
 echo "LPORDDIR = %{_builddir}/MUMPS_%{version}/PORD/lib/" >> Makefile.inc
 echo "LPORD    = -L$(LPORDDIR) -lpord" >> Makefile.inc
-
-
 echo >> Makefile.inc
 echo "# ORDERINGS" >> Makefile.inc
 echo "ORDERINGSF = -Dscotch -Dmetis -Dpord -Dptscotch -Dparmetis" >> Makefile.inc
@@ -110,34 +103,86 @@ echo "LIBEXT = .a" >> Makefile.inc
 %else
 echo "LIBEXT = .so" >> Makefile.inc
 %endif
-
 echo "LIBEXT_SHARED = .so" >> Makefile.inc
+echo "SONAME = -soname" >> Makefile.inc
+
 echo >> Makefile.inc
 %if "%{tpls_gpu}" == "lapack"
 echo "LIBPAR = %{tpls_scalapack} %{tpls_lapack} %{tpls_blas}" >> Makefile.inc
 echo "LIBSEQ = %{tpls_lapack} %{tpls_blas} -L$(topdir)/libseq -lmpiseq" >> Makefile.inc
+echo "LIBS   = %{tpls_ldflags} %{tpls_scalapack} %{tpls_lapack} %{tpls_blas} -lpthread" >> Makefile.inc
 %else
-echo "LIBPAR = %{mkl_mpi_linker_flags}" >> Makefile.inc
-echo "LIBSEQ = %{mkl_linker_flags} -L$(topdir)/libseq -lmpiseq" >> Makefile.inc
+echo "LIBPAR = %{tpls_mkl_mpi_linker_flags}" >> Makefile.inc
+echo "LIBSEQ = %{tpls_mkl_linker_flags} -L$(topdir)/libseq -lmpiseq" >> Makefile.inc
+echo "LIBS   = %{tpls_ldflags} %{tpls_mkl_mpi_linker_flags} -lpthread" >> Makefile.inc
 %endif
 echo "LIBOTHERS = -lpthread" >> Makefile.inc
+echo "LIBSEQNEEDED =" >> Makefile.inc
 echo >> Makefile.inc
 echo "# Preprocessor Definitions" >> Makefile.inc
+%if %{tpls_int} == 32
 echo "CDEFS = -DAdd_" >> Makefile.inc
+%else
+echo "CDEFS = -DAdd_ -DINTSIZE64" >> Makefile.inc
+%endif
 echo >> Makefile.inc
-echo "# Include and Library Settings for Parallel and Sequential Versions" >> Makefile.inc
+echo "# Includes" >> Makefile.inc
 echo >> Makefile.inc
 echo "INCS = -I%{tpls_prefix}/include -I%{_builddir}/MUMPS_%{version}/PORD/include" >> Makefile.inc
-echo "LIBS = $(LIBPAR)" >> Makefile.inc
-echo "LIBSEQNEEDED =" >> Makefile.inc
 
-%make_build
-LDFLAGS="%{tpls_ldflags}" make allshared
+# make PORD
+pushd ./PORD/lib
+%if %{tpls_int} == 32
+for f in *.c ; do
+   %{tpls_mpicc} %{tpls_cflags} %{tpls_ompflag} -I../include -c ${f%.c}.o $f ;
+done
+%else
+for f in *.c ; do
+   %{tpls_mpicc} %{tpls_cflags} %{tpls_ompflag} -DPORD_INTSIZE64 -I../include -c ${f%.c}.o $f ;
+done
+%endif
+pwd
+%if "%{tpls_libs}" == "static"
+%{tpls_ar} %{tpls_arflags} ../../lib/libpord.a *.o
+%{tpls_ranlib} ../../lib/libpord.a
+%else
+%{tpls_mpicc} -shared -o ../../lib/libpord.so *.o -Wl,-soname,libpord.so -Wl,-z,defs
+%endif 
+popd
+pushd src
+make  %{?_smp_mflags} all
+popd
 
 %install
+pushd lib
+mkdir -p %{buildroot}%{tpls_prefix}/lib
+%if "%{tpls_libs}" == "static"
+for f in *.a ; do
+   install -m 644 $f %{buildroot}%{tpls_prefix}/lib ;
+done ;
+%else
+for f in *.so ; do
+   install -m 755 $f %{buildroot}%{tpls_prefix}/lib ;
+done ; 
+%endif
+popd
 
 %files
-
+%if "%{tpls_libs}" == "static"
+%{tpls_prefix}/lib/libcmumps.a
+%{tpls_prefix}/lib/libdmumps.a
+%{tpls_prefix}/lib/libmumps_common.a
+%{tpls_prefix}/lib/libpord.a
+%{tpls_prefix}/lib/libsmumps.a
+%{tpls_prefix}/lib/libzmumps.a
+%else
+%{tpls_prefix}/lib/libcmumps.so
+%{tpls_prefix}/lib/libdmumps.so
+%{tpls_prefix}/lib/libmumps_common.so
+%{tpls_prefix}/lib/libpord.so
+%{tpls_prefix}/lib/libsmumps.so
+%{tpls_prefix}/lib/libzmumps.so
+%endif
 
 %changelog
 * Wed Dec 20 2023 Christian Messe <cmesse@lbl.gov> - 5.6.2-1

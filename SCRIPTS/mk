@@ -2,4 +2,4 @@
 
 cat ~/.tplsmacros > ~/rpmbuild/SPECS/tpls-$1.spec
 cat ~/rpmbuild/TEMPLATES/tpls-$1.spec >> ~/rpmbuild/SPECS/tpls-$1.spec
-rpmbuild -ba ~/rpmbuild/SPECS/tpls-$1.spec
+mock -r tpls --rebuild  ~/rpmbuild/SPECS/tpls-$1.spec
