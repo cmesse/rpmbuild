@@ -249,7 +249,10 @@ def write_compiler_flags( file, config ):
     
     if libs == 'shared' :
         ldflags += ' {:s}'.format( rpath )
-        
+    else:
+        # for hwloc
+        ldflags += ' -lpciaccess'
+    
     # add includes to the flags
     cflags   += includes
     cxxflags += includes

@@ -12,7 +12,9 @@ lapack = [ "lapack", "fspblas", "scalapack" ]
 
 
 # Add nodes (vertices) to the graph
-packages = ["libevent",
+packages = [
+         "hwloc",
+         "libevent",
 		 "openmpi",
 		 "hdf5",
 		 "testsweeper",
@@ -32,6 +34,8 @@ if( LAPACK ):
 	
 # Add edges (dependencies) to the graph
 dependencies = [
+    ("hwloc", "libevent"),
+    ("openmpi", "hwloc"),
 	("openmpi", "libevent"),
 	("hdf5", "openmpi"), 
 	("blas++", "testsweeper"), 

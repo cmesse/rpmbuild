@@ -45,7 +45,7 @@
 %define tpls_cflags   -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-lapack-static-32/include
 %define tpls_cxxflags   -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-lapack-static-32/include
 %define tpls_fcflags   -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-lapack-static-32/include
-%define tpls_ldflags    -L/opt/tpls/skylake-gnu-openmpi-lapack-static-32/lib
+%define tpls_ldflags    -L/opt/tpls/skylake-gnu-openmpi-lapack-static-32/lib -lpciaccess
 %define tpls_arflags   -cru
 %define tpls_ompflag    -fopenmp
 
