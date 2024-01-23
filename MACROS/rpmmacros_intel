@@ -37,6 +37,7 @@ if [[ ":$PATH:" != *:%{tpls_prefix}/bin* ]]; then \
   export PATH="%{tpls_prefix}/bin:$PATH"; \
 fi; \
 if [ -f ./configure ]; then \
-    sed -i "s| -V||g" ./configure \
-    sed -i "s| -qversion||g" ./configure \
+    sed -i "s| -V ||g" ./configure \
+    sed -i "s| -qversion ||g" ./configure \
+    sed -i "s/|)/)/g" ./configure \
 fi

@@ -24,10 +24,9 @@ preordering for sparsity is completely separate from the factorization.
 %setup -q -n superlu-%{version}
 
 %build
-
-cmake \
-	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
-	-DCMAKE_BUILD_TYPE="Release" \
+%{expand: %setup_tpls_env}
+%{tpls_env} \
+%{tpls_cmake} . \
 %if "%{tpls_libs}" == "static"
     -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
@@ -40,16 +39,19 @@ cmake \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags}  -fPIC -DNDEBUG" \
     -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -fPIC -DNDEBUG" \
     -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -fPIC -DNDEBUG" \
-        -DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -fPIC -DNDEBUG" \
+    -DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -fPIC -DNDEBUG" \
     -DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -fPIC -DNDEBUG" \
 %endif
 	-DCMAKE_INSTALL_LIBDIR=lib \
 %if "%{tpls_gpu}" == "lapack"
 	-DTPL_BLAS_LIBRARIES=%{tpls_blas} \
 	-DTPL_BLAS_LIBRARIES=%{tpls_lapack} \
+%elseif "%{tpls_libs}" == "static"
+	-DCMAKE_STATIC_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
+	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
 %else
-	-DTPL_BLAS_LIBRARIES=%{mkl_linker_flags} \
-	-DTPL_BLAS_LIBRARIES=%{mkl_linker_flags} \
+	-DCMAKE_SHARED_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
+	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
 %endif
 	-DTPL_ENABLE_METISLIB=ON \
 	-DTPL_METIS_INCLUDE_DIRS=%{tpls_prefix}/include \
@@ -108,5 +110,5 @@ install ./FORTRAN/libsuperlu_fortran.so %{buildroot}/%{tpls_prefix}/lib/
 %endif
 
 %changelog
-* Tue Dec 19 2023 Christian Messe <cmesse@lbl.gov> -6.0.1-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> -6.0.1-1
 - Initial Package

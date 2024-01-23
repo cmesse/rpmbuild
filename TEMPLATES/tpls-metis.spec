@@ -23,7 +23,7 @@ Patch3:  metis-static-GKlib-fixincludes.patch
 
 
 
-BuildRequires:  cmake
+BuildRequires:  tpls-%{tpls_flavor}-cmake
 BuildRequires: help2man
 BuildRequires: chrpath
 BuildRequires:  pcre2-devel
@@ -108,57 +108,72 @@ make config \
 %build
 
 pushd build/Linux-x86_64
-
-%{tpls_compilers} cmake \
+%{tpls_env} \
+CC=%{tpls_mpicc} \
+CXX=%{tpls_mpicxx} \
+FC=%{tpls_mpifort} \
+%{tpls_cmake} . \
 %if "%{tpls_libs}" == "static"
+	-DBUILD_STATIC_LIBS=ON \
+	-DBUILD_SHARED_LIBS=OFF \
     -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -DNDEBUG" \
     -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -DNDEBUG" \
 %else
+	-DBUILD_STATIC_LIBS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
     -DCMAKE_C_FLAGS="%{tpls_cflags} -fPIC -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags}  -fPIC -DNDEBUG" \
     -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -fPIC -DNDEBUG" \
     -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -fPIC -DNDEBUG" \
 %endif
-	-DOPENMP=ON \
-	.
+	-DOPENMP=ON
 popd
 
 pushd parmetis-%{parmetis_version}
 
 ln -s $(dirname $(pwd)) METIS
 
+%{tpls_env} \
 CC=%{tpls_mpicc} \
 CXX=%{tpls_mpicxx} \
 FC=%{tpls_mpifort} \
+%if "%{tpls_mpi}" == "openmpi"
 %if "%{tpls_libs}" == "static"
 LDFLAGS="%{tpls_prefix}/lib/libmpi.a" \
 %else
 LDFLAGS="%{tpls_prefix}/lib/libmpi.so %{tpls_ldflags}" \
 %endif
-cmake \
+%endif
+%if "%{tpls_mpi}" == "intelmpi"
+%if "%{tpls_libs}" == "static"
+LDFLAGS="${I_MPI_ROOT}/lib/libmpi.a %{tpls_ldflags}" \
+%else
+LDFLAGS="${I_MPI_ROOT}/lib/libmpi.so %{tpls_ldflags}" \
+%endif
+%endif
+%{tpls_cmake} . \
     -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -DNDEBUG" \
     -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -DNDEBUG" \
 	-DGKLIB_PATH=$(dirname $(pwd))/GKlib \
 	-DMETIS_PATH=$(dirname $(pwd)) \
-	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
 	-DOPENMP=ON \
-	.
-popd
+%if "%{tpls_libs}" == "static"
+	-DBUILD_STATIC_LIBS=ON \
+	-DBUILD_SHARED_LIBS=OFF \
+%else
+	-DBUILD_STATIC_LIBS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
+%endif
 
-make %{?_smp_mflags}
 
-pushd parmetis-%{parmetis_version}
 make %{?_smp_mflags}
 
 # manually create the shared file
 %{tpls_cc} -shared -o ./libparmetis/libparmetis.so libparmetis/CMakeFiles/parmetis.dir/*.o
-popd
-
-
 
 %install
 
@@ -202,6 +217,6 @@ rm -v %{buildroot}/%{tpls_prefix}/lib/libparmetis.a
 
 
 %changelog
-* Tue Dec 19 2023 Christian Messe <cmesse@lbl.gov> - 5.1.0-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 5.1.0-1
 - Initial Package
 

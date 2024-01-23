@@ -164,5 +164,5 @@ LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 %{tpls_prefix}/lib/pkgconfig/blaspp.pc
 
 %changelog
-* Tue Dec 12 2023 Christian Messe <cmesse@lbl.gov> - 2023.11.05-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2023.11.05-1
 - Initial Package

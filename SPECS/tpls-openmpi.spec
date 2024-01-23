@@ -2,73 +2,69 @@
 # FLAVOR SPECIFIC DEFINES                                             #
 #######################################################################
 
-%define tpls_flavor skylake-gnu-openmpi-cuda-shared-32 
+%define tpls_flavor cascadelake-intel-intelmpi-cuda-shared-32 
 
-%define tpls_host skylake 
-%define tpls_compiler gnu 
-%define tpls_mpi openmpi 
+%define tpls_host cascadelake 
+%define tpls_compiler intel 
+%define tpls_mpi intelmpi 
 %define tpls_gpu cuda 
 %define tpls_libs shared 
 %define tpls_int 32 
-%define tpls_comp_minver 11.4.1 
+%define tpls_comp_minver 2024.0.1 
 
-%define tpls_rpm_cc gcc 
-%define tpls_rpm_cxx gcc-c++ 
-%define tpls_rpm_fc gfortran 
+%define tpls_rpm_cc intel-oneapi-compiler-dpcpp-cpp 
+%define tpls_rpm_cxx intel-oneapi-compiler-dpcpp-cpp 
+%define tpls_rpm_fc intel-oneapi-compiler-fortran 
 %define tpls_auto_req_prov yes
 
 # important paths
-%define tpls_prefix /opt/tpls/skylake-gnu-openmpi-cuda-shared-32 
-%define tpls_includes /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/includes 
-%define tpls_libdir /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib 
-%define tpls_comproot /usr 
+%define tpls_prefix /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32 
+%define tpls_includes /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/includes 
+%define tpls_libdir /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib 
+%define tpls_comproot /opt/intel/oneapi/compiler/latest 
 %define tpls_mklroot  /opt/intel/oneapi/mkl/latest 
 %define tpls_cuda  /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda 
 %define tpls_rocm  /opt/rocm 
-%define tpls_ld_library_path  /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib:/opt/intel/oneapi/mkl/latest/lib:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 
+%define tpls_ld_library_path  /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib:/opt/intel/oneapi/mkl/latest/lib:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64:/opt/intel/oneapi/compiler/latest/lib 
 
 # compiler executables
-%define tpls_cc gcc 
-%define tpls_cxx g++ 
-%define tpls_fc gfortran 
-%define tpls_ar ar 
-%define tpls_ld ld 
+%define tpls_cc icx 
+%define tpls_cxx icpx 
+%define tpls_fc ifx 
+%define tpls_ar xiar 
+%define tpls_ld xild 
 %define tpls_cpp ld -E 
 %define tpls_cxxcpp ld -E 
 
 # MPI wrappers
-%define tpls_mpicc   /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/bin/mpicc
-%define tpls_mpicxx  /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/bin/mpicxx 
-%define tpls_mpifort /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/bin/mpifort 
+%define tpls_mpicc   /opt/intel/oneapi/mkl/latest/bin/mpiicx 
+%define tpls_mpicxx  /opt/intel/oneapi/mkl/latest/bin/mpiicpx 
+%define tpls_mpifort /opt/intel/oneapi/mkl/latest/bin/mpiifx 
 
 # Compiler Flags
-%define tpls_cflags   -O2 -m64 -fno-fast-math -fPIC -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include
-%define tpls_cxxflags   -O2 -m64 -fno-fast-math -fPIC -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include
-%define tpls_fcflags   -O2 -m64 -fno-fast-math -fPIC -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include
-%define tpls_ldflags    -L/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64  -Wl,-rpath,/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64
-%define tpls_arflags   -cru
-%define tpls_ompflag    -fopenmp
+%define tpls_cflags   -O3 -fp-model precise -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_cxxflags   -O3 -fp-model precise -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_fcflags   -O3 -fp-model precise -fPIC -mtune=cascadelake -i4 -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_ldflags    -L/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64  -Wl,-rpath,/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64
+%define tpls_arflags   cru
+%define tpls_ompflag    -qopenmp
 
 # the netlib reference implementations
-%define tpls_blas   /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/libblas.so
-%define tpls_lapack  /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/liblapack.so
-%define tpls_scalapack /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/libscalapack.so
+%define tpls_blas   /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/libblas.so
+%define tpls_lapack  /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/liblapack.so
+%define tpls_scalapack /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/libscalapack.so
 
 # the MKL setup
-%define tpls_mkl_linker_flags   -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core  -lgomp  -lpthread -lm -ldl
-%define tpls_mkl_mpi_linker_flags  -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lmkl_blacs_openmpi_lp64  -lgomp -lpthread -lm -ldl
-
+%define tpls_mkl_linker_flags   -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core /opt/intel/oneapi/compiler/latest/lib/libiomp5.so  -lpthread -lm -ldl
+%define tpls_mkl_mpi_linker_flags  -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_lp64 /opt/intel/oneapi/compiler/latest/lib/libiomp5.so -lpthread -lm -ldl
 ########################################################################
 # ENVIRONMENT SETUP                                                    #
 ########################################################################
 
-
 %global setup_tpls_env \
 # setup the Intel OneAPI \
-if [ "%{tpls_gpu}" != "lapack" ]; then \
-  if [ "$SETVARS_COMPLETED" != "1" ]; then \
-    source /opt/intel/oneapi/setvars.sh intel64; \
-  fi; \
+if [ "$SETVARS_COMPLETED" != "1" ]; then \
+  source /opt/intel/oneapi/setvars.sh intel64; \
 fi; \
 export LD=%{tpls_ld} \
 export AR=%{tpls_ar} \
@@ -83,10 +79,6 @@ export CFLAGS="%{tpls_cflags}" \
 export CXXFLAGS="%{tpls_cxxflags}" \
 export FFLAGS="%{tpls_fcflags}" \
 export FCLAGS="%{tpls_fcflags}" \
-# check if the compilers are in the path \
-if [[ ":$PATH:" != *:%{tpls_comproot}/bin* ]]; then \
-  export PATH="%{tpls_comproot}/bin:$PATH"; \
-fi; \
 # check if CUDA is used and in the path \
 if [ "%{tpls_gpu}" == "cuda" ]; then \
   if [[ ":$PATH:" != *:%{tpls_cuda}/bin* ]]; then \
@@ -102,35 +94,48 @@ fi; \
 # add the TPLS binary directory \
 if [[ ":$PATH:" != *:%{tpls_prefix}/bin* ]]; then \
   export PATH="%{tpls_prefix}/bin:$PATH"; \
-fi;
+fi; \
+if [ -f ./configure ]; then \
+    sed -i "s| -V ||g" ./configure \
+    sed -i "s| -qversion ||g" ./configure \
+    sed -i "s/|)/)/g" ./configure \
+fi
+
 ########################################################################
 # AUTOMATIC MACROS                                                     #
 ########################################################################
 
 %define tpls_maxprocs 64
 
-%define tpls_compilers     \
+%define tpls_env \
 	LD=%{tpls_ld}   \
 	AR=%{tpls_ar}   \
 	CC=%{tpls_cc}   \
 	CXX=%{tpls_cxx} \
 	FC=%{tpls_fc}   \
 	FF=%{tpls_fc}   \
-	F77=%{tpls_fc}
-
+	F77=%{tpls_fc} \
+    CFLAGS="%{tpls_cflags}" \
+	CXXFLAGS="%{tpls_cxxflags}" \
+	FCFLAGS="%{tpls_fcflags}"
+		
 # fix the qversion bug in configure
 %define tpls_remove_qversion    sed -i 's| -qversion||'g ./configure ;
+
+# cmake
+%define tpls_cmake %{tpls_prefix}/bin/cmake -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib
+
 
 # delete-la-tool
 %define tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
 Name:           tpls-%{tpls_flavor}-openmpi
-Version:        5.0.0
+Version:        5.0.1
 Release:        1%{?dist}
 Summary:        A powerful implementation of MPI/SHMEM
 
 License:        BSD
 URL:            https://www.open-mpi.org/
-Source0:        https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-%{version}.tar.gz
+Source0:        https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-%{version}.tar.bz2
 
 BuildRequires: make
 BuildRequires: tpls-%{tpls_flavor}-libevent
@@ -188,6 +193,7 @@ Documentation files for OpenMPI
 %build
 
 %{setup_tpls_env}
+CC=%{tpls_cc} CXX=%{tpls_cxx} FC=%{tpls_fc} \
 %if "%{tpls_libs}" == "static"
 CFLAGS+="  -DHAVE_UNIX_BYTESWAP" \
 CXXFLAGS+=" -DHAVE_UNIX_BYTESWAP" \
@@ -199,6 +205,10 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
 %endif
 ./configure \
    --prefix=%{tpls_prefix} \
+   CC=%{tpls_cc} \
+   CXX=%{tpls_cxx}  \
+   FC=%{tpls_fc} \
+   F77=%{tpls_fc} \
    --enable-mpi-fortran \
    --with-hwloc=%{tpls_prefix} \
    --with-hwloc-libdir=%{tpls_prefix}/lib \
@@ -219,7 +229,8 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
    --with-rocm=%{tpls_rocm} \
 %endif
    --enable-mpi1-compatibility \
-   --with-libevent-libdir=%{tpls_prefix}
+   --with-libevent-libdir=%{tpls_prefix} \
+   --disable-dlopen
 
 %make_build
 
@@ -3146,6 +3157,6 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/share/man/man7/Open-MPI.7
 
 %changelog
-* Thu Dec 14 2023 Christian Messe <cmesse@lbl.gov> - 5.0.0-1
-- Initial package.
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 5.0.1-1
+- Initial Package
 

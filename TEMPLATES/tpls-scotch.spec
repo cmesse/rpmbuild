@@ -58,62 +58,83 @@ sparse matrix ordering. The parallel scotch libraries are packaged in the
 
 pwd
 
-cmake \
- 	 -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
- 	 -DBUILD_LIBESMUMPS=ON \
- 	 -DBUILD_LIBSCOTCHMETIS=ON \
- 	 -DBUILD_PTSCOTCH=ON \
- 	 -DCMAKE_BUILD_TYPE=Release \
- 	 -DINTSIZE=%{tpls_int} \
- 	 -DCMAKE_C_COMPILER=%{tpls_mpicc} \
- 	 -DCMAKE_C_FLAGS="%{tpls_cflags}" \
- 	 -DCMAKE_C_FLAGS_RELEASE=-DNDEBUG \
- 	 -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
- 	 -DCMAKE_CXX_COMPILER=%{tpls_mpicxx} \
- 	 -DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
- 	 -DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
- 	 -DCMAKE_Fortran_COMPILER="%{tpls_mpifort}" \
- 	 -DCMAKE_Fortran_FLAGS="%{tpls_fcflags}" \
- 	 -DCMAKE_Fortran_FLAGS_RELEASE=-DNDEBUG \
- 	 -DINSTALL_METIS_HEADERS=OFF \
- 	 -DMPIEXEC_MAX_NUMPROCS=%{tpls_maxprocs}
-	
-#%make_build
+%{tpls_env} \
+CC=%{tpls_mpicc} \
+CXX=%{tpls_mpicxx} \
+FC=%{tpls_mpifort} \
+%{tpls_cmake} . \
+%if "%{tpls_libs}" == "static"
+	-DBUILD_STATIC_LIBS=ON \
+	-DBUILD_SHARED_LIBS=OFF \
+%else
+	-DBUILD_STATIC_LIBS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
+%endif
+ 	-DBUILD_LIBESMUMPS=ON \
+ 	-DBUILD_LIBSCOTCHMETIS=ON \
+ 	-DBUILD_PTSCOTCH=ON \
+ 	-DINTSIZE=%{tpls_int} \
+ 	-DCMAKE_C_COMPILER=%{tpls_mpicc} \
+ 	-DCMAKE_C_FLAGS="%{tpls_cflags}" \
+ 	-DCMAKE_C_FLAGS_RELEASE=-DNDEBUG \
+ 	-DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
+ 	-DCMAKE_CXX_COMPILER=%{tpls_mpicxx} \
+ 	-DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
+ 	-DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
+ 	-DCMAKE_Fortran_COMPILER="%{tpls_mpifort} -O2" \
+ 	-DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -O2" \
+ 	-DCMAKE_Fortran_FLAGS_RELEASE=-DNDEBUG \
+ 	-DINSTALL_METIS_HEADERS=OFF \
+ 	-DMPIEXEC_MAX_NUMPROCS=%{tpls_maxprocs} \
+    -DCMAKE_SKIP_RPATH=ON \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,${I_MPI_ROOT}/lib -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id" \
+%if "%{tpls_mpi}" == "intelmpi"
+ 	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${I_MPI_ROOT}/lib -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id"
+%else
+ 	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id"
+%endif
+
 %make_build
 
 # build the static libraries
 %if "%{tpls_libs}" == "shared"
 echo "Building shared libraries"
 
+# Loop for building esmumps and ptesmumps libraries
 for l in esmumps ptesmumps; do
-    %{tpls_mpicc} -shared -o ./lib/lib${l}.so ./src/esmumps/CMakeFiles/${l}.dir/*.o
+    echo "Building lib${l}.so"
+    # Compile and link the library
+    %{tpls_mpicc} -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/esmumps/CMakeFiles/${l}.dir/*.o
 done
 
+# Loop for building ptscotch libraries
 for l in ptscotch ptscotcherr ptscotcherrexit scotch scotcherr scotcherrexit; do
-    echo $l 
-    %{tpls_mpicc} -shared -o ./lib/lib${l}.so ./src/libscotch/CMakeFiles/${l}.dir/*.o
+    echo "Building lib${l}.so"
+    # Compile and link the library
+    %{tpls_mpicc} -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/libscotch/CMakeFiles/${l}.dir/*.o
 done
 
+# Loop for building scotchmetis libraries
 for l in ptscotchparmetisv3 scotchmetisv3 scotchmetisv5; do
-    %{tpls_mpicc} -shared -o ./lib/lib${l}.so ./src/libscotchmetis/CMakeFiles/${l}.dir/*.o
+    echo "Building lib${l}.so"
+    # Compile and link the library
+    %{tpls_mpicc} -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/libscotchmetis/CMakeFiles/${l}.dir/*.o
 done
 
 %endif
 
 
-#%check
-cd src
-LD_LIBRARY_PATH=$(dirname $(pwd))/lib  FC=%{tpls_fc}  make %{?_smp_mflags} check
+%check # dgpart timeout with intel
+# LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib  FC=%{tpls_mpifort}  make %{?_smp_mflags} test
 
 
 %install
+%make_install
+
 %if "%{tpls_libs}" == "shared"
 mkdir -p %{buildroot}/%{tpls_prefix}/lib/
 install -m 755 ./lib/*.so %{buildroot}/%{tpls_prefix}/lib/
 %endif
-
-cd src
-%make_install
 
 %files
 %{tpls_prefix}/bin/acpl
@@ -187,29 +208,46 @@ cd src
 %{tpls_prefix}/lib/libscotchmetisv3.a
 %{tpls_prefix}/lib/libscotchmetisv5.a
 %else
-%exclude %{tpls_prefix}/lib/libesmumps.a
-%exclude %{tpls_prefix}/lib/libptesmumps.a
-%exclude %{tpls_prefix}/lib/libptscotch.a
-%exclude %{tpls_prefix}/lib/libptscotcherr.a
-%exclude %{tpls_prefix}/lib/libptscotcherrexit.a
-%exclude %{tpls_prefix}/lib/libptscotchparmetisv3.a
-%exclude %{tpls_prefix}/lib/libscotch.a
-%exclude %{tpls_prefix}/lib/libscotcherr.a
-%exclude %{tpls_prefix}/lib/libscotcherrexit.a
-%exclude %{tpls_prefix}/lib/libscotchmetisv3.a
-%exclude %{tpls_prefix}/lib/libscotchmetisv5.a
 %{tpls_prefix}/lib/libesmumps.so
 %{tpls_prefix}/lib/libptesmumps.so
 %{tpls_prefix}/lib/libptscotch.so
+%{tpls_prefix}/lib/libptscotch.so.*
 %{tpls_prefix}/lib/libptscotcherr.so
 %{tpls_prefix}/lib/libptscotcherrexit.so
 %{tpls_prefix}/lib/libptscotchparmetisv3.so
 %{tpls_prefix}/lib/libscotch.so
+%{tpls_prefix}/lib/libscotch.so.*
 %{tpls_prefix}/lib/libscotcherr.so
 %{tpls_prefix}/lib/libscotcherrexit.so
 %{tpls_prefix}/lib/libscotchmetisv3.so
 %{tpls_prefix}/lib/libscotchmetisv5.so
 %endif
+
+%{tpls_prefix}/man/man1/acpl.1
+%{tpls_prefix}/man/man1/amk_ccc.1
+%{tpls_prefix}/man/man1/amk_grf.1
+%{tpls_prefix}/man/man1/atst.1
+%{tpls_prefix}/man/man1/dgmap.1
+%{tpls_prefix}/man/man1/dgord.1
+%{tpls_prefix}/man/man1/dgscat.1
+%{tpls_prefix}/man/man1/dgtst.1
+%{tpls_prefix}/man/man1/gbase.1
+%{tpls_prefix}/man/man1/gcv.1
+%{tpls_prefix}/man/man1/gdump.1
+%{tpls_prefix}/man/man1/gmap.1
+%{tpls_prefix}/man/man1/gmk_hy.1
+%{tpls_prefix}/man/man1/gmk_m2.1
+%{tpls_prefix}/man/man1/gmk_msh.1
+%{tpls_prefix}/man/man1/gmtst.1
+%{tpls_prefix}/man/man1/gord.1
+%{tpls_prefix}/man/man1/gotst.1
+%{tpls_prefix}/man/man1/gout.1
+%{tpls_prefix}/man/man1/gtst.1
+%{tpls_prefix}/man/man1/mcv.1
+%{tpls_prefix}/man/man1/mmk_m2.1
+%{tpls_prefix}/man/man1/mord.1
+%{tpls_prefix}/man/man1/mtst.1
+
 %changelog
-* Mon Dec 18 2023 Christian Messe <cmesse@lbl.gov> - 7.0.4-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 7.0.4-1
 - Initial Package

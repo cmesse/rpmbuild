@@ -150,5 +150,5 @@ install -m 0644 %{_builddir}/fspblas-%{version}/libfspblas.so %{buildroot}%{tpls
 %endif
 
 %changelog
-* Tue Dec 12 2023 Christian Messe <cmesse@lbl.gov> - 0.5.0-1
-- Initial package.
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 0.5.0-1
+- Initial Package

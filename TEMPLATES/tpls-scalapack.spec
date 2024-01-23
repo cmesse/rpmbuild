@@ -106,5 +106,5 @@ FC=%{tpls_prefix}/bin/mpifort \
 
 
 %changelog
-* Thu Dec 14 2023 Christian Messe <cmesse@lbl.gov> - 2.2.0-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2.2.0-1
 - Initial package.

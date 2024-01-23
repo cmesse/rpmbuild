@@ -5,17 +5,24 @@
 
 %define tpls_maxprocs 64
 
-%define tpls_compilers     \
+%define tpls_env \
 	LD=%{tpls_ld}   \
 	AR=%{tpls_ar}   \
 	CC=%{tpls_cc}   \
 	CXX=%{tpls_cxx} \
 	FC=%{tpls_fc}   \
 	FF=%{tpls_fc}   \
-	F77=%{tpls_fc}
-
+	F77=%{tpls_fc} \
+    CFLAGS="%{tpls_cflags}" \
+	CXXFLAGS="%{tpls_cxxflags}" \
+	FCFLAGS="%{tpls_fcflags}"
+		
 # fix the qversion bug in configure
 %define tpls_remove_qversion    sed -i 's| -qversion||'g ./configure ;
+
+# cmake
+%define tpls_cmake %{tpls_prefix}/bin/cmake -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib
+
 
 # delete-la-tool
 %define tpls_remove_la_files    find %{buildroot} -name '*.la' -delete

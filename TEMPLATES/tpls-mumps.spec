@@ -13,7 +13,7 @@ Source0:        http://mumps.enseeiht.fr/MUMPS_%{version}.tar.gz
 
 # borrowed from debian
 Patch0:          mumps_fix_mumps_c.patch
-
+Patch1:          mumps_fix_makefile.patch
 
 BuildRequires:  %{tpls_rpm_cc}  >= %{tpls_comp_minver}
 BuildRequires:  %{tpls_rpm_fc}  >= %{tpls_comp_minver}
@@ -29,11 +29,17 @@ BuildRequires:  intel-oneapi-mkl-devel
 Requires:       intel-oneapi-mkl
 %endif
 
+%if "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
+%endif
+
 BuildRequires:  tpls-%{tpls_flavor}-metis
 BuildRequires:  tpls-%{tpls_flavor}-scotch
 
-Requires:       tpls-%{tpls_flavor}-openmpi
+%if "%{tpls_mpi}" == "openmpi"
+Requires:  tpls-%{tpls_flavor}-openmpi
+%endif
+
 Requires:       tpls-%{tpls_flavor}-metis
 Requires:       tpls-%{tpls_flavor}-scotch
 
@@ -48,6 +54,7 @@ C interfaces, and can interface with ordering tools such as Scotch.
 %setup -q -n MUMPS_%{version}
 
 %patch0 -p1
+%patch1 -p1
 
 %build
 
@@ -134,11 +141,11 @@ echo "INCS = -I%{tpls_prefix}/include -I%{_builddir}/MUMPS_%{version}/PORD/inclu
 pushd ./PORD/lib
 %if %{tpls_int} == 32
 for f in *.c ; do
-   %{tpls_mpicc} %{tpls_cflags} %{tpls_ompflag} -I../include -c ${f%.c}.o $f ;
+   %{tpls_mpicc} %{tpls_cflags} %{tpls_ompflag} -I../include -c $f  ;
 done
 %else
 for f in *.c ; do
-   %{tpls_mpicc} %{tpls_cflags} %{tpls_ompflag} -DPORD_INTSIZE64 -I../include -c ${f%.c}.o $f ;
+   %{tpls_mpicc} %{tpls_cflags} %{tpls_ompflag} -DPORD_INTSIZE64 -I../include c $f ;
 done
 %endif
 pwd
@@ -185,5 +192,5 @@ popd
 %endif
 
 %changelog
-* Wed Dec 20 2023 Christian Messe <cmesse@lbl.gov> - 5.6.2-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 5.6.2-1
 - Initial Package

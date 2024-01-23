@@ -23,14 +23,12 @@ if [ -e ~/.tplsmacros ]; then
 fi
 
 # Create the macro file
-pushd ~/rpmbuild/PYTHON/
-python3 select.py $FLAVOR
+python3 ~/rpmbuild/PYTHON/select_flavor.py $FLAVOR
 cat ~/rpmbuild/MACROS/rpmmacros_${FLAVOR} >> .tplsmacros
 cat ~/rpmbuild/MACROS/rpmmacros_common >> .tplsmacros
 mv .tplsmacros ~/
-popd
 
-clear
+#clear
 
 echo "--------------------------------------------------------------------------------"
 echo "Switched to the $FLAVOR RPM-flavor."

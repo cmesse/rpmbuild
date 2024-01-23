@@ -65,18 +65,18 @@ sed -i 's| -V -qversion -version||g' ./configure
 %{setup_tpls_env}
 
     CC=%{tpls_mpicc} \
-    CXX=%{tpls_mpicxx} \
     FC=%{tpls_mpifort} \
     AR=%{tpls_ar} \
     AR_FLAGS=%{tpls_arflags}  \
+    CXX="%{tpls_mpicxx}"\
 %if "%{tpls_libs}" == "static"
     CFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include" \
-    CXXFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include" \
-    FCFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include" \
+    CXXFLAGS="%{tpls_cxxflags} -I%{tpls_prefix}/include" \
+    FCFLAGS="%{tpls_fclags} -I%{tpls_prefix}/include" \
 %else
     CFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include -fPIC" \
-    CXXFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include -fPIC" \
-    FCFLAGS="%{tpls_cflags} -I%{tpls_prefix}/include  -fPIC" \
+    CXXFLAGS="%{tpls_cxxflags} -I%{tpls_prefix}/include -fPIC" \
+    FCFLAGS="%{tpls_fcflags} -I%{tpls_prefix}/include  -fPIC" \
 %endif
     LDFLAGS="%{tpls_ldflags}" \
     ./configure \
@@ -93,7 +93,11 @@ sed -i 's| -V -qversion -version||g' ./configure
 %make_build
      
 %check
+%if "%{tpls_compiler}" == "intel"
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:%{tpls_ld_library_path} make %{?_smp_mflags} check
+%else
 LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
+%endif
 
 %install
 %make_install
@@ -268,6 +272,5 @@ LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 %{tpls_prefix}/share/hdf5_examples/run-all-ex.sh
 
 
-%changelog
-* Thu Dec 14 2023 Christian Messe <cmesse@lbl.gov> - 1.14.3-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 1.14.3-1
 - Initial Package

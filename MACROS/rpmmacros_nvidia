@@ -4,9 +4,6 @@
 
 %global setup_tpls_env \
 # setup the Intel OneAPI \
-if [ "$SETVARS_COMPLETED" != "1" ]; then \
-  source /opt/intel/oneapi/setvars.sh intel64 \
-fi \
 export LD=%{tpls_ld} \
 export AR=%{tpls_ar} \
 export CC=%{tpls_cc} \

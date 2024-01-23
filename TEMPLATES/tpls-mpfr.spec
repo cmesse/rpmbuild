@@ -26,10 +26,10 @@ ANSI/IEEE-754 standard for double-precision floating-point arithmetic
 %setup -q -n mpfr-%{version}
 
 %build
-CFLAGS="%{tpls_cflags}" \
-CXXFLAGS="%{tpls_cxxflags}" \
-%tpls_configure \
-    --with-gmp=%{tpls_prefix} \
+%{tpls_env} ./configure \
+    --prefix=%{tpls_prefix} \
+    --with-gmp-include=%{tpls_prefix}/include \
+    --with-gmp-lib=%{tpls_prefix}/lib \
 	--enable-thread-safe \
 %if "%{tpls_libs}" == "static"
 	--enable-static \
@@ -41,9 +41,8 @@ CXXFLAGS="%{tpls_cxxflags}" \
 
 %make_build
 
-%if %{tpls_check} == 1
+%check
 %make_build check
-%endif
 
 %install
 %make_install
@@ -56,8 +55,7 @@ CXXFLAGS="%{tpls_cxxflags}" \
 %{tpls_prefix}/lib/libmpfr.a
 %else
 %{tpls_prefix}/lib/libmpfr.so
-%{tpls_prefix}/lib/libmpfr.so.6
-%{tpls_prefix}/lib/libmpfr.so.6.2.1
+%{tpls_prefix}/lib/libmpfr.so.*
 %endif
 %{tpls_prefix}/lib/pkgconfig/mpfr.pc
 %exclude %{tpls_prefix}/share

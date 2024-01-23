@@ -105,5 +105,5 @@ popd
 
 
 %changelog
-* Tue Dec 19 2023 Christian Messe <cmesse@lbl.gov> - 3.20.0-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 3.20.0-1
 - Initial package.

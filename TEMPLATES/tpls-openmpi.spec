@@ -1,11 +1,11 @@
 Name:           tpls-%{tpls_flavor}-openmpi
-Version:        5.0.0
+Version:        5.0.1
 Release:        1%{?dist}
 Summary:        A powerful implementation of MPI/SHMEM
 
 License:        BSD
 URL:            https://www.open-mpi.org/
-Source0:        https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-%{version}.tar.gz
+Source0:        https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-%{version}.tar.bz2
 
 BuildRequires: make
 BuildRequires: tpls-%{tpls_flavor}-libevent
@@ -63,6 +63,7 @@ Documentation files for OpenMPI
 %build
 
 %{setup_tpls_env}
+CC=%{tpls_cc} CXX=%{tpls_cxx} FC=%{tpls_fc} \
 %if "%{tpls_libs}" == "static"
 CFLAGS+="  -DHAVE_UNIX_BYTESWAP" \
 CXXFLAGS+=" -DHAVE_UNIX_BYTESWAP" \
@@ -74,6 +75,10 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
 %endif
 ./configure \
    --prefix=%{tpls_prefix} \
+   CC=%{tpls_cc} \
+   CXX=%{tpls_cxx}  \
+   FC=%{tpls_fc} \
+   F77=%{tpls_fc} \
    --enable-mpi-fortran \
    --with-hwloc=%{tpls_prefix} \
    --with-hwloc-libdir=%{tpls_prefix}/lib \
@@ -94,7 +99,8 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
    --with-rocm=%{tpls_rocm} \
 %endif
    --enable-mpi1-compatibility \
-   --with-libevent-libdir=%{tpls_prefix}
+   --with-libevent-libdir=%{tpls_prefix} \
+   --disable-dlopen
 
 %make_build
 
@@ -3021,6 +3027,6 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/share/man/man7/Open-MPI.7
 
 %changelog
-* Thu Dec 14 2023 Christian Messe <cmesse@lbl.gov> - 5.0.0-1
-- Initial package.
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 5.0.1-1
+- Initial Package
 

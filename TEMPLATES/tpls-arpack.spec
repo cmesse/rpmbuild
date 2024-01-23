@@ -7,6 +7,8 @@ License:        BSD
 URL:            https://github.com/opencollab/arpack-ng
 Source0:       https://src.fedoraproject.org/lookaside/pkgs/arpack/arpack-ng-3.9.1.tar.gz/sha512/1ca590a8c4f75aa74402f9bd62e63851039687f4cb11afa8acb05fce1f22a512bff5fd1709ea85fdbea90b344fbbc01e3944c770b5ddc4d1aabc98ac334f78d2/arpack-ng-3.9.1.tar.gz
 
+BuildRequires:  tpls-%{tpls_flavor}-cmake
+
 %if   "%{tpls_mpi}" == "openempi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
@@ -17,7 +19,7 @@ Requires:       tpls-%{tpls_flavor}-mpich
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
 BuildRequires:  intel-oneapi-mpi
-%end
+%endif
 
 
 %if "%{tpls_gpu}" == "lapack"
@@ -49,17 +51,18 @@ Restarted Arnoldi Method (IRAM).
 
 # Compiler Settings
 %{expand: %setup_tpls_env}
-
-pwd
-
+%{tpls_env} \
 CC=%{tpls_mpicc} \
 CXX=%{tpls_mpicxx} \
 FC=%{tpls_mpifort} \
-CFLAGS="%{tpls_cflags}" \
-CXXFLAGS="%{tpls_cflags}" \
-FCFLAGS="%{tpls_cflags}" \
-cmake \
-	-DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
+%{tpls_cmake} . \
+%if "%{tpls_libs}" == "static"
+	-DBUILD_STATIC_LIBS=ON \
+	-DBUILD_SHARED_LIBS=OFF \
+%else
+	-DBUILD_STATIC_LIBS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
+%endif
 %if "%{tpls_gpu}" == "lapack"
 %if "%{tpls_libs}" == "static"
 	-DBLAS_LIBRARIES=%{tpls_blas_static} \
@@ -69,25 +72,17 @@ cmake \
 	-DLAPACK_LIBRARIES=%{tpls_lapack_shared}  \
 %endif
 %else
-%if "%{tpls_libs}" == "static"
-	-DBLAS_LIBRARIES="%{tpls_mkl_static}" \
-	-DLAPACK_LIBRARIES="%{tpls_mkl_static}" \
-%else
-	-DBLAS_LIBRARIES="%{tpls_mkl_shared}" \
-	-DLAPACK_LIBRARIES="%{tpls_mkl_shared}" \
+	-DBLAS_LIBRARIES="%{tpls_mkl_linker_flags}" \
+	-DLAPACK_LIBRARIES="%{tpls_mkl_linker_flags}" \
 %endif
-	-DCMAKE_INSTALL_LIBDIR=lib \
 	-DMPI=ON
-%endif
-.
-
 %make_build
 
 %check
 %if "%{tpls_gpu}" == "lapack"
 make %{?_smp_mflags} test
 %else
-LD_LIBRARY_PATH=%{tpls_mklroot}/lib make %{?_smp_mflags} test
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH} make %{?_smp_mflags} test
 %endif
 
 %install
@@ -101,18 +96,22 @@ LD_LIBRARY_PATH=%{tpls_mklroot}/lib make %{?_smp_mflags} test
 %{tpls_prefix}/include/arpack/debugF90.h
 %{tpls_prefix}/include/arpack/stat.h
 %{tpls_prefix}/include/arpack/statF90.h
-%{tpls_prefix}/lib64/cmake/arpackng/arpackng-config-version.cmake
-%{tpls_prefix}/lib64/cmake/arpackng/arpackng-config.cmake
-%{tpls_prefix}/lib64/cmake/arpackng/arpackngTargets-release.cmake
-%{tpls_prefix}/lib64/cmake/arpackng/arpackngTargets.cmake
+%{tpls_prefix}/lib/cmake/arpackng/arpackng-config-version.cmake
+%{tpls_prefix}/lib/cmake/arpackng/arpackng-config.cmake
+%{tpls_prefix}/lib/cmake/arpackng/arpackngTargets-release.cmake
+%{tpls_prefix}/lib/cmake/arpackng/arpackngTargets.cmake
 %if "%{tpls_libs}" == "static"
-%{tpls_prefix}/lib64/libarpack.a
+%{tpls_prefix}/lib/libarpack.a
+%{tpls_prefix}/lib/libparpack.a
 %else
-%{tpls_prefix}/lib64/libarpack.so
-%{tpls_prefix}/lib64/libarpack.so.*
+%{tpls_prefix}/lib/libarpack.so
+%{tpls_prefix}/lib/libarpack.so.*
+%{tpls_prefix}/lib/libparpack.so
+%{tpls_prefix}/lib/libparpack.so.*
 %endif
-%{tpls_prefix}/lib64/pkgconfig/arpack.pc
+%{tpls_prefix}/lib/pkgconfig/arpack.pc
+%{tpls_prefix}/lib/pkgconfig/parpack.pc
 
 %changelog
-* Tue Dec 19 2023 Christian Messe <cmesse@lbl.gov> - 3.9.1-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 3.9.1-1
 - Initial Package

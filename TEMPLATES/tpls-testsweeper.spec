@@ -7,7 +7,7 @@ License:        BSD
 URL:            https://github.com/icl-utk-edu/testsweeper
 Source0:        https://github.com/icl-utk-edu/testsweeper/releases/download/v2023.11.05/testsweeper-%{version}.tar.gz
 BuildRequires: make
-BuildRequires: cmake
+BuildRequires: tpls-%{tpls_flavor}-cmake
 
 BuildRequires:      %{tpls_rpm_cc}  >= %{tpls_comp_minver}
 BuildRequires:      %{tpls_rpm_cxx} >= %{tpls_comp_minver}
@@ -29,19 +29,15 @@ the Department of Energy as part of its Exascale Computing Initiative
 %build
 %{expand: %setup_tpls_env}
 
-mkdir -p build && cd build && LDFLAGS="%{tpls_ldflags} %{tpls_rpath}" %{tpls_compilers} LD=%{tpls_cxx} cmake \
--DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
--DCMAKE_CXX_COMPILER=%{tpls_cxx} \
--DCMAKE_INSTALL_LIBDIR=lib \
+mkdir -p build && cd build
+%{tpls_env} \
+%{tpls_cmake} .. \
 -Dbuild_tests=ON \
 %if "%{tpls_libs}" == "static"
 -DBUILD_SHARED_LIBS=OFF \
--DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
 %else
--DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -fPIC" \
--DBUILD_SHARED_LIBS=ON \
+-DBUILD_SHARED_LIBS=ON
 %endif
-..
 
 %make_build
 
@@ -64,6 +60,6 @@ cd build && %make_install
 %endif
 
 %changelog
-* Tue Dec 12 2023 Christian Messe <cmesse@lbl.gov> - 2023.11.05
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2023.11.05
 - Initial package.
 

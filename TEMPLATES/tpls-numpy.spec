@@ -98,5 +98,5 @@ pip3 uninstall setuptools
 
 
 %changelog
-* Tue Dec 19 2023 Christian Messe <cmesse@lbl.gov> - 1.26.2-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 1.26.2-1
 - Initial Package

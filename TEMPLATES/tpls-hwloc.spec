@@ -48,6 +48,9 @@ Documentation files for hwloc
 
 
 %build
+%{setup_tpls_env}
+
+%{tpls_env}
 
 %if "%{tpls_libs}" == "static"
 CFLAGS+="  -DHAVE_UNIX_BYTESWAP" \
@@ -139,5 +142,5 @@ make %{?_smp_mflags} check
 %{tpls_prefix}/share/man/man7/hwloc.7
 
 %changelog
-* Sat Dec 30 2023 Christian Messe <cmesse@lbl.gov> - 2.10.0-1
-- Initial package.
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2.10.0-1
+- Initial Package

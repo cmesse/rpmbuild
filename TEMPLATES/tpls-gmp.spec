@@ -29,13 +29,15 @@ emphasizes speed over simplicity/elegance in its operations.
 
 
 %build
-sed -i 's/-O2/%{tpls_cflags}/g'  ./configure
-sed -i 's/skylake/%{tpls_host}/g'  ./configure
-sed -i 's/broadwell/%{tpls_host}/g' ./configure
 
-CFLAGS="%{tpls_cflags}" \
-CXXFLAGS="%{tpls_cxxflags}" \
-%tpls_configure_noprefixdir \
+%setup_tpls_env
+
+sed -i 's|-O2|%{tpls_cflags}|g'  ./configure
+sed -i 's|skylake|%{tpls_host}|g'  ./configure
+sed -i 's|broadwell|%{tpls_host}|g' ./configure
+
+%{tpls_env} ./configure \
+    --prefix=%{tpls_prefix} \
 	--enable-cxx \
 %if "%{tpls_libs}" == "static"
 	--enable-static \
@@ -47,15 +49,13 @@ CXXFLAGS="%{tpls_cxxflags}" \
 
 %make_build
 
-%if %{tpls_check} == 1
+%check
 %make_build check
-%endif
+
 
 %install
 %make_install
 %{tpls_remove_la_files}
-%{tpls_remove_info_files}
-%{tpls_remove_doc_files}
 
 %files
 %{tpls_prefix}/include/gmp.h
@@ -76,5 +76,5 @@ CXXFLAGS="%{tpls_cxxflags}" \
 %exclude %{tpls_prefix}/share
 
 %changelog
-* Mon Dec 11 2023 Christian Messe <cmesse@lbl.gov> - 6.3.0-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 6.3.0-1
 - Initial Package

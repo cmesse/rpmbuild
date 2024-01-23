@@ -51,7 +51,7 @@ without having to change the event loop.
 
 %{setup_tpls_env}
 
-./configure \
+%{tpls_env} ./configure \
     --prefix=%{tpls_prefix} \
     --disable-dependency-tracking \
 %if "%{tpls_libs}" == "static"
@@ -149,5 +149,5 @@ EOF
 
 
 %changelog
-* Wed Dec 13 2023 Christian Messe <cmesse@lbl.gov> - 2.1.12-1
-- Initial package.
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2.1.12-1
+- Initial Package

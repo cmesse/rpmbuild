@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cd ~/rpmbuild
+rm -rvf BUILD && mkdir BUILD
+rm -rvf BUILDROOT && mkdir BUILDROOT
+rm -rvf SPECS && mkdir SPECS
+pushd ./SRPMS && rm -rf *.rpm && popd
+pushd ./RPMS/x86_64 && rm -rf *.rpm && popd

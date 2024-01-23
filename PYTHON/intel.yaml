@@ -7,9 +7,9 @@ flavor:
   int: 32
 
 flags:
-  cc: "-O3 -fp-model precise -no-ftz"
-  cxx: "-O3 -fp-model precise -no-ftz"
-  fc: "-O3 -fp-model precise -no-ftz"
+  cc: "-O3 -fp-model precise"
+  cxx: "-O3 -fp-model precise"
+  fc: "-O3 -fp-model precise"
   ar: "cru"
 
 rpm:
@@ -23,6 +23,7 @@ system:
   comp: /opt/intel/oneapi/compiler/latest
   mkl: /opt/intel/oneapi/mkl/latest
   cuda: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
+  math: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs
   rocm: /opt/rocm
 
 binaries:
