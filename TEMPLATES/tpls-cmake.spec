@@ -10,7 +10,7 @@ Summary:        Cross-platform make system
 License:        BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0
 URL:            http://www.cmake.org
 Source0:        http://www.cmake.org/files/v%{major_version}.%{minor_version}/cmake-%{version}.tar.gz
-Patch0:        cmake_icpx.patch
+Patch0:         cmake_icpx.patch
 
 BuildRequires:  %{tpls_rpm_cc}   >= %{tpls_comp_minver}
 BuildRequires:  %{tpls_rpm_cxx}  >= %{tpls_comp_minver}

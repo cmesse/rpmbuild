@@ -78,12 +78,12 @@ sed -i 's|static   =|static   = 1|g' make.inc.in
 %build
 
 %{expand: %setup_tpls_env}
-
-PATH=%{tpls_prefix}/bin:$PATH \
+unset LD
 LDFLAGS="-L/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib"  \
+PATH=%{tpls_prefix}/bin:$PATH \
 %if "%{tpls_gpu}" == "cuda"
 python3 configure.py blas=mkl gpu_backend=cuda 
-%elseif "%{tpls_gpu}" == "rocm"
+%elif "%{tpls_gpu}" == "rocm"
 python3 configure.py blas=mkl gpu_backend=rocm 
 %else
 %if "%{tpls_libs}" == "static"

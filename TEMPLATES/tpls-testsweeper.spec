@@ -51,8 +51,9 @@ cd build && %make_install
 %{tpls_prefix}/include/testsweeper.hh
 %{tpls_prefix}/lib/cmake/testsweeper/testsweeperConfig.cmake
 %{tpls_prefix}/lib/cmake/testsweeper/testsweeperConfigVersion.cmake
-%{tpls_prefix}/lib/cmake/testsweeper/testsweeperTargets-noconfig.cmake
+%{tpls_prefix}/lib/cmake/testsweeper/testsweeperTargets-release.cmake
 %{tpls_prefix}/lib/cmake/testsweeper/testsweeperTargets.cmake
+
 %if "%{tpls_libs}" == "static"
 %{tpls_prefix}/lib/libtestsweeper.a
 %else

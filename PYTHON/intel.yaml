@@ -1,7 +1,7 @@
 flavor:
   host: cascadelake
   compiler: intel
-  mpi: openmpi
+  mpi: intelmpi
   gpu: cuda
   libs: shared
   int: 32
@@ -21,7 +21,8 @@ rpm:
 
 system:
   comp: /opt/intel/oneapi/compiler/latest
-  mkl: /opt/intel/oneapi/mkl/latest
+  mkl:  /opt/intel/oneapi/mkl/latest
+  mpi:  /opt/intel/oneapi/mpi/latest
   cuda: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
   math: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs
   rocm: /opt/rocm

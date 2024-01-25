@@ -62,8 +62,8 @@ sed -i 's| -V -qversion -version||g' ./configure
 
 %build
 
-%{setup_tpls_env}
-
+%{expand: %setup_tpls_env}
+%{tpls_env} \
     CC=%{tpls_mpicc} \
     FC=%{tpls_mpifort} \
     AR=%{tpls_ar} \

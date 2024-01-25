@@ -47,17 +47,17 @@ def compilation_order(dependencies):
 G = nx.DiGraph()
 
 LAPACK = False
+OPENMPI = False
 
 lapack = [ "lapack", "fspblas", "scalapack" ]
+openmpi = [ "hwloc", "libevent", "openmpi" ]
 
 # Add nodes (vertices) to the graph
 packages = [
 		 "gmp",
 		 "mpfr",
+         "fftw",
          "cmake",
-         "hwloc",
-         "libevent",
-		 "openmpi",
 		 "hdf5",
 		 "testsweeper",
 		 "blas++",
@@ -74,24 +74,21 @@ packages = [
 if( LAPACK ):
     for p in lapack :
         packages.append( p )
+if( OPENMPI ):
+    for p in openmpi :
+        packages.append( p )
 
 
 G.add_nodes_from(packages)
-	
+
+
 # Add edges (dependencies) to the graph
 dependencies = [
-    ("hwloc", "libevent"),
-    ("openmpi", "hwloc"),
-	("openmpi", "libevent"),
-	("hdf5", "openmpi"), 
 	("blas++", "testsweeper"), 
 	("lapack++", "blas++"),
-	("metis", "openmpi"),
-	("scotch","openmpi"),
 	("superlu", "metis"),
 	("mumps", "metis"),
     ("mumps", "scotch"),
-	("arpack", "openmpi"),
     ("arpack", "cmake"),
     ("superlu", "cmake"),
     ("scotch", "cmake"),
@@ -124,14 +121,27 @@ lapack_dependencies = [
     ("blaze", "blas"),
     ("blaze", "lapack")]
 
+
+openmpi_dependencies = [
+    ("hwloc", "libevent"),
+    ("openmpi", "hwloc"),
+	("openmpi", "libevent"),
+	("hdf5", "openmpi"),
+    ("metis", "openmpi"),
+    ("scotch", "openmpi"),
+    ("arpack", "openmpi"),
+]
 if( LAPACK ):
     for d in lapack_dependencies :
+        dependencies.append( d )
+
+if( OPENMPI ):
+    for d in openmpi_dependencies :
         dependencies.append( d )
 
 G.add_edges_from(dependencies)
 # Optional: Visualize the graph (requires matplotlib)
 pos = nx.spring_layout(G, scale=20, k=3/np.sqrt(G.order()))
-print(pos['hwloc'])# Adjust layout as needed
 nx.draw(G, pos, with_labels=True, node_size=800, node_color="skyblue")
 
 

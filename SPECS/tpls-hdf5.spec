@@ -25,7 +25,7 @@
 %define tpls_mklroot  /opt/intel/oneapi/mkl/latest 
 %define tpls_cuda  /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda 
 %define tpls_rocm  /opt/rocm 
-%define tpls_ld_library_path  /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib:/opt/intel/oneapi/mkl/latest/lib:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 
+%define tpls_ld_library_path  /opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib:/opt/intel/oneapi/mkl/latest/lib:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64:/opt/intel/oneapi/compiler/latest/lib 
 
 # compiler executables
 %define tpls_cc icx 
@@ -37,15 +37,15 @@
 %define tpls_cxxcpp ld -E 
 
 # MPI wrappers
-%define tpls_mpicc   /opt/intel/oneapi/mpi/2021.11/bin/mpiicx 
-%define tpls_mpicxx  /opt/intel/oneapi/mpi/2021.11/bin/mpiicpx 
-%define tpls_mpifort /opt/intel/oneapi/mpi/2021.11/bin/mpiifx 
+%define tpls_mpicc   /opt/intel/oneapi/mpi/latest/bin/mpiicx 
+%define tpls_mpicxx  /opt/intel/oneapi/mpi/latest/bin/mpiicpx 
+%define tpls_mpifort /opt/intel/oneapi/mpi/latest/bin/mpiifx 
 
 # Compiler Flags
-%define tpls_cflags   -O3 -fp-model precise -no-ftz -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include
-%define tpls_cxxflags   -O3 -fp-model precise -no-ftz -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include
-%define tpls_fcflags   -O3 -fp-model precise -no-ftz -fPIC -mtune=cascadelake -i4 -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include
-%define tpls_ldflags    -L/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64  -Wl,-rpath,/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64
+%define tpls_cflags   -O3 -fp-model precise -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_cxxflags   -O3 -fp-model precise -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_fcflags   -O3 -fp-model precise -fPIC -mtune=cascadelake -i4 -I/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_ldflags    -L/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64  -Wl,-rpath,/opt/tpls/cascadelake-intel-intelmpi-cuda-shared-32/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64
 %define tpls_arflags   cru
 %define tpls_ompflag    -qopenmp
 
@@ -122,17 +122,9 @@ fi
 # fix the qversion bug in configure
 %define tpls_remove_qversion    sed -i 's| -qversion||'g ./configure ;
 
-%define tpls_cmake \
-	%{tpls_prefix}/bin/cmake \
-	-DCMAKE_C_COMPILER=%{tpls_cc} \
-	-DCMAKE_C_COMPILER_AR=%{tpls_ar} \
-	-DCMAKE_C_FLAGS=%{tpls_cflags} \
-	-DCMAKE_CXX_COMPILER=%{tpls_cxx} \
-	-DCMAKE_CXX_COMPILER_AR=%{tpls_ar} \
-	-DCMAKE_CXX_FLAGS=%{tpls_cxxflags} \
-	-DCMAKE_Fortran_COMPILER=%{tpls_fc} \
-	-DCMAKE_Fortran_COMPILER_AR=%{tpls_ar} \
-	-DCMAKE_Fortran_FLAGS=%{tpls_fcflags}
+# cmake
+%define tpls_cmake %{tpls_prefix}/bin/cmake -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib
+
 
 # delete-la-tool
 %define tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
@@ -200,8 +192,8 @@ sed -i 's| -V -qversion -version||g' ./configure
 
 %build
 
-%{setup_tpls_env}
-
+%{expand: %setup_tpls_env}
+%{tpls_env} \
     CC=%{tpls_mpicc} \
     FC=%{tpls_mpifort} \
     AR=%{tpls_ar} \
@@ -410,6 +402,5 @@ LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 %{tpls_prefix}/share/hdf5_examples/run-all-ex.sh
 
 
-%changelog
-* Thu Dec 14 2023 Christian Messe <cmesse@lbl.gov> - 1.14.3-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 1.14.3-1
 - Initial Package

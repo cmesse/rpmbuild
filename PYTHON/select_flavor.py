@@ -62,7 +62,9 @@ def ompflag(config):
 
 def mklroot(config):
     return str(config['system']['mkl'])
-
+    
+def mpiroot(config):
+    return str(config['system']['mpi'])
 
 def mkl_scalapack(config):
     if int(config['flavor']['int']) == 32 :
@@ -172,7 +174,7 @@ def write_binaries(file,config):
 def write_mpi_binaries(file,config):
     file.write('\n# MPI wrappers\n')
     if str(config['flavor']['mpi']) == 'intelmpi' :
-        pref = mklroot(config)
+        pref = mpiroot(config)
         file.write('%define tpls_mpicc   {:s}/bin/mpiicx \n'.format(pref ))
         file.write('%define tpls_mpicxx  {:s}/bin/mpiicpx \n'.format(pref))
         file.write('%define tpls_mpifort {:s}/bin/mpiifx \n'.format(pref))
