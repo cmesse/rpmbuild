@@ -30,7 +30,7 @@ emphasizes speed over simplicity/elegance in its operations.
 
 %build
 
-%setup_tpls_env
+%{expand: %setup_tpls_env}
 
 sed -i 's|-O2|%{tpls_cflags}|g'  ./configure
 sed -i 's|skylake|%{tpls_host}|g'  ./configure

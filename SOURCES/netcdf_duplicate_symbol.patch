@@ -1,0 +1,11 @@
+--- A/ncdump/ocprint.c
++++ B/ncdump/ocprint.c
+@@ -56,7 +56,7 @@
+ /*Mnemonic*/
+ #define TOPLEVEL 1
+ 
+-int ocdebug;
++extern int ocdebug;
+ 
+ static OCerror ocstat;
+ static OClink glink;

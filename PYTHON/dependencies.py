@@ -69,7 +69,9 @@ packages = [
 		 "mumps",
 		 "suitesparse",
          "armadillo",
-         "blaze"]
+         "blaze",
+         "tinyxml2",
+         "netcdf"]
 
 if( LAPACK ):
     for p in lapack :
@@ -84,10 +86,10 @@ G.add_nodes_from(packages)
 
 # Add edges (dependencies) to the graph
 dependencies = [
-	("blas++", "testsweeper"), 
-	("lapack++", "blas++"),
-	("superlu", "metis"),
-	("mumps", "metis"),
+    ("blas++", "testsweeper"),
+    ("lapack++", "blas++"),
+    ("superlu", "metis"),
+    ("mumps", "metis"),
     ("mumps", "scotch"),
     ("arpack", "cmake"),
     ("superlu", "cmake"),
@@ -97,14 +99,16 @@ dependencies = [
     ("suitesparse","gmp"),
     ("mpfr","gmp"),
     ("suitesparse","mpfr"),
-	("suitesparse","metis"),
+    ("suitesparse","metis"),
     ("armadillo", "hdf5"),
-	("armadillo", "superlu"),
-	("armadillo", "arpack"),
-	("armadillo", "metis"),
-    ("testsweeper", "cmake")]
-	   
-
+    ("armadillo", "superlu"),
+    ("armadillo", "arpack"),
+    ("armadillo", "metis"),
+    ("testsweeper", "cmake"),
+    ("timyxml2", "cmake"),
+    ("netcdf", "cmake"),
+    ("netcdf", "hdf5")
+    ("tinyxml2", "cmake")]
 
 lapack_dependencies = [
 	("lapack", "cmake"),

@@ -61,7 +61,7 @@ prefix=%{tpls_prefix} to use h5cc, h5fc, etc. in %{tpls_prefix}/bin.
 sed -i 's| -V -qversion -version||g' ./configure
 
 %build
-
+%{tpls_env} \
 %{expand: %setup_tpls_env}
 %{tpls_env} \
     CC=%{tpls_mpicc} \
@@ -87,9 +87,9 @@ sed -i 's| -V -qversion -version||g' ./configure
         --disable-shared \
 %else
 		--disable-static \
-        --enable-shared \
+        --enable-shared
 %endif
-        --with-default-api-version=v18
+
 %make_build
      
 %check
@@ -272,5 +272,6 @@ LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 %{tpls_prefix}/share/hdf5_examples/run-all-ex.sh
 
 
+%changelog
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 1.14.3-1
 - Initial Package

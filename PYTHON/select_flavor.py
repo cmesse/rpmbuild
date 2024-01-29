@@ -178,6 +178,7 @@ def write_mpi_binaries(file,config):
         file.write('%define tpls_mpicc   {:s}/bin/mpiicx \n'.format(pref ))
         file.write('%define tpls_mpicxx  {:s}/bin/mpiicpx \n'.format(pref))
         file.write('%define tpls_mpifort {:s}/bin/mpiifx \n'.format(pref))
+        file.write('%define tpls_mpiroot {:s} \n'.format(pref))
     else:
         pref= prefix( config )
         file.write('%define tpls_mpicc   {:s}/bin/mpicc\n'.format(pref ))

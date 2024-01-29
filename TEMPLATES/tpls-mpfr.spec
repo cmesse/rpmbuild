@@ -26,6 +26,8 @@ ANSI/IEEE-754 standard for double-precision floating-point arithmetic
 %setup -q -n mpfr-%{version}
 
 %build
+%{expand: %setup_tpls_env}
+
 %{tpls_env} ./configure \
     --prefix=%{tpls_prefix} \
     --with-gmp-include=%{tpls_prefix}/include \

@@ -16,6 +16,8 @@ Requires:       tpls-%{tpls_flavor}-lapack
 
 AutoReqProv:    %{tpls_auto_req_prov}
 
+BuildRequires:  tpls-%{tpls_flavor}-cmake
+
 %description
 Blaze is an open-source, high-performance C++ math library for dense and \
 sparse arithmetic. With its state-of-the-art Smart Expression Template \

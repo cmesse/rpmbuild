@@ -1,0 +1,15 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -787,9 +787,9 @@
+     # and toggle various options.
+     ###
+ 
+-    IF(${HDF5_VERSION} VERSION_LESS ${HDF5_VERSION_REQUIRED})
+-      MESSAGE(FATAL_ERROR "netCDF requires at least HDF5 ${HDF5_VERSION_REQUIRED}. Found ${HDF5_VERSION}.")
+-    ENDIF()
++    #IF(${HDF5_VERSION} VERSION_LESS ${HDF5_VERSION_REQUIRED})
++    #  MESSAGE(FATAL_ERROR "netCDF requires at least HDF5 ${HDF5_VERSION_REQUIRED}. Found ${HDF5_VERSION}.")
++    #ENDIF()
+ 
+ 
+ 

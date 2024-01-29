@@ -88,7 +88,7 @@ tar xvf %{SOURCE1}
 #%endif
 
 
-%{setup_tpls_env}
+%{expand: %setup_tpls_env}
 
 make config \
     prefix=%{tpls_prefix} \
