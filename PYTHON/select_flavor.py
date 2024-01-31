@@ -250,6 +250,9 @@ def write_compiler_flags( file, config ):
         includes += ' -I{:s}/include -I{:s}/include'.format(cuda, math )
         ldflags += ' -L{:s}/lib64 -L{:s}/lib64'.format( cuda, math )
         rpath += ' -Wl,-rpath,{:s}/lib64 -Wl,-rpath,{:s}/lib64'.format( cuda, math )
+        file.write('%define tpls_nvcc   {:s}/bin/nvcc'.format( cuda ) )
+        if compiler == 'intel' :
+            file.write('%define tpls_nvccflags   -allow-unsupported-compiler\n')
     elif gpu == 'rocm' :
         rocm = str( str(config['system']['rocm']))
         includes += ' -I{:s}/include'.format(rocm)

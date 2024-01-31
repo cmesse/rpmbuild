@@ -66,10 +66,6 @@ NetCDF data is:
 
 mkdir build && cd build
 %{tpls_env} \
-%if "%{tpls_compiler}" == "intel"
-CFLAGS+=" -Wl,--build-id" \
-CXXFLAGS+=" -Wl,--build-id" \
-%endif
 %{tpls_cmake} \
 	-DCMAKE_C_AR=%{tpls_ar} \
     -DCMAKE_C_COMPILER=%{tpls_mpicc} \
@@ -105,7 +101,7 @@ CXXFLAGS+=" -Wl,--build-id" \
 %if "%{tpls_compiler}" == "intel"
 %if "%{tpls_mpi}" == "intelmpi"
 	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mpiproot}/lib -Wl,-rpath,%{tpls_mpiproot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
-	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mpiproot}/lib -Wl,-rpath,%{tpls_mpiproot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mpiproot}/lib -Wl,-rpath,%{tpls_mpiroot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
 %else
 	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
 	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \

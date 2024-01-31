@@ -71,7 +71,9 @@ packages = [
          "armadillo",
          "blaze",
          "tinyxml2",
-         "netcdf"]
+         "netcdf",
+         "exodus",
+         "slate"]
 
 if( LAPACK ):
     for p in lapack :
@@ -107,8 +109,14 @@ dependencies = [
     ("testsweeper", "cmake"),
     ("timyxml2", "cmake"),
     ("netcdf", "cmake"),
-    ("netcdf", "hdf5")
-    ("tinyxml2", "cmake")]
+    ("netcdf", "hdf5"),
+    ("exodus", "cmake"),
+    ("exodus", "hdf5"),
+    ("exodus", "metis"),
+    ("exodus", "netcdf"),
+    ("slate", "cmake"),
+    ("slate", "blaspp"),
+    ("slate", "lapackpp")]
 
 lapack_dependencies = [
 	("lapack", "cmake"),
@@ -123,7 +131,8 @@ lapack_dependencies = [
     ("suitesparse","lapack"),
 	("scalapack", "cmake"),
     ("blaze", "blas"),
-    ("blaze", "lapack")]
+    ("blaze", "lapack"),
+    ("slate", "scalapack")]
 
 
 openmpi_dependencies = [
@@ -134,6 +143,9 @@ openmpi_dependencies = [
     ("metis", "openmpi"),
     ("scotch", "openmpi"),
     ("arpack", "openmpi"),
+    ("mumps", "openmpi"),
+    ("netcdf", "openmpi"),
+    ("exodus", "openmpi"),
 ]
 if( LAPACK ):
     for d in lapack_dependencies :
@@ -145,7 +157,7 @@ if( OPENMPI ):
 
 G.add_edges_from(dependencies)
 # Optional: Visualize the graph (requires matplotlib)
-pos = nx.spring_layout(G, scale=20, k=3/np.sqrt(G.order()))
+pos = nx.spring_layout(G, scale=30, k=2/np.sqrt(G.order()))
 nx.draw(G, pos, with_labels=True, node_size=800, node_color="skyblue")
 
 

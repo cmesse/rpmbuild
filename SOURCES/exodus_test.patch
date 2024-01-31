@@ -1,0 +1,55 @@
+--- A/packages/seacas/libraries/exodus/test/testwt-assembly.c
++++ B/packages/seacas/libraries/exodus/test/testwt-assembly.c
+@@ -93,7 +93,7 @@
+   /* ======================================================================== */
+   /* write element block parameters */
+   struct ex_block blocks[num_elem_blk];
+-  for (i = 0; i < num_elem_blk; i++) {
++  for (int i = 0; i < num_elem_blk; i++) {
+     blocks[i] = (ex_block){.type = EX_ELEM_BLOCK, .num_entry = 1, .id = i + 10};
+   }
+ 
+@@ -116,14 +116,14 @@
+   EXCHECK(ex_put_block_params(exoid, num_elem_blk, blocks));
+ 
+   int connect[] = {1};
+-  for (i = 0; i < num_elem_blk; i++) {
++  for (int i = 0; i < num_elem_blk; i++) {
+     EXCHECK(ex_put_conn(exoid, EX_ELEM_BLOCK, blocks[i].id, connect, NULL, NULL));
+   }
+ 
+   /* Write element block names */
+   char *block_names[] = {"block_A", "block_B", "block_C", "block_D",
+                          "block_E", "block_F", "block_G"};
+-  for (i = 0; i < num_elem_blk; i++) {
++  for (int i = 0; i < num_elem_blk; i++) {
+     EXCHECK(ex_put_name(exoid, EX_ELEM_BLOCK, blocks[i].id, block_names[i]));
+   }
+ 
+@@ -141,7 +141,7 @@
+                             {300, "Child3", EX_ELEM_BLOCK, 3, list_300},
+                             {400, "Child4", EX_ELEM_BLOCK, 2, NULL}};
+ 
+-  for (i = 0; i < num_assembly; i++) {
++  for (int i = 0; i < num_assembly; i++) {
+     EXCHECK(ex_put_assembly(exoid, assembly[i]));
+   }
+ 
+@@ -193,14 +193,14 @@
+ 
+   { /* Output time steps ... */
+     double *var_vals = (double *)calloc(num_assem_vars, CPU_word_size);
+-    for (ts = 0; ts < 10; ts++) {
++    for (int ts = 0; ts < 10; ts++) {
+       double time_val = (double)(ts + 1) / 100.0f;
+ 
+       EXCHECK(ex_put_time(exoid, ts + 1, &time_val));
+ 
+       /* write assembly variables */
+-      for (k = 0; k < num_assembly; k++) {
+-        for (var_idx = 0; var_idx < num_assem_vars; var_idx++) {
++      for (int k = 0; k < num_assembly; k++) {
++        for (int var_idx = 0; var_idx < num_assem_vars; var_idx++) {
+           var_vals[var_idx] = (double)(var_idx + 2) * time_val + k;
+         }
+         EXCHECK(ex_put_reduction_vars(exoid, ts + 1, EX_ASSEMBLY, assembly[k].id, num_assem_vars,

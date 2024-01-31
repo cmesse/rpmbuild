@@ -133,6 +133,6 @@ done
 
 
 %changelog
-* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 3.3.10-1
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 1.0.1-1
 - Initial Package
 

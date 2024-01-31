@@ -14,17 +14,6 @@ Source0:        Source0: https://www.vtk.org/files/release/VTK-%{vtk_major}.%{vt
 
 BuildRequires:  tpls-%{tpls_flavor}-cmake
 
-%if   "%{tpls_mpi}" == "openempi"
-BuildRequires:  tpls-%{tpls_flavor}-openmpi
-Requires:       tpls-%{tpls_flavor}-openmpi
-%elif "%{tpls_mpi}" == "mpich"
-BuildRequires:  tpls-%{tpls_flavor}-mpich
-Requires:       tpls-%{tpls_flavor}-mpich
-%elif "%{tpls_mpi}" == "intelmpi"
-BuildRequires:  intel-oneapi-mpi
-BuildRequires:  intel-oneapi-mpi-devel
-BuildRequires:  intel-oneapi-mpi
-%endif
 
 BuildRequires:  libXcursor-devel
 BuildRequires:  libXext-devel
@@ -64,7 +53,7 @@ mkdir build && cd build
 	-DVTK_USE_CUDA=OFF \
 %endif
 	-DVTK_SMP_IMPLEMENTATION_TYPE=OpenMP \
-	-DVTK_USE_MPI=ON \
+	-DVTK_USE_MPI=OFF \
 	-DVTK_WRAP_JAVA=OFF \
 	-DVTK_WRAP_PYTHON=OFF
 	
@@ -93,5 +82,5 @@ cd build && %make_install
 %{tpls_prefix}/lib/vtk-%{vtk_major}.%{vtk_minor}/hierarchy/VTK
 
 %changelog
-* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 9.3.0
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 9.3.0-1
 - Initial Package

@@ -7,9 +7,9 @@ flavor:
   int: 32
 
 flags:
-  cc: "-O3 -fp-model precise -Wl,--build-id"
-  cxx: "-O3 -fp-model precise -Wl,--build-id"
-  fc: "-O3 -fp-model precise -Wl,--build-id"
+  cc: "-O3 -fp-model precise -Wl,--build-id -Wno-unused-command-line-argument"
+  cxx: "-O3 -fp-model precise -Wl,--build-id -Wno-unused-command-line-argument"
+  fc: "-O3 -fp-model precise -Wl,--build-id -Wno-unused-command-line-argument"
   ar: "cru"
 
 rpm:
