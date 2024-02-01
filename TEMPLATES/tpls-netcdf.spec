@@ -10,7 +10,7 @@ Source0:        https://downloads.unidata.ucar.edu/netcdf-c/%{version}/netcdf-c-
 BuildRequires:  tpls-%{tpls_flavor}-cmake
 BuildRequires:  tpls-%{tpls_flavor}-hdf5
 
-%if   "%{tpls_mpi}" == "openempi"
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
 %elif "%{tpls_mpi}" == "mpich"
@@ -19,7 +19,7 @@ Requires:       tpls-%{tpls_flavor}-mpich
 %elif "%{tpls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
-BuildRequires:  intel-oneapi-mpi
+Requires:       intel-oneapi-mpi
 %endif
 
 BuildRequires:  libcurl-devel
@@ -92,7 +92,6 @@ mkdir build && cd build
 	-DHDF5_hdf5_hl_LIBRARY_RELEASE=%{tpls_prefix}/lib/libhdf5_hl.a \
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
-	-DCMAKE_STATIC_LINKER_FLAGS="-L%{tpls_prefix}/lib" \
 %else
 	-DHDF5_hdf5_LIBRARY_RELEASE=%{tpls_prefix}/lib/libhdf5.so \
 	-DHDF5_hdf5_hl_LIBRARY_RELEASE=%{tpls_prefix}/lib/libhdf5_hl.so \

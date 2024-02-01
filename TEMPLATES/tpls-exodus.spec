@@ -19,7 +19,7 @@ Requires:       tpls-%{tpls_flavor}-hdf5
 Requires:       tpls-%{tpls_flavor}-netcdf
 Requires:       tpls-%{tpls_flavor}-metis
 
-%if   "%{tpls_mpi}" == "openempi"
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
 %elif "%{tpls_mpi}" == "mpich"
@@ -29,8 +29,9 @@ Requires:       tpls-%{tpls_flavor}-mpich
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
 Requires:       intel-oneapi-mpi
-Requires:       intel-oneapi-mpi-devel
 %endif
+BuildRequires:  libcurl-devel
+BuildRequires:  libcurl
 
 AutoReqProv:    %{tpls_auto_req_prov}
 
@@ -57,6 +58,7 @@ sed -i "s|#!/usr/bin/env python|#!/usr/bin/env python3|g" ./packages/seacas/scri
 %{expand: %setup_tpls_env}
 mkdir build && cd build
 %{tpls_env} \
+LDFLAGS+=" -lcurl" \
 %{tpls_cmake} \
 	-G "Unix Makefiles" \
     -DCMAKE_C_COMPILER=%{tpls_mpicc} \
@@ -74,11 +76,11 @@ mkdir build && cd build
     -DSeacas_HIDE_DEPRECATED_CODE=ON \
     -DSeacas_ENABLE_Fortran=ON \
     -DHDF5_DIR=%{tpls_prefix} \
+    -DBUILD_TESTING=OFF \
 %if "%{tpls_libs}" == "static"
 	-DBUILD_SHARED_LIBS=OFF \
 	-DSEACASExodus_ENABLE_SHARED=OFF \
 	-DSEACASExodus_ENABLE_STATIC=ON \
-	-DCMAKE_STATIC_LINKER_FLAGS="-L%{tpls_prefix}/lib" \
 %else
 	-DBUILD_SHARED_LIBS=ON \
 	-DSEACASExodus_ENABLE_SHARED=ON \
@@ -109,8 +111,8 @@ mkdir build && cd build
 	-DHDF5_ROOT=%{tpls_prefix} \
 	-DHDF5_NO_SYSTEM_PATHS=YES \
 	..
-	
-%make_build
+
+make
 
 %install
 cd build
@@ -130,12 +132,6 @@ cd build
 %{tpls_prefix}/lib/cmake/SEACASExodus/SEACASExodusTargets.cmake
 %exclude %{tpls_prefix}/lib/cmake/Seacas/SeacasConfig.cmake
 %exclude %{tpls_prefix}/lib/cmake/Seacas/SeacasConfigVersion.cmake
-%exclude %{tpls_prefix}/lib/exodus.py
-%exclude %{tpls_prefix}/lib/exodus2.py
-%exclude %{tpls_prefix}/lib/exodus3.py
-%exclude %{tpls_prefix}/lib/exomerge.py
-%exclude %{tpls_prefix}/lib/exomerge2.py
-%exclude %{tpls_prefix}/lib/exomerge3.py
 %exclude %{tpls_prefix}/lib/external_packages/DLlib/DLlibConfig.cmake
 %exclude %{tpls_prefix}/lib/external_packages/DLlib/DLlibConfigVersion.cmake
 %exclude %{tpls_prefix}/lib/external_packages/MPI/MPIConfig.cmake
@@ -143,20 +139,12 @@ cd build
 %exclude %{tpls_prefix}/lib/external_packages/Netcdf/NetcdfConfig.cmake
 %exclude %{tpls_prefix}/lib/external_packages/Netcdf/NetcdfConfigVersion.cmake
 %if "%{tpls_libs}" == "static"
-%{tpls_prefix}/lib/libexoIIv2c.a
-%{tpls_prefix}/lib/libexoIIv2for.a
-%{tpls_prefix}/lib/libexoIIv2for32.a
 %{tpls_prefix}/lib/libexodus.a
-%{tpls_prefix}/lib/libexodus.so
-%{tpls_prefix}/lib/libexodus.so.*
+%exclude %{tpls_prefix}/lib/libexoIIv2c.a
 %else
 %{tpls_prefix}/lib/libexodus.so
 %{tpls_prefix}/lib/libexodus.so.*
 %endif
-%exclude %{tpls_prefix}/lib/tests/exomerge_unit_test.e
-%exclude %{tpls_prefix}/lib/tests/exomerge_unit_test.py
-%exclude %{tpls_prefix}/lib/tests/test-assembly.exo
-%exclude %{tpls_prefix}/lib/tests/test_exodus3.py
 
 
 %changelog

@@ -28,6 +28,10 @@ game. It uses less memory, is faster, and uses far fewer memory allocations.
 %build
 %{tpls_env} \
 %{tpls_cmake} . \
+    -DCMAKE_C_COMPILER=%{tpls_cc} \
+    -DCMAKE_C_FLAGS="%{tpls_cflags}" \
+    -DCMAKE_CXX_COMPILER=%{tpls_cxx} \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
 %if "%{tpls_libs}" == "static"
 	-DBUILD_SHARED_LIBS=OFF \
 %else

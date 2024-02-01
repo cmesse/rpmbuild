@@ -12,7 +12,7 @@ BuildRequires:  tpls-%{tpls_flavor}-arpack
 BuildRequires:  tpls-%{tpls_flavor}-superlu
 BuildRequires:  tpls-%{tpls_flavor}-metis
 
-%if   "%{tpls_mpi}" == "openempi"
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
 %elif "%{tpls_mpi}" == "mpich"
@@ -21,7 +21,7 @@ Requires:       tpls-%{tpls_flavor}-mpich
 %elif "%{tpls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
-BuildRequires:  intel-oneapi-mpi
+Requires:       intel-oneapi-mpi
 %endif
 
 
@@ -58,6 +58,7 @@ than another language like Matlab or Octave.
 # Compiler Settings
 %{expand: %setup_tpls_env}
 %{tpls_env} \
+LDFLAGS='%{tpls_ldflags} -lgfortran' \
 %{tpls_cmake} . \
 %if "%{tpls_libs}" == "static"
 	-DBUILD_SHARED_LIBS=OFF \
@@ -69,25 +70,18 @@ than another language like Matlab or Octave.
 	-DSuperLU_LIBRARY=%{tpls_prefix}/lib/libsuperlu.so \
 %endif
 %if "%{tpls_gpu}" == "lapack"
-	-DTPL_BLAS_LIBRARIES=%{tpls_blas} \
-	-DTPL_BLAS_LIBRARIES=%{tpls_lapack} \
-%if "%{tpls_libs}" == "static"
-	-DCMAKE_STATIC_LINKER_FLAGS=%{tpls_prefix}/lib/libmetis.a \
-	-DCMAKE_EXE_LINKER_FLAGS=%{tpls_prefix}/lib/libmetis.a \
+	-DBLAS_LIBRARY="%{tpls_blas}" \
+	-DLAPACK_LIBRARY="%{tpls_lapack}" \
 %else
-	-DCMAKE_STATIC_LINKER_FLAGS=%{tpls_prefix}/lib/libmetis.so \
-	-DCMAKE_EXE_LINKER_FLAGS=%{tpls_prefix}/lib/libmetis.so \
+	-DTPL_BLAS_LIBRARIES="%{tpls_mkl_linker_flags}" \
 %endif
-%else
-	-DCMAKE_STATIC_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
-	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
 %if "%{tpls_libs}" == "static"
-	-DCMAKE_STATIC_LINKER_FLAGS="%{tpls_prefix}/lib/libmetis.a %{tpls_mkl_linker_flags}" \
-	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_prefix}/lib/libmetis.a %{tpls_mkl_linker_flags}" \
+%if "%{tpls_compiler}" == "gnu"
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -lgfortran" \
+%endif
 %else
 	-DCMAKE_SHARED_LINKER_FLAGS="%{tpls_prefix}/lib/libmetis.so %{tpls_mkl_linker_flags}" \
 	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_prefix}/lib/libmetis.so %{tpls_mkl_linker_flags}" \
-%endif
 %endif
 	-DALLOW_FLEXIBLAS_LINUX=OFF
 	
@@ -104,8 +98,12 @@ LD_LIBRARY_PATH=%{tpls_ld_library_path} make test
 %files
 %{tpls_prefix}/include/armadillo
 %{tpls_prefix}/include/armadillo_bits/
+%if "%{tpls_libs}" == "static"
+%{tpls_prefix}/lib/libarmadillo.a
+%else
 %{tpls_prefix}/lib/libarmadillo.so
 %{tpls_prefix}/lib/libarmadillo.so.*
+%endif
 %{tpls_prefix}/lib/pkgconfig/armadillo.pc
 %{tpls_prefix}/share/Armadillo/CMake/ArmadilloConfig.cmake
 %{tpls_prefix}/share/Armadillo/CMake/ArmadilloConfigVersion.cmake

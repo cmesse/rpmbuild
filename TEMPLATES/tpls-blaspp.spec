@@ -15,7 +15,11 @@ Patch4:         blaspp_fix_rocm_shared.patch
 BuildRequires:  tpls-%{tpls_flavor}-testsweeper
 BuildRequires:  %{tpls_rpm_cxx} >= %{tpls_comp_minver}
 
-%if "%{tpls-gpu}" == "cuda" 
+%if "%{tpls-gpu}" == "lapack"
+BuildRequires:  tpls-%{tpls_flavor}-blas
+BuildRequires:  tpls-%{tpls_flavor}-cblas
+BuildRequires:  tpls-%{tpls_flavor}-lapack
+%elif "%{tpls-gpu}" == "cuda" 
 BuildRequires: nvhpc-cuda-multi
 Requires:      nvhpc-cuda-multi
 %elif "%{tpls_gpu}" == "rocm"
@@ -87,9 +91,9 @@ python3 configure.py blas=mkl gpu_backend=cuda
 python3 configure.py blas=mkl gpu_backend=rocm 
 %else
 %if "%{tpls_libs}" == "static"
-BLAS_LIBRARIES="%{tpls_prefix}/lib/libcblas.a %{tpls_prefix}/lib/libblas.a" python3 configure.py blas=generic gpu_backend=none
+BLAS_LIBRARIES="%{tpls_prefix}/lib/libcblas.a %{tpls_prefix}/lib/liblapack.a %{tpls_prefix}/lib/libblas.a -lgfortran" python3 configure.py blas=generic gpu_backend=none
 %else
-LD_LIBRARY_PATH="%{tpls_prefix}/lib" LDFLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix} -lcblas -lblas" BLAS_LIBRARIES=%{tpls_blas_shared} python3 configure.py blas=generic gpu_backend=none
+LD_LIBRARY_PATH="%{tpls_prefix}/lib" LDFLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix} -lcblas -llapack -lblas -lgfortran" BLAS_LIBRARIES=%{tpls_blas_shared} python3 configure.py blas=generic gpu_backend=none
 %endif
 %endif
 
@@ -104,12 +108,20 @@ sed -i 's|-fopenmp|-mp|g' make.inc
 
 %make_build
 
+%if "%{tpls_libs}" == "static"
+%{tpls_ar} %{tpls_arflags} ./lib/libblaspp.a ./src/*.o
+ranlib  ./lib/libblaspp.a
+%endif
+
 %check
 LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 
 %install
 %make_install
 %{tpls_remove_la_files}
+%if "%{tpls_libs}" == "static"
+install -m 644 ./lib/libblaspp.a %{buildroot}%{tpls_prefix}/lib ;
+%endif
 
 %files
 %{tpls_prefix}/include/blas.hh
@@ -158,6 +170,7 @@ LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 %{tpls_prefix}/include/blas/wrappers.hh
 %if "%{tpls_libs}" == "static"
 %{tpls_prefix}/lib/libblaspp.a
+%exclude %{tpls_prefix}/lib/libblaspp.so
 %else
 %{tpls_prefix}/lib/libblaspp.so
 %endif

@@ -10,7 +10,8 @@ License:        BSD-3-Clause
 URL:            https://icl.bitbucket.io/slate/
 Source0:        https://github.com/icl-utk-edu/slate/releases/download/v%{version}/v%{version}.tar.gz
 Patch0:         slate_cmake.patch
-%if   "%{tpls_mpi}" == "openempi"
+
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
 %elif "%{tpls_mpi}" == "mpich"
@@ -20,7 +21,6 @@ Requires:       tpls-%{tpls_flavor}-mpich
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
 Requires:       intel-oneapi-mpi
-Requires:       intel-oneapi-mpi-devel
 %endif
 
 BuildRequires:  tpls-%{tpls_flavor}-cmake

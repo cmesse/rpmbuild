@@ -28,10 +28,9 @@ preordering for sparsity is completely separate from the factorization.
 %{tpls_env} \
 %{tpls_cmake} . \
 %if "%{tpls_libs}" == "static"
+    -DCMAKE_C_COMPILER=%{tpls_cc} \
     -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -DNDEBUG" \
     -DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -DNDEBUG" \
     -DCMAKE_Fortran_FLAGS_RELEASE="%{tpls_fcflags} -DNDEBUG" \
 %else
@@ -44,18 +43,22 @@ preordering for sparsity is completely separate from the factorization.
 %endif
 	-DCMAKE_INSTALL_LIBDIR=lib \
 %if "%{tpls_gpu}" == "lapack"
-	-DTPL_BLAS_LIBRARIES=%{tpls_blas} \
-	-DTPL_BLAS_LIBRARIES=%{tpls_lapack} \
-%elseif "%{tpls_libs}" == "static"
-	-DCMAKE_STATIC_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
-	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
+%if "%{tpls_compiler}" == "gnu"
+	-DTPL_BLAS_LIBRARIES="%{tpls_lapack};%{tpls_blas};-lgfortran" \
+%else
+	-DTPL_BLAS_LIBRARIES="%{tpls_lapack};%{tpls_blas}" \
+%endif
+%else
+	-DBLAS_LIBRARIES="%{tpls_mkl_linker_flags}" \
+%endif
+%if "%{tpls_libs}" == "static"
 %else
 	-DCMAKE_SHARED_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
 	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_mkl_linker_flags}" \
 %endif
 	-DTPL_ENABLE_METISLIB=ON \
 	-DTPL_METIS_INCLUDE_DIRS=%{tpls_prefix}/include \
-%if "%{tpls-libs}" == "static"
+%if "%{tpls_libs}" == "static"
 	-DTPL_METIS_LIBRARIES=%{tpls_prefix}/lib/libmetis.a \
 %else
 	-DTPL_METIS_LIBRARIES=%{tpls_prefix}/lib/libmetis.so \
@@ -67,16 +70,21 @@ preordering for sparsity is completely separate from the factorization.
 %make_build
 
 # manually create shared libs
+%if "%{tpls_libs}" == "shared"
 %{tpls_cc} -shared -o ./SRC/libsuperlu.so ./SRC/CMakeFiles/superlu.dir/*.o
 %{tpls_fc} -shared -o ./FORTRAN/libsuperlu_fortran.so ./FORTRAN/CMakeFiles/superlu_fortran.dir/*.o
+%endif
 
 %check
 make test
 
 %install
 %make_install
+
+%if "%{tpls_libs}" == "shared"
 install ./SRC/libsuperlu.so %{buildroot}/%{tpls_prefix}/lib/
 install ./FORTRAN/libsuperlu_fortran.so %{buildroot}/%{tpls_prefix}/lib/
+%endif
 
 %files
 %{tpls_prefix}/include/slu_Cnames.h
@@ -98,8 +106,6 @@ install ./FORTRAN/libsuperlu_fortran.so %{buildroot}/%{tpls_prefix}/lib/
 %if "%{tpls_libs}" == "static"
 %{tpls_prefix}/lib/libsuperlu.a
 %{tpls_prefix}/lib/libsuperlu_fortran.a
-%exclude %{tpls_prefix}/lib/libsuperlu.so
-%exclude %{tpls_prefix}/lib/libsuperlu_fortran.so
 %{tpls_prefix}/lib/pkgconfig/superlu.pc
 %else
 %exclude %{tpls_prefix}/lib/libsuperlu.a

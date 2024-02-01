@@ -88,9 +88,9 @@ unset CXXFLAGS
 unset FCFLAGS
 unset FFLAGS
 %if "%{tpls_compiler}" == "gnu"
-mkdir -p build && cd build && %{tpls_compilers} %{tpls_cmake} \
+mkdir -p build && cd build && %{tpls_env} %{tpls_cmake} \
 %else
-mkdir -p build && cd build && LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" %{tpls_compilers} %{tpls_cmake} \
+mkdir -p build && cd build && LDFLAGS="%{tpls_comp_ldflags} %{tpls_comp_rpath}" %{tpls_env} %{tpls_cmake} \
 %endif
 -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} \
 %if "%{tpls_compiler}" == "intel"

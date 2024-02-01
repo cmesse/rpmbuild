@@ -250,7 +250,7 @@ def write_compiler_flags( file, config ):
         includes += ' -I{:s}/include -I{:s}/include'.format(cuda, math )
         ldflags += ' -L{:s}/lib64 -L{:s}/lib64'.format( cuda, math )
         rpath += ' -Wl,-rpath,{:s}/lib64 -Wl,-rpath,{:s}/lib64'.format( cuda, math )
-        file.write('%define tpls_nvcc   {:s}/bin/nvcc'.format( cuda ) )
+        file.write('%define tpls_nvcc   {:s}/bin/nvcc\n'.format( cuda ) )
         if compiler == 'intel' :
             file.write('%define tpls_nvccflags   -allow-unsupported-compiler\n')
     elif gpu == 'rocm' :
@@ -271,8 +271,8 @@ def write_compiler_flags( file, config ):
     fcflags  += includes
 
     # write the flags
-    file.write('%define tpls_cflags   {:s}\n'.format( cflags ))
-    file.write('%define tpls_cxxflags   {:s}\n'.format(cxxflags))
+    file.write('%define tpls_cflags    {:s}\n'.format( cflags ))
+    file.write('%define tpls_cxxflags  {:s}\n'.format(cxxflags))
     file.write('%define tpls_fcflags   {:s}\n'.format(fcflags))
     file.write('%define tpls_ldflags   {:s}\n'.format(ldflags))
     file.write('%define tpls_arflags   {:s}\n'.format(str(config['flags']['ar'])))
@@ -281,13 +281,13 @@ def write_netlib(file,config) :
     file.write('\n# the netlib reference implementations\n')
     libs  = str(config['flavor']['libs'])
     if libs == 'static' :
-        blas  = '{:s}/libblas.a'.format(prefix( config ))
-        lapack = '{:s}/liblapack.a'.format(prefix(config))
-        scalapack = '{:s}/libscalapack.a'.format(prefix(config))
+        blas  = '{:s}/lib/libblas.a'.format(prefix( config ))
+        lapack = '{:s}/lib/liblapack.a'.format(prefix(config))
+        scalapack = '{:s}/lib/libscalapack.a'.format(prefix(config))
     else:
-        blas  = '{:s}/libblas.so'.format(prefix( config ))
-        lapack = '{:s}/liblapack.so'.format(prefix(config))
-        scalapack = '{:s}/libscalapack.so'.format(prefix(config))
+        blas  = '{:s}/lib/libblas.so'.format(prefix( config ))
+        lapack = '{:s}/lib/liblapack.so'.format(prefix(config))
+        scalapack = '{:s}/lib/libscalapack.so'.format(prefix(config))
 
     file.write('%define tpls_blas   {:s}\n'.format(blas))
     file.write('%define tpls_lapack  {:s}\n'.format(lapack))
@@ -297,6 +297,20 @@ def write_mkl(file,config) :
     file.write('\n# the MKL setup\n')
     file.write('%define tpls_mkl_linker_flags   {:s}\n'.format(mkl_linker_flags(config)))
     file.write('%define tpls_mkl_mpi_linker_flags  {:s}\n'.format(mkl_mpi_linker_flags(config)))
+
+
+def write_arpack(file, config ) :
+    libs = str(config['flavor']['libs'])
+    if libs == 'static':
+        arpack = '{:s}/lib/libarpack.a'.format(prefix(config))
+        parpack = '{:s}/lib/libparpack.a'.format(prefix(config))
+    else:
+        arpack = '{:s}/lib/libarpack.so'.format(prefix(config))
+        parpack = '{:s}/lib/libparpack.so'.format(prefix(config))
+    file.write('%define tpls_arpack {:s}\n'.format(arpack))
+    file.write('%define tpls_parpack {:s}\n'.format(parpack))
+
+
 
 def main():
     if len(sys.argv) < 2:
@@ -316,6 +330,7 @@ def main():
         write_compiler_flags(file, config)
         write_netlib(file, config)
         write_mkl(file, config)
+        write_arpack(file, config)
 
 if __name__ == '__main__':
     main()

@@ -2,66 +2,94 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt  # Optional for visualization
 from collections import defaultdict, deque
-def compilation_order(dependencies):
-    # Create a graph, in_degree and ranks dictionary
+
+
+
+
+
+
+def compilation_order(dependencies, packages):
     graph = defaultdict(set)
     in_degree = defaultdict(int)
-    nodes = set()
+    nodes = set(packages)
+
+    # Initialize ranks for all nodes with a default value
+    ranks = {node: -1 for node in nodes}
 
     # Populate the graph and in-degree
     for dependent, dependency in dependencies:
         graph[dependency].add(dependent)
         in_degree[dependent] += 1
         nodes.add(dependency)
-        nodes.add(dependent)
 
     # Queue for nodes with in-degree 0 (no dependencies), sorted alphabetically
     queue = deque(sorted(node for node in nodes if in_degree[node] == 0))
-    ranks = {node: 0 for node in queue}  # Initialize ranks for these nodes
+
+    # Update the ranks for nodes with in-degree 0
+    for node in queue:
+        ranks[node] = 0
 
     # Perform the topological sort and calculate ranks
-    topological_order = []
     while queue:
         node = queue.popleft()
-        topological_order.append(node)
-        neighbors = sorted(list(graph[node]))  # Sort neighbors alphabetically
-        for neighbour in neighbors:
+        for neighbour in sorted(graph[node]):  # Sort neighbors alphabetically
             in_degree[neighbour] -= 1
+            # Assign rank as max of current rank and one more than the rank of the node
+            ranks[neighbour] = max(ranks[neighbour], ranks[node] + 1)
             if in_degree[neighbour] == 0:
                 queue.append(neighbour)
-                ranks[neighbour] = ranks[node] + 1
 
-    # Group nodes by their ranks
-    ranked_groups = defaultdict(list)
-    for node in topological_order:
-        ranked_groups[ranks[node]].append(node)
+    # Calculate the max rank from the graph
+    max_rank = max(ranks.values())
 
-    # Combine the groups based on ranks and sort alphabetically within each group
-    combined_order = []
-    for rank in sorted(ranked_groups):
-        combined_order.extend(sorted(ranked_groups[rank]))
+    # Assign ranks to independent nodes (not in ranks yet)
+    for node in nodes:
+        if ranks[node] == -1:
+            max_rank += 1
+            ranks[node] = max_rank
 
-    return combined_order
+    # Combine the nodes based on ranks and sort alphabetically within each group
+    combined_order_with_ranks = []
+    for rank in range(max_rank + 1):
+        nodes_at_rank = [node for node, node_rank in ranks.items() if node_rank == rank]
+        combined_order_with_ranks.extend((rank, node) for node in sorted(nodes_at_rank))
+
+    # Check and adjust ranks if dependency conditions are violated
+    dependency_violation = True
+    while dependency_violation:
+        dependency_violation = False
+        for dependent, dependency in dependencies:
+            if ranks[dependent] <= ranks[dependency]:
+                ranks[dependent] = ranks[dependency] + 1
+                dependency_violation = True
+
+    # Reconstruct combined order with adjusted ranks
+    combined_order_with_ranks = []
+    for rank in range(max(ranks.values()) + 1):
+        nodes_at_rank = [node for node, node_rank in ranks.items() if node_rank == rank]
+        combined_order_with_ranks.extend((rank, node) for node in sorted(nodes_at_rank))
+
+    return combined_order_with_ranks
 
 # Create a directed graph
 G = nx.DiGraph()
 
-LAPACK = False
+LAPACK = True
 OPENMPI = False
+MPICH = True
+SLATE = False
 
 lapack = [ "lapack", "fspblas", "scalapack" ]
-openmpi = [ "hwloc", "libevent", "openmpi" ]
+slate = [ "testsweeper", "lapackpp", "blaspp", "slate"]
 
 # Add nodes (vertices) to the graph
 packages = [
+         "gperftools",
 		 "gmp",
 		 "mpfr",
          "fftw",
          "cmake",
 		 "hdf5",
-		 "testsweeper",
-		 "blas++",
-		 "lapack++",
 		 "metis",
 		 "scotch",
 		 "superlu",
@@ -73,23 +101,27 @@ packages = [
          "tinyxml2",
          "netcdf",
          "exodus",
-         "slate"]
+         "zfp",
+         "googletest",
+         "blaze",
+         "vtk",
+         "butterflypack",
+         "strumpack"]
+
 
 if( LAPACK ):
     for p in lapack :
         packages.append( p )
-if( OPENMPI ):
-    for p in openmpi :
+
+if( SLATE ):
+    for p in slate :
         packages.append( p )
 
 
-G.add_nodes_from(packages)
-
 
 # Add edges (dependencies) to the graph
+
 dependencies = [
-    ("blas++", "testsweeper"),
-    ("lapack++", "blas++"),
     ("superlu", "metis"),
     ("mumps", "metis"),
     ("mumps", "scotch"),
@@ -106,64 +138,106 @@ dependencies = [
     ("armadillo", "superlu"),
     ("armadillo", "arpack"),
     ("armadillo", "metis"),
-    ("testsweeper", "cmake"),
-    ("timyxml2", "cmake"),
+    ("tinyxml2", "cmake"),
     ("netcdf", "cmake"),
     ("netcdf", "hdf5"),
     ("exodus", "cmake"),
     ("exodus", "hdf5"),
     ("exodus", "metis"),
     ("exodus", "netcdf"),
-    ("slate", "cmake"),
-    ("slate", "blaspp"),
-    ("slate", "lapackpp")]
+    ("zfp", "cmake"),
+    ("googletest", "cmake"),
+    ("vtk", "cmake"),
+    ("butterflypack", "cmake"),
+    ("strumpack", "cmake"),
+    ("strumpack", "butterflypack"),
+    ("strumpack", "metis"),
+    ("strumpack", "scotch"),
+    ("strumpack", "zfp")]
 
-lapack_dependencies = [
-	("lapack", "cmake"),
-    ("fspblas", "blas"),
-	("blas++", "blas"),
-	("lapack++", "lapack"), 
-	("scotch", "scalapack"),
-	("superlu", "blas"),
-	("mumps", "scalapack"),
-    ("lapack","cmake"),
-    ("suitesparse","blas"),
-    ("suitesparse","lapack"),
-	("scalapack", "cmake"),
-    ("blaze", "blas"),
-    ("blaze", "lapack"),
-    ("slate", "scalapack")]
+if SLATE :
+    slate_dependencies = [
+        ("blaspp", "testsweeper"),
+        ("lapackpp", "blaspp"),
+        ("slate", "cmake"),
+        ("slate", "blaspp"),
+        ("slate", "lapackpp"),
+        ("testsweeper", "cmake"),
+        ("strumpack", "slate")
+    ]
 
+    if LAPACK :
+        slate_lapack_dependencies = [
+            ("blaspp", "lapack"),
+            ("lapackpp", "lapack"),
+            ("slate", "scalapack"),
+            ("mumps", "scalapack"),
+            ("arpack", "scalapack"),
+            ("butterflypack", "scalapack"),
+            ("strumpack", "scalapack") ]
 
-openmpi_dependencies = [
-    ("hwloc", "libevent"),
-    ("openmpi", "hwloc"),
-	("openmpi", "libevent"),
-	("hdf5", "openmpi"),
-    ("metis", "openmpi"),
-    ("scotch", "openmpi"),
-    ("arpack", "openmpi"),
-    ("mumps", "openmpi"),
-    ("netcdf", "openmpi"),
-    ("exodus", "openmpi"),
-]
-if( LAPACK ):
+        for p in slate_lapack_dependencies:
+            packages.append(p)
+
+if (OPENMPI or MPICH):
+
+    if( OPENMPI ) :
+        mpiimpl = "openmpi"
+    else :
+        mpiimpl = "mpich"
+
+    mpi = ["hwloc", "libevent", mpiimpl]
+
+    mpi_dependencies = [
+        ("hwloc", "libevent"),
+        (mpiimpl, "hwloc"),
+        ("hdf5", mpiimpl ),
+        ("metis", mpiimpl ),
+        ("scotch", mpiimpl ),
+        ("arpack", mpiimpl ),
+        ("mumps", mpiimpl),
+        ("netcdf", mpiimpl ),
+        ("exodus", mpiimpl ),
+    ]
+
+    for p in mpi:
+        packages.append(p)
+
+    for d in mpi_dependencies :
+        dependencies.append( d )
+
+if LAPACK :
+    lapack_dependencies = [
+        ("lapack", "cmake"),
+        ("fspblas", "lapack"),
+        ("scotch", "scalapack"),
+        ("superlu", "lapack"),
+        ("mumps", "scalapack"),
+        ("lapack", "cmake"),
+        ("suitesparse", "lapack"),
+        ("scalapack", "cmake"),
+        ("scalapack", "lapack"),
+        ("scalapack", mpiimpl),
+        ("blaze", "lapack")]
+
     for d in lapack_dependencies :
         dependencies.append( d )
 
-if( OPENMPI ):
-    for d in openmpi_dependencies :
-        dependencies.append( d )
-
+G.add_nodes_from(packages)
 G.add_edges_from(dependencies)
 # Optional: Visualize the graph (requires matplotlib)
 pos = nx.spring_layout(G, scale=30, k=2/np.sqrt(G.order()))
 nx.draw(G, pos, with_labels=True, node_size=800, node_color="skyblue")
 
-
-compilation_order = compilation_order(dependencies)
 count = 1
-for package in compilation_order :
-    print( count, package )
-    count+=1
-plt.show()
+
+compilation_order_with_ranks = compilation_order(dependencies, packages)
+current_rank = -1
+for rank, package in compilation_order_with_ranks:
+    if rank != current_rank:
+        current_rank = rank
+        print("--- Group ", rank+1, "---")
+    print(count, package)
+    count += 1
+
+#plt.show()

@@ -1,0 +1,11 @@
+--- a/src/sparse/fronts/FrontalMatrixLossy.cpp
++++ b/src/sparse/fronts/FrontalMatrixLossy.cpp
+@@ -28,7 +28,7 @@
+  */
+ #include "FrontalMatrixLossy.hpp"
+ #include "zfp.h"
+-#include "zfparray2.h"
++#include "array2.hpp"
+ 
+ namespace strumpack {
+ 

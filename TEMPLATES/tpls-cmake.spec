@@ -51,7 +51,7 @@ mkdir build && cd build
     --no-system-libs \
     --parallel=$(nproc) \
     --generator="Unix Makefiles"
-
+    
 make %{?_smp_mflags}
 
 %check

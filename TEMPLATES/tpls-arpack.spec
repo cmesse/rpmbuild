@@ -9,7 +9,7 @@ Source0:       https://src.fedoraproject.org/lookaside/pkgs/arpack/arpack-ng-3.9
 
 BuildRequires:  tpls-%{tpls_flavor}-cmake
 
-%if   "%{tpls_mpi}" == "openempi"
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
 %elif "%{tpls_mpi}" == "mpich"
@@ -18,17 +18,21 @@ Requires:       tpls-%{tpls_flavor}-mpich
 %elif "%{tpls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
-BuildRequires:  intel-oneapi-mpi
+Requires:       intel-oneapi-mpi
 %endif
-
 
 %if "%{tpls_gpu}" == "lapack"
 BuildRequires:  tpls-%{tpls_flavor}-blas
 BuildRequires:  tpls-%{tpls_flavor}-lapack
+BuildRequires:  tpls-%{tpls_flavor}-scalapack
 Requires:       tpls-%{tpls_flavor}-blas
 Requires:       tpls-%{tpls_flavor}-lapack
+Requires:       tpls-%{tpls_flavor}-scalapack
+%else
+BuildRequires:  intel-oneapi-mkl
+BuildRequires:  intel-oneapi-mkl-devel
+Requires:       intel-oneapi-mkl
 %endif
-
 
 AutoReqProv:    %{tpls_auto_req_prov}
 
@@ -55,34 +59,48 @@ Restarted Arnoldi Method (IRAM).
 CC=%{tpls_mpicc} \
 CXX=%{tpls_mpicxx} \
 FC=%{tpls_mpifort} \
-%{tpls_cmake} . \
-%if "%{tpls_libs}" == "static"
-	-DBUILD_STATIC_LIBS=ON \
-	-DBUILD_SHARED_LIBS=OFF \
-%else
-	-DBUILD_STATIC_LIBS=OFF \
-	-DBUILD_SHARED_LIBS=ON \
-%endif
+%{tpls_cmake} \
 %if "%{tpls_gpu}" == "lapack"
-%if "%{tpls_libs}" == "static"
-	-DBLAS_LIBRARIES=%{tpls_blas_static} \
-	-DLAPACK_LIBRARIES=%{tpls_lapack_static} \
-%else
-	-DBLAS_LIBRARIES=%{tpls_blas_shared}  \
-	-DLAPACK_LIBRARIES=%{tpls_lapack_shared}  \
-%endif
+	-DBLAS_LIBRARIES=%{tpls_blas} \
+	-DLAPACK_LIBRARIES=%{tpls_lapack} \
 %else
 	-DBLAS_LIBRARIES="%{tpls_mkl_linker_flags}" \
 	-DLAPACK_LIBRARIES="%{tpls_mkl_linker_flags}" \
 %endif
-	-DMPI=ON
+	-DMPI=ON \
+%if "%{tpls_libs}" == "static"
+	-DBUILD_STATIC_LIBS=ON \
+	-DBUILD_SHARED_LIBS=OFF \
+	-DTESTS=OFF \
+%else
+	-DBUILD_STATIC_LIBS=OFF \
+	-DBUILD_SHARED_LIBS=ON \
+	-DTESTS=ON \
+%if "%{tpls_int}" == 32
+	-DINTERFACE64=OFF \
+%else
+	-DINTERFACE64=ON \
+%endif
+%if "%{tpls_compiler}" == "intel"
+%if "%{tpls_mpi}" == "intelmpi"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mpiproot}/lib -Wl,-rpath,%{tpls_mpiproot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mpiproot}/lib -Wl,-rpath,%{tpls_mpiroot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%endif
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+%endif
+%endif
+	.
+
 %make_build
 
 %check
-%if "%{tpls_gpu}" == "lapack"
+%if "%{tpls_libs}" == "shared"
 make %{?_smp_mflags} test
-%else
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH} make %{?_smp_mflags} test
 %endif
 
 %install

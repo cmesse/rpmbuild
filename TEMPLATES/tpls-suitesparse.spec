@@ -43,6 +43,12 @@ matrices.  The package includes the following libraries:
 
 
 %{tpls_env} %tpls_cmake  \
+	-DCMAKE_C_COMPILER=%{tpls_cc} \
+    -DCMAKE_C_FLAGS="%{tpls_cflags}" \
+    -DCMAKE_CXX_COMPILER=%{tpls_cxx} \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
+    -DCMAKE_Fortran_COMPILER=%{tpls_fc} \
+    -DCMAKE_Fortran_FLAGS="%{tpls_fcflags}" \
 %if "%{tpls_gpu}" == "lapack"
 	-DBLA_VENDOR="Generic" \
 %elif "%{tpls_cc}" == "nvc"
@@ -60,6 +66,13 @@ matrices.  The package includes the following libraries:
 	-DBLA_STATIC=OFF \
 	-DBUILD_SHARED_LIBS=ON \
 	-DBUILD_STATIC_LIBS=OFF \
+%if "%{tpls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+%endif
 %endif
 	-DSUITESPARSE_USE_CUDA=OFF \
 %if "%{tpls_int}" == "32"

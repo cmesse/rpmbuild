@@ -71,7 +71,9 @@ mkdir build && cd build
 %if "%{tpls_gpu}" == "cuda"
 	-DZFP_WITH_CUDA=ON \
 	-DCUDA_NVCC_EXECUTABLE=%{tpls_nvcc} \
+%if "%{tpls_compiler}" == "intel"
 	-DCUDA_NVCC_FLAGS=%{tpls_nvccflags} \
+%endif
 %else
 	-DZFP_WITH_CUDA=OFF \
 %endif

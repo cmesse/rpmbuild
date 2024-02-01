@@ -22,7 +22,7 @@ BuildRequires: zlib-devel
 BuildRequires: bzip2-devel
 BuildRequires: xz-devel
 
-%if   "%{tpls_mpi}" == "openempi"
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
 %elif "%{tpls_mpi}" == "mpich"
@@ -31,7 +31,7 @@ Requires:       tpls-%{tpls_flavor}-mpich
 %elif "%{tpls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
-BuildRequires:  intel-oneapi-mpi
+Requires:       intel-oneapi-mpi
 %endif
 
 %if "%{tpls_gpu}" == "lapack"
@@ -71,7 +71,7 @@ FC=%{tpls_mpifort} \
 	-DBUILD_SHARED_LIBS=ON \
 %endif
  	-DBUILD_LIBESMUMPS=ON \
- 	-DBUILD_LIBSCOTCHMETIS=ON \
+ 	-DBUILD_LIBSCOTCHMETIS=OFF \
  	-DBUILD_PTSCOTCH=ON \
  	-DINTSIZE=%{tpls_int} \
  	-DCMAKE_C_COMPILER=%{tpls_mpicc} \
@@ -86,12 +86,19 @@ FC=%{tpls_mpifort} \
  	-DCMAKE_Fortran_FLAGS_RELEASE=-DNDEBUG \
  	-DINSTALL_METIS_HEADERS=OFF \
  	-DMPIEXEC_MAX_NUMPROCS=%{tpls_maxprocs} \
+%if "%{tpls_int}" == "32"
+	-DINTSIZE=32 \
+%else
+	-DINTSIZE=64 \
+%endif
+%if "%{tpls_libs}" == "shared"
     -DCMAKE_SKIP_RPATH=ON \
     -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,${I_MPI_ROOT}/lib -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id" \
 %if "%{tpls_mpi}" == "intelmpi"
  	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${I_MPI_ROOT}/lib -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id"
 %else
  	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id"
+%endif
 %endif
 
 %make_build
@@ -115,18 +122,21 @@ for l in ptscotch ptscotcherr ptscotcherrexit scotch scotcherr scotcherrexit; do
 done
 
 # Loop for building scotchmetis libraries
-for l in ptscotchparmetisv3 scotchmetisv3 scotchmetisv5; do
-    echo "Building lib${l}.so"
-    # Compile and link the library
-    %{tpls_mpicc} -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/libscotchmetis/CMakeFiles/${l}.dir/*.o
-done
+#for l in ptscotchparmetisv3 scotchmetisv3 scotchmetisv5; do
+#    echo "Building lib${l}.so"
+#    # Compile and link the library
+#    %{tpls_mpicc} -Wl,-rpath,${tpls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/libscotchmetis/CMakeFiles/${l}.dir/*.o
+#done
 
 %endif
 
 
-%check # dgpart timeout with intel
+%check
+%if "%{tpls_compiler}" == "gnu"
+%make_build check
+%endif
+# dgpart timeout with intel
 # LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib  FC=%{tpls_mpifort}  make %{?_smp_mflags} test
-
 
 %install
 %make_install
@@ -173,40 +183,16 @@ install -m 755 ./lib/*.so %{buildroot}/%{tpls_prefix}/lib/
 %{tpls_prefix}/include/ptscotchf.h
 %{tpls_prefix}/include/scotch.h
 %{tpls_prefix}/include/scotchf.h
-%{tpls_prefix}/lib/cmake/scotch/SCOTCHConfig.cmake
-%{tpls_prefix}/lib/cmake/scotch/SCOTCHConfigVersion.cmake
-%{tpls_prefix}/lib/cmake/scotch/esmumpsTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/esmumpsTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptesmumpsTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptesmumpsTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotchTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotchTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotcherrTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotcherrTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotcherrexitTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotcherrexitTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotchparmetisTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/ptscotchparmetisTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotchTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotchTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotcherrTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotcherrTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotcherrexitTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotcherrexitTargets.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotchmetisTargets-release.cmake
-%{tpls_prefix}/lib/cmake/scotch/scotchmetisTargets.cmake
+%{tpls_prefix}/lib/cmake/scotch
 %if "%{tpls_libs}" == "static"
 %{tpls_prefix}/lib/libesmumps.a
 %{tpls_prefix}/lib/libptesmumps.a
 %{tpls_prefix}/lib/libptscotch.a
 %{tpls_prefix}/lib/libptscotcherr.a
 %{tpls_prefix}/lib/libptscotcherrexit.a
-%{tpls_prefix}/lib/libptscotchparmetisv3.a
 %{tpls_prefix}/lib/libscotch.a
 %{tpls_prefix}/lib/libscotcherr.a
 %{tpls_prefix}/lib/libscotcherrexit.a
-%{tpls_prefix}/lib/libscotchmetisv3.a
-%{tpls_prefix}/lib/libscotchmetisv5.a
 %else
 %{tpls_prefix}/lib/libesmumps.so
 %{tpls_prefix}/lib/libptesmumps.so
@@ -214,15 +200,11 @@ install -m 755 ./lib/*.so %{buildroot}/%{tpls_prefix}/lib/
 %{tpls_prefix}/lib/libptscotch.so.*
 %{tpls_prefix}/lib/libptscotcherr.so
 %{tpls_prefix}/lib/libptscotcherrexit.so
-%{tpls_prefix}/lib/libptscotchparmetisv3.so
 %{tpls_prefix}/lib/libscotch.so
 %{tpls_prefix}/lib/libscotch.so.*
 %{tpls_prefix}/lib/libscotcherr.so
 %{tpls_prefix}/lib/libscotcherrexit.so
-%{tpls_prefix}/lib/libscotchmetisv3.so
-%{tpls_prefix}/lib/libscotchmetisv5.so
 %endif
-
 %{tpls_prefix}/man/man1/acpl.1
 %{tpls_prefix}/man/man1/amk_ccc.1
 %{tpls_prefix}/man/man1/amk_grf.1

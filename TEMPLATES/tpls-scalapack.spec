@@ -13,12 +13,24 @@ Patch3: scalapack-2.2.0-fix57.patch
 Patch4: scalapack-cblas.patch
 #Patch5: scalapack-mpi.patch
 
+%if "%{tpls_gpu}" == "lapack"
 BuildRequires:  tpls-%{tpls_flavor}-blas
 BuildRequires:  tpls-%{tpls_flavor}-lapack
-BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-blas
 Requires:       tpls-%{tpls_flavor}-lapack
+%endif
+
+%if   "%{tpls_mpi}" == "openmpi"
+BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
+%elif "%{tpls_mpi}" == "mpich"
+BuildRequires:  tpls-%{tpls_flavor}-mpich
+Requires:       tpls-%{tpls_flavor}-mpich
+%elif "%{tpls_mpi}" == "intelmpi"
+BuildRequires:  intel-oneapi-mpi
+BuildRequires:  intel-oneapi-mpi-devel
+Requires:       intel-oneapi-mpi
+%endif
 
 %description
 The ScaLAPACK (or Scalable LAPACK) library includes a subset
@@ -48,8 +60,6 @@ routines resemble their LAPACK equivalents as much as possible.
 
 %prep
 
-%{expand: %error_if_not_lapack}
-
 %setup -q -n scalapack-%{version}
 %patch1 -p1
 %patch2 -p1
@@ -69,18 +79,22 @@ FC=%{tpls_prefix}/bin/mpifort \
     -DCMAKE_C_FLAGS="%{tpls_cflags}" \
 	-DCMAKE_Fortran_FLAGS="%{tpls_fcflags} -fallow-argument-mismatch" \
 %if "%{tpls_libs}" == "static"
-	-DBUILD_STATIC_LIBS=ON \	
+	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
-	-DBLAS_LIBRARIES=%{tpls_blas_static} \
-	-DLAPACK_LIBRARIES=%{tpls_lapack_static} \
 %else
 	-DBUILD_STATIC_LIBS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
-	-DBLAS_LIBRARIES=%{tpls_blas_shared} \
-	-DLAPACK_LIBRARIES=%{tpls_lapack_shared} \
 %endif
+%if "%{tpls_gpu}" == "lapack"
+	-DBLAS_LIBRARIES=%{tpls_blas} \
+	-DLAPACK_LIBRARIES=%{tpls_lapack} \
 	-DUSE_OPTIMIZED_LAPACK_BLAS=OFF \
-    -DBUILD_TESTING=OFF
+%else
+	-DBLAS_LIBRARIES="%{tpls_mkl_linker_flags}" \
+	-DLAPACK_LIBRARIES="%{tpls_mkl_linker_flags}" \
+%endif
+    -DSCALAPACK_BUILD_TESTS=OFF \
+    .
 
 %make_build
 
@@ -98,9 +112,14 @@ FC=%{tpls_prefix}/bin/mpifort \
 %{tpls_prefix}/lib/cmake/scalapack-%{version}/scalapack-targets.cmake
 %if "%{tpls_libs}" == "static"
 %{tpls_prefix}/lib/libscalapack.a
+%exclude %{tpls_prefix}/lib/libblas.a
+%exclude %{tpls_prefix}/lib/liblapack.a
+
 %else
 %{tpls_prefix}/lib/libscalapack.so
 %{tpls_prefix}/lib/libscalapack.so.*
+%exclude %{tpls_prefix}/lib/libblas.so
+%exclude %{tpls_prefix}/lib/liblapack.so
 %endif
 %{tpls_prefix}/lib/pkgconfig/scalapack.pc
 

@@ -56,33 +56,44 @@ sed -i 's|@LDFLAGS@| @LDFLAGS@ %{tpls_ldflags}|g'  make.inc.in
 sed -i 's|static   =|static   = 1|g' make.inc.in 
 %endif
 
+
 %build
 
 %{expand: %setup_tpls_env}
 
 unset LD
-
-PATH=%{tpls_prefix}/bin:$PATH \
 LDFLAGS="-L/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib"  \
+PATH=%{tpls_prefix}/bin:$PATH \
 %if "%{tpls_gpu}" == "cuda"
-python3 configure.py blas=mkl gpu_backend=cuda 
+python3 configure.py blas=mkl gpu_backend=cuda
 %elif "%{tpls_gpu}" == "rocm"
-python3 configure.py blas=mkl gpu_backend=rocm 
+python3 configure.py blas=mkl gpu_backend=rocm
 %else
 %if "%{tpls_libs}" == "static"
-BLAS_LIBRARIES=%{tpls_blas_static} LDFLAGS="%{tpls_prefix}/lib/libblaspp.a %{tpls_prefix}/lib/liblapacke.a  %{tpls_prefix}/lib/liblapacks.a %{tpls_prefix}/lib/libcblas.a {tpls_prefix}/lib/lblas.a" python3 configure.py
+BLAS_LIBRARIES="%{tpls_prefix}/lib/liblapacke.a %{tpls_prefix}/lib/libcblas.a %{tpls_prefix}/lib/liblapack.a %{tpls_prefix}/lib/libblas.a -lgfortran" python3 configure.py blas=generic gpu_backend=none
 %else
-LD_LIBRARY_PATH="%{tpls_prefix}/lib" LDFLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix} -lblaspp -llapacke -llapack -lcblas -lblas" BLAS_LIBRARIES=%{tpls_blas_shared} python3 configure.py
+LD_LIBRARY_PATH="%{tpls_prefix}/lib" LDFLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix} -llapacke -lcblas -llapack -lblas -lgfortran" BLAS_LIBRARIES=%{tpls_blas_shared} python3 configure.py blas=generic gpu_backend=none
 %endif
 %endif
 
+
 %make_build
+
+%if "%{tpls_libs}" == "static"
+%{tpls_ar} %{tpls_arflags} ./lib/liblapackpp.a ./src/*.o
+ranlib  ./lib/liblapackpp.a
+%endif
 
 %check
 LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 
 %install
 %make_install
+
+%if "%{tpls_libs}" == "static"
+install -m 644 ./lib/liblapackpp.a %{buildroot}%{tpls_prefix}/lib ;
+%endif
+
 %{tpls_remove_la_files}
 
 %files
@@ -91,11 +102,11 @@ LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 %{tpls_prefix}/include/lapack/*.hh
 %if "%{tpls_libs}" == "static"
 %{tpls_prefix}/lib/liblapackpp.a
+%exclude %{tpls_prefix}/lib/liblapackpp.so
 %else
 %{tpls_prefix}/lib/liblapackpp.so
 %endif
 %{tpls_prefix}/lib/pkgconfig/lapackpp.pc
-
 
 %changelog
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2023.11.05-1

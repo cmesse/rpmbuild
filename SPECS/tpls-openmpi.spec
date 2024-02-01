@@ -2,13 +2,13 @@
 # FLAVOR SPECIFIC DEFINES                                             #
 #######################################################################
 
-%define tpls_flavor skylake-gnu-openmpi-cuda-shared-32 
+%define tpls_flavor skylake-gnu-openmpi-lapack-static-32 
 
 %define tpls_host skylake 
 %define tpls_compiler gnu 
 %define tpls_mpi openmpi 
-%define tpls_gpu cuda 
-%define tpls_libs shared 
+%define tpls_gpu lapack 
+%define tpls_libs static 
 %define tpls_int 32 
 %define tpls_comp_minver 11.4.1 
 
@@ -18,14 +18,14 @@
 %define tpls_auto_req_prov yes
 
 # important paths
-%define tpls_prefix /opt/tpls/skylake-gnu-openmpi-cuda-shared-32 
-%define tpls_includes /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/includes 
-%define tpls_libdir /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib 
+%define tpls_prefix /opt/tpls/skylake-gnu-openmpi-lapack-static-32 
+%define tpls_includes /opt/tpls/skylake-gnu-openmpi-lapack-static-32/includes 
+%define tpls_libdir /opt/tpls/skylake-gnu-openmpi-lapack-static-32/lib 
 %define tpls_comproot /usr 
 %define tpls_mklroot  /opt/intel/oneapi/mkl/latest 
 %define tpls_cuda  /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda 
 %define tpls_rocm  /opt/rocm 
-%define tpls_ld_library_path  /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib:/opt/intel/oneapi/mkl/latest/lib:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 
+%define tpls_ld_library_path  /opt/tpls/skylake-gnu-openmpi-lapack-static-32/lib 
 
 # compiler executables
 %define tpls_cc gcc 
@@ -37,26 +37,26 @@
 %define tpls_cxxcpp ld -E 
 
 # MPI wrappers
-%define tpls_mpicc   /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/bin/mpicc
-%define tpls_mpicxx  /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/bin/mpicxx 
-%define tpls_mpifort /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/bin/mpifort 
+%define tpls_mpicc   /opt/tpls/skylake-gnu-openmpi-lapack-static-32/bin/mpicc
+%define tpls_mpicxx  /opt/tpls/skylake-gnu-openmpi-lapack-static-32/bin/mpicxx 
+%define tpls_mpifort /opt/tpls/skylake-gnu-openmpi-lapack-static-32/bin/mpifort 
 
 # Compiler Flags
-%define tpls_cflags   -O2 -m64 -fno-fast-math -fPIC -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
-%define tpls_cxxflags   -O2 -m64 -fno-fast-math -fPIC -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
-%define tpls_fcflags   -O2 -m64 -fno-fast-math -fPIC -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
-%define tpls_ldflags    -L/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64  -Wl,-rpath,/opt/tpls/skylake-gnu-openmpi-cuda-shared-32/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64
+%define tpls_cflags    -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-lapack-static-32/include
+%define tpls_cxxflags  -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-lapack-static-32/include
+%define tpls_fcflags   -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-openmpi-lapack-static-32/include
+%define tpls_ldflags    -L/opt/tpls/skylake-gnu-openmpi-lapack-static-32/lib -lpciaccess
 %define tpls_arflags   -cru
 %define tpls_ompflag    -fopenmp
 
 # the netlib reference implementations
-%define tpls_blas   /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/libblas.so
-%define tpls_lapack  /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/liblapack.so
-%define tpls_scalapack /opt/tpls/skylake-gnu-openmpi-cuda-shared-32/libscalapack.so
+%define tpls_blas   /opt/tpls/skylake-gnu-openmpi-lapack-static-32/libblas.a
+%define tpls_lapack  /opt/tpls/skylake-gnu-openmpi-lapack-static-32/liblapack.a
+%define tpls_scalapack /opt/tpls/skylake-gnu-openmpi-lapack-static-32/libscalapack.a
 
 # the MKL setup
-%define tpls_mkl_linker_flags   -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core  -lgomp  -lpthread -lm -ldl
-%define tpls_mkl_mpi_linker_flags  -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lmkl_blacs_openmpi_lp64  -lgomp -lpthread -lm -ldl
+%define tpls_mkl_linker_flags    -Wl,--start-group /opt/intel/oneapi/mkl/latest/lib/libmkl_intel_lp64.a /opt/intel/oneapi/mkl/latest/lib/libmkl_gnu_thread.a /opt/intel/oneapi/mkl/latest/lib/libmkl_core.a -Wl,--end-group  -lgomp -lpthread -lm -ldl
+%define tpls_mkl_mpi_linker_flags  /opt/intel/oneapi/mkl/latest/lib/libmkl_scalapack_lp64.a  -Wl,--start-group /opt/intel/oneapi/mkl/latest/lib/libmkl_intel_lp64.a /opt/intel/oneapi/mkl/latest/lib/libmkl_gnu_thread.a /opt/intel/oneapi/mkl/latest/lib/libmkl_core.a -Wl,--end-group /opt/intel/oneapi/mkl/latest/lib/libmkl_blacs_openmpi_lp64.a  -lgomp -lpthread -lm -ldl
 
 ########################################################################
 # ENVIRONMENT SETUP                                                    #
@@ -110,6 +110,7 @@ fi;
 %define tpls_maxprocs 64
 
 %define tpls_env \
+    PKG_CONFIG_PATH=%{tpls_prefix}lib/pkgconfig \
 	LD=%{tpls_ld}   \
 	AR=%{tpls_ar}   \
 	CC=%{tpls_cc}   \
@@ -130,14 +131,17 @@ fi;
 
 # delete-la-tool
 %define tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
+%global openmpi_version 5.0.1
+%global hwloc_version   2.10.0
+
 Name:           tpls-%{tpls_flavor}-openmpi
-Version:        5.0.1
+Version:        %{openmpi_version}
 Release:        1%{?dist}
 Summary:        A powerful implementation of MPI/SHMEM
 
 License:        BSD
 URL:            https://www.open-mpi.org/
-Source0:        https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-%{version}.tar.bz2
+Source0:        https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-%{openmpi_version}.tar.bz2
 
 BuildRequires: make
 BuildRequires: tpls-%{tpls_flavor}-libevent
@@ -148,8 +152,7 @@ Requires:      %{tpls_rpm_fc}  >= %{tpls_comp_minver}
 Requires:      tpls-%{tpls_flavor}-libevent
 AutoReqProv:   %{tpls_auto_req_prov}
 
-BuildRequires: tpls-%{tpls_flavor}-hwloc
-Requires:      tpls-%{tpls_flavor}-hwloc
+Requires:      tpls-%{tpls_flavor}-hwloc == %{hwloc_version}
 
 BuildRequires: libpciaccess-devel
 Requires: libpciaccess-devel
@@ -189,8 +192,44 @@ Requires:      tpls-%{tpls_flavor}-openmpi == %{version}
 %description doc
 Documentation files for OpenMPI
 
+%package -n tpls-%{tpls_flavor}-hwloc
+Release:        1%{?dist}
+Version:        %{hwloc_version}
+License:        BSD
+Summary:        Portable Hardware Locality
+AutoReqProv:   %{tpls_auto_req_prov}
+BuildRequires: tpls-%{tpls_flavor}-libevent
+Requires: tpls-%{tpls_flavor}-libevent
+
+%if "%{tpls_gpu}" == "cuda"
+BuildRequires: nvhpc-cuda-multi 
+Requires:      nvhpc-cuda-multi 
+%elif "%{tpls_gpu}" == "rocm"
+BuildRequires: rocm-hip-sdk
+BuildRequires: rocsolver-devel
+BuildRequires: rocblas-devel
+BuildRequires: hip-runtime-amd
+Requires: rocm-hip-sdk
+Requires: rocsolver-devel
+Requires: rocblas-devel
+Requires: hip-runtime-amd
+%endif
+
+
+%description -n tpls-%{tpls_flavor}-hwloc
+The Portable Hardware Locality (hwloc) software package provides a portable abstraction (across OS, versions, architectures, ...) of the hierarchical topology of modern architectures, including NUMA memory nodes (DRAM, HBM, non-volatile memory, CXL, etc.), sockets, shared caches, cores and simultaneous multithreading. It also gathers various system attributes such as cache and memory information as well as the locality of I/O devices such as network interfaces, InfiniBand HCAs or GPUs.
+
+hwloc primarily aims at helping applications with gathering information about increasingly complex parallel computing platforms so as to exploit them accordingly and efficiently. For instance, two tasks that tightly cooperate should probably be placed onto cores sharing a cache. However, two independent memory-intensive tasks should better be spread out onto different sockets so as to maximize their memory throughput. As described in this paper, OpenMP threads have to be placed according to their affinities and to the hardware characteristics. MPI implementations apply similar techniques while also adapting their communication strategies to the network locality as described in this paper or this one.
+
+hwloc may also help many applications just by providing a portable CPU and memory binding API and a reliable way to find out how many cores and/or hardware threads are available.
+
+%package -n tpls-%{tpls_flavor}-hwloc-doc
+Summary: Documentation files for hwloc
+%description -n tpls-%{tpls_flavor}-hwloc-doc
+Documentation files for hwloc
+
 %prep
-%setup -q -n openmpi-%{version}
+%setup -q -n openmpi-%{openmpi_version}
 
 %build
 
@@ -212,8 +251,6 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
    FC=%{tpls_fc} \
    F77=%{tpls_fc} \
    --enable-mpi-fortran \
-   --with-hwloc=%{tpls_prefix} \
-   --with-hwloc-libdir=%{tpls_prefix}/lib \
 %if "%{tpls_libs}" == "static"
    --enable-static \
    --disable-shared \
@@ -418,7 +455,6 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/lib/libmpi_usempi_ignore_tkr.a
 %{tpls_prefix}/lib/libmpi_usempif08.a
 %{tpls_prefix}/lib/libopen-pal.a
-#%{tpls_prefix}/lib/libpmix.a
 %{tpls_prefix}/lib/libprrte.a
 %{tpls_prefix}/lib/openmpi/libompi_dbg_msgq.a
 %else
@@ -437,9 +473,6 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/lib/libprrte.so
 %{tpls_prefix}/lib/libprrte.so.*
 %{tpls_prefix}/lib/openmpi/libompi_dbg_msgq.so
-#%{tpls_prefix}/lib/pmix/pmix_mca_pcompress_zlib.so
-#%{tpls_prefix}/lib/pmix/pmix_mca_prm_default.so
-#%{tpls_prefix}/lib/pmix/pmix_mca_prm_slurm.so
 %endif
 %{tpls_prefix}/lib/mpi.mod
 %{tpls_prefix}/lib/mpi_ext.mod
@@ -972,6 +1005,49 @@ make %{?_smp_mflags} test
 %{tpls_prefix}/share/man/man5/openpmix.5
 %{tpls_prefix}/share/man/man5/prte.5
 %{tpls_prefix}/share/man/man7/Open-MPI.7
+
+%files -n tpls-%{tpls_flavor}-hwloc
+%{tpls_prefix}/bin/hwloc*
+%{tpls_prefix}/bin/lstopo
+%{tpls_prefix}/bin/lstopo-no-graphics
+%{tpls_prefix}/include/hwloc.h
+%{tpls_prefix}/include/hwloc/autogen/config.h
+%{tpls_prefix}/include/hwloc/*.h
+%if "%{tpls_libs}" == "static"
+%{tpls_prefix}/lib/libhwloc.a
+%{tpls_prefix}/lib/libpmix.a
+%else
+%{tpls_prefix}/lib/libhwloc.so
+%{tpls_prefix}/lib/libhwloc.so.*
+%{tpls_prefix}/lib/libpmix.so
+%{tpls_prefix}/lib/libpmix.so.*
+%endif
+%{tpls_prefix}/lib/pkgconfig/hwloc.pc
+%{tpls_prefix}/sbin/hwloc-dump-hwdata
+%{tpls_prefix}/share/hwloc/hwloc-valgrind.supp
+%{tpls_prefix}/share/hwloc/hwloc-dump-hwdata.service
+
+%files -n tpls-%{tpls_flavor}-hwloc-doc
+%{tpls_prefix}/share/bash-completion/completions/hwloc
+%{tpls_prefix}/share/doc/hwloc/dynamic_SVG_example.html
+%{tpls_prefix}/share/doc/hwloc/hwloc-a4.pdf
+%{tpls_prefix}/share/doc/hwloc/hwloc-letter.pdf
+%{tpls_prefix}/share/hwloc/hwloc-ps.www/README
+%{tpls_prefix}/share/hwloc/hwloc-ps.www/assets/index.html
+%{tpls_prefix}/share/hwloc/hwloc-ps.www/assets/main.css
+%{tpls_prefix}/share/hwloc/hwloc-ps.www/assets/script.js
+%{tpls_prefix}/share/hwloc/hwloc-ps.www/assets/style.css
+%{tpls_prefix}/share/hwloc/hwloc-ps.www/client.js
+%{tpls_prefix}/share/hwloc/hwloc-ps.www/package.json
+%{tpls_prefix}/share/hwloc/hwloc.dtd
+%{tpls_prefix}/share/hwloc/hwloc2-diff.dtd
+%{tpls_prefix}/share/hwloc/hwloc2.dtd
+%{tpls_prefix}/share/man/man1/hw*
+%{tpls_prefix}/share/man/man1/lstopo-no-graphics.1
+%{tpls_prefix}/share/man/man1/lstopo.1
+%{tpls_prefix}/share/man/man3/HWLOC*
+%{tpls_prefix}/share/man/man3/hw*
+%{tpls_prefix}/share/man/man7/hwloc.7
 
 %changelog
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 5.0.1-1

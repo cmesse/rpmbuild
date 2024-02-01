@@ -1,9 +1,9 @@
 flavor:
   host: skylake
   compiler: gnu
-  mpi: openmpi
-  gpu: cuda
-  libs: shared 
+  mpi: mpich
+  gpu: lapack
+  libs: static 
   int: 32
 
 flags:

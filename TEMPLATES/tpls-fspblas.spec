@@ -63,12 +63,12 @@ echo 'FCFLAGS       = %{tpls_fcflags} -diag-disable 8291' >> Makefile
 %else
 echo 'FCFLAGS       = %{tpls_fcflags}' >> Makefile
 %endif
-echo 'LDFLAGS       = %{tpls_ldflags} -lblas' >> Makefile
+echo 'LDFLAGS       = %{tpls_ldflags}' >> Makefile
 echo 'FSPBLASLIB    = libfspblas.a' >> Makefile
 %else
 echo 'FC            = %{tpls_fc}' >> Makefile
 echo 'FCFLAGS       = %{tpls_fcflags} -fPIC' >> Makefile
-echo 'LDFLAGS       = %{tpls_ldflags} %{tpls_rpath} -lblas' >> Makefile
+echo 'LDFLAGS       = %{tpls_ldflags}' >> Makefile
 echo 'FSPBLASLIB    = libfspblas.so' >> Makefile
 %endif
 
@@ -114,7 +114,7 @@ echo >> Makefile
 
 # Rule to compile test source files into executables
 echo '$(TESTS): %: %.f $(ERRCHK)' >> Makefile
-echo '	$(FC) $(LDFLAGS) $(FSPBLASLIB) $(FCFLAGS) -o $@ $< $(ERRCHK)' >> Makefile
+echo '	$(FC) $(FCFLAGS)  $<   $(ERRCHK)  $(FSPBLASLIB)  $(LDFLAGS)  %{tpls_lapack} %{tpls_blas} -o $@' >> Makefile
 
 echo >> Makefile
 
@@ -122,11 +122,11 @@ echo >> Makefile
 echo '$(ERRCHK): %.o: %.f' >> Makefile
 echo '	$(FC) $(FCFLAGS) -c $< -o $@' >> Makefile
 
-
 # build the library
 make %{?_smp_mflags} lib
 
 %check
+cd fspblas-%{version}
 make %{?_smp_mflags} tests
 pushd ./test
 LD_LIBRARY_PATH=.. ./runtests

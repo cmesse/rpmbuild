@@ -19,8 +19,10 @@ BuildRequires:  %{tpls_rpm_cc}  >= %{tpls_comp_minver}
 BuildRequires:  %{tpls_rpm_fc}  >= %{tpls_comp_minver}
 
 %if "%{tpls_gpu}" == "lapack"
+BuildRequires:  tpls-%{tpls_flavor}-blas
 BuildRequires:  tpls-%{tpls_flavor}-lapack
 BuildRequires:  tpls-%{tpls_flavor}-scalapack
+Requires:       tpls-%{tpls_flavor}-blas
 Requires:       tpls-%{tpls_flavor}-lapack
 Requires:       tpls-%{tpls_flavor}-scalapack
 %else
@@ -151,7 +153,7 @@ done
 pwd
 %if "%{tpls_libs}" == "static"
 %{tpls_ar} %{tpls_arflags} ../../lib/libpord.a *.o
-%{tpls_ranlib} ../../lib/libpord.a
+ranlib ../../lib/libpord.a
 %else
 %{tpls_mpicc} -shared -o ../../lib/libpord.so *.o -Wl,-soname,libpord.so -Wl,-z,defs
 %endif 

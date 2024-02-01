@@ -30,7 +30,7 @@ BuildRequires:  pcre2-devel
 Requires:       pcre2
 AutoReqProv:   %{tpls_auto_req_prov}
 
-%if   "%{tpls_mpi}" == "openempi"
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
 %elif "%{tpls_mpi}" == "mpich"
@@ -39,7 +39,7 @@ Requires:       tpls-%{tpls_flavor}-mpich
 %elif "%{tpls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
-BuildRequires:  intel-oneapi-mpi
+Requires:  intel-oneapi-mpi
 %endif
 
 AutoReqProv:    %{tpls_auto_req_prov}
@@ -108,14 +108,21 @@ make config \
 %build
 
 pushd build/Linux-x86_64
-%{tpls_env} \
+
 CC=%{tpls_mpicc} \
 CXX=%{tpls_mpicxx} \
 FC=%{tpls_mpifort} \
 %{tpls_cmake} . \
+	-DCMAKE_C_COMPILER=%{tpls_cc} \
+    -DCMAKE_C_FLAGS="%{tpls_cflags}" \
+    -DCMAKE_CXX_COMPILER=%{tpls_cxx} \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
+    -DCMAKE_Fortran_COMPILER=%{tpls_fc} \
+    -DCMAKE_Fortran_FLAGS="%{tpls_fcflags}" \
 %if "%{tpls_libs}" == "static"
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
+	-DSHARED=OFF \
     -DCMAKE_C_FLAGS="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags} -DNDEBUG" \
     -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -DNDEBUG" \
@@ -123,10 +130,18 @@ FC=%{tpls_mpifort} \
 %else
 	-DBUILD_STATIC_LIBS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
+	-DSHARED=ON \
     -DCMAKE_C_FLAGS="%{tpls_cflags} -fPIC -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{tpls_cflags}  -fPIC -DNDEBUG" \
     -DCMAKE_CXX_FLAGS="%{tpls_cxxflags} -fPIC -DNDEBUG" \
     -DCMAKE_CXX_FLAGS_RELEASE="%{tpls_cxxflags} -fPIC -DNDEBUG" \
+%if "%{tpls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+%endif
 %endif
 	-DOPENMP=ON
 popd

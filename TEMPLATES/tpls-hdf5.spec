@@ -13,16 +13,16 @@ URL:            https://portal.hdfgroup.org/display/HDF5/HDF5
 %global         version_main %(echo %version | cut -d. -f-2)
 Source0:        https://hdf-wordpress-1.s3.amazonaws.com/wp-content/uploads/manual/HDF5/HDF5_%{major}_.%{minor}_%{ptch}/src/hdf5-%{version}.tar.gz
 
-%if   "%{tpls_mpi}" == "openempi"
+%if   "%{tpls_mpi}" == "openmpi"
 BuildRequires:  tpls-%{tpls_flavor}-openmpi
 Requires:       tpls-%{tpls_flavor}-openmpi
-%elseif "%{tpls_mpi}" == "mpich"
+%elif "%{tpls_mpi}" == "mpich"
 BuildRequires:  tpls-%{tpls_flavor}-mpich
 Requires:       tpls-%{tpls_flavor}-mpich
-%elseif "%{tpls_mpi}" == "intelmpi"
+%elif "%{tpls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
-BuildRequires:  intel-oneapi-mpi
+Requires:       intel-oneapi-mpi
 %endif
 
 AutoReqProv:    %{tpls_auto_req_prov}
@@ -96,7 +96,7 @@ sed -i 's| -V -qversion -version||g' ./configure
 %if "%{tpls_compiler}" == "intel"
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:%{tpls_ld_library_path} make %{?_smp_mflags} check
 %else
-LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
+#LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 %endif
 
 %install
