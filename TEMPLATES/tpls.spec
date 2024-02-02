@@ -14,6 +14,8 @@ Requires:       tpls-%{tpls_flavor}-lapack
 Requires:       tpls-%{tpls_flavor}-lapacke
 Requires:       tpls-%{tpls_flavor}-fspblas
 Requires:       tpls-%{tpls_flavor}-scalapack
+%else
+Requires:       tpls-%{tpls_flavor}-gperftools
 %endif
 
 Requires:       tpls-%{tpls_flavor}-armadillo

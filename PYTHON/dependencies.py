@@ -61,10 +61,10 @@ def compilation_order(dependencies, packages):
 # Create a directed graph
 G = nx.DiGraph()
 
-LAPACK = False
+LAPACK = True
 OPENMPI = False
-MPICH = False
-SLATE = True
+MPICH = True
+SLATE = False
 
 lapack = [ "lapack", "fspblas", "scalapack" ]
 slate = [ "testsweeper", "lapackpp", "blaspp", "slate"]
@@ -118,6 +118,7 @@ dependencies = [
     ("mumps", "scotch"),
     ("arpack", "cmake"),
     ("superlu", "cmake"),
+    ("blaze", "cmake"),
     ("scotch", "cmake"),
     ("metis", "cmake"),
     ("suitesparse","cmake"),
@@ -204,7 +205,8 @@ if (OPENMPI or MPICH):
         ("netcdf", mpiimpl ),
         ("exodus", mpiimpl ),
         ("petsc", mpiimpl),
-        ("fftw", mpiimpl)
+        ("fftw", mpiimpl),
+        ("butterflypack", mpiimpl),
     ]
 
     for p in mpi:

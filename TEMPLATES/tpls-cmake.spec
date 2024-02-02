@@ -26,7 +26,6 @@ BuildRequires:  git
 BuildRequires:  ncurses-devel
 
 Requires:       ncurses
-Requires:       intel-oneapi
 
 %description
 CMake is used to control the software compilation process using simple
