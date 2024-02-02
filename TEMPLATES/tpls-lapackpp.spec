@@ -82,6 +82,23 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
     -Dgpu_backend=hip \
 %endif
 %endif
+%if "%{tpls_gpu}" == "lapack"
+%if "%{tpls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+%endif
+%else
+%if "%{tpls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib  -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib " \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib " \
+%endif
+%endif
     ..
 
 %make_build
@@ -89,7 +106,11 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
 
 %check
 cd build
+%if "%{tpls-gpu}" == "lapack"
 LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
+%else
+LD_LIBRARY_PATH=%{tpls_ld_library_path}:%{tpls_mklroot}/lib make %{?_smp_mflags} check
+%endif
 
 %install
 cd build

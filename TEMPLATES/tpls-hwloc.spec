@@ -82,7 +82,6 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP" \
 %else
 	--disable-rocm \
 %endif
-	--enable-pci \
 	--disable-opencl \
 	--disable-gl \
 	--disable-levelzero \

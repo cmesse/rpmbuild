@@ -5,7 +5,7 @@ Summary:        Library for compressed numerical arrays with high throughput R/W
 
 License:        BSD-3-Clause
 URL:            https://computation.llnl.gov/projects/floating-point-compression
-Source0:        https://github.com/LLNL/%{name}/archive/%{version}/zfp-%{version}.tar.gz
+Source0:        https://github.com/LLNL/zfp/archive/%{version}/zfp-%{version}.tar.gz
 Patch0:         zfp_no_cuda_version_check.patch
 
 BuildRequires:  tpls-%{tpls_flavor}-cmake

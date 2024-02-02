@@ -5,7 +5,7 @@ Summary:        [brief description]
 
 License:        zlib
 URL:            https://github.com/leethomason/tinyxml2
-Source0:        https://github.com/leethomason/tinyxml2/releases/tag/%{version}.tar.gz
+Source0:        https://github.com/leethomason/tinyxml2/archive/refs/tags/%{version}.tar.gz
 
 BuildRequires:  tpls-%{tpls_flavor}-cmake
 
