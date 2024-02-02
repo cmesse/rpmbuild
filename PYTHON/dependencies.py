@@ -106,7 +106,8 @@ packages = [
          "blaze",
          "vtk",
          "butterflypack",
-         "strumpack"]
+         "strumpack",
+         "petsc"]
 
 
 if( LAPACK ):
@@ -153,7 +154,16 @@ dependencies = [
     ("strumpack", "butterflypack"),
     ("strumpack", "metis"),
     ("strumpack", "scotch"),
-    ("strumpack", "zfp")]
+    ("strumpack", "zfp"),
+    ("petsc", "cmake"),
+    ("petsc", "gmp"),
+    ("petsc", "mpfr"),
+    ("petsc", "fftw"),
+    ("petsc", "metis"),
+    ("petsc", "scotch"),
+    ("petsc", "strumpack"),
+    ("petsc", "googletest"),
+    ("petsc", "hdf5")]
 
 if SLATE :
     slate_dependencies = [
@@ -179,6 +189,8 @@ if SLATE :
         for p in slate_lapack_dependencies:
             packages.append(p)
 
+
+
 if (OPENMPI or MPICH):
 
     if( OPENMPI ) :
@@ -198,6 +210,7 @@ if (OPENMPI or MPICH):
         ("mumps", mpiimpl),
         ("netcdf", mpiimpl ),
         ("exodus", mpiimpl ),
+        ("petsc", mpiimpl)
     ]
 
     for p in mpi:
@@ -218,7 +231,9 @@ if LAPACK :
         ("scalapack", "cmake"),
         ("scalapack", "lapack"),
         ("scalapack", mpiimpl),
-        ("blaze", "lapack")]
+        ("blaze", "lapack"),
+        ("petsc", "lapack"),
+        ("petsc", "scalapack")]
 
     for d in lapack_dependencies :
         dependencies.append( d )

@@ -9,6 +9,18 @@ Source0:        http://www.fftw.org/fftw-%{version}.tar.gz
 
 BuildRequires:  %{tpls_rpm_fc}  >= %{tpls_comp_minver}
 
+%if   "%{tpls_mpi}" == "openmpi"
+BuildRequires:  tpls-%{tpls_flavor}-openmpi
+Requires:       tpls-%{tpls_flavor}-openmpi
+%elif "%{tpls_mpi}" == "mpich"
+BuildRequires:  tpls-%{tpls_flavor}-mpich
+Requires:       tpls-%{tpls_flavor}-mpich
+%elif "%{tpls_mpi}" == "intelmpi"
+BuildRequires:  intel-oneapi-mpi
+BuildRequires:  intel-oneapi-mpi-devel
+Requires:  intel-oneapi-mpi
+%endif
+
 %description
 FFTW is a C subroutine library for computing the Discrete Fourier
 Transform (DFT) in one or more dimensions, of both real and complex
@@ -18,8 +30,6 @@ data, and of arbitrary input size.
 %setup -q -n fftw-%{version}
 
 %build
-
-
 
 %{expand: %setup_tpls_env}
 
@@ -47,7 +57,7 @@ sed -i 's|-fopenmp|-mp|g' configure
 
 for ((i=0; i<2; i++)) ; do
 mkdir build_${prec_name[i]} && cd build_${prec_name[i]}
-%{tpls_env} ../configure \
+%{tpls_env} PATH=%{tpls_prefix}/bin:$PATH ../configure \
 			--prefix=%{tpls_prefix} \
 %if "%{tpls_libs}" == "static"
             --enable-static  \
@@ -59,6 +69,7 @@ mkdir build_${prec_name[i]} && cd build_${prec_name[i]}
             --disable-dependency-tracking \
             --enable-openmp \
             --disable-threads \
+            --enable-mpi \
             ${prec_flags[i]}
             
     make %{?_smp_mflags}
@@ -74,7 +85,7 @@ prec_name[2]=long
 prec_name[3]=quad
 for ((i=0; i<2; i++)) ; do
 	cd build_${prec_name[i]}
-%make_install
+PATH=%{tpls_prefix}/bin:$PATH %make_install
 	cd ..
 done
 %{tpls_remove_la_files}
@@ -87,7 +98,7 @@ prec_name[2]=long
 prec_name[3]=quad
 for ((i=0; i<2; i++)) ; do
 	cd build_${prec_name[i]}
-	make %{?_smp_mflags} check
+	PATH=%{tpls_prefix}/bin:$PATH make %{?_smp_mflags} check
 	cd ..
 done
 
@@ -97,11 +108,9 @@ done
 %{tpls_prefix}/bin/fftw-wisdom
 %{tpls_prefix}/bin/fftw-wisdom-to-conf
 %{tpls_prefix}/bin/fftwf-wisdom
-%{tpls_prefix}/include/fftw3.f
-%{tpls_prefix}/include/fftw3.f03
-%{tpls_prefix}/include/fftw3.h
-%{tpls_prefix}/include/fftw3l.f03
-%{tpls_prefix}/include/fftw3q.f03
+%{tpls_prefix}/include/fftw*.f
+%{tpls_prefix}/include/fftw*.f03
+%{tpls_prefix}/include/fftw*.h
 %{tpls_prefix}/lib/cmake/fftw3/FFTW3Config.cmake
 %{tpls_prefix}/lib/cmake/fftw3/FFTW3ConfigVersion.cmake
 %{tpls_prefix}/lib/cmake/fftw3/FFTW3fConfig.cmake
@@ -111,6 +120,8 @@ done
 %{tpls_prefix}/lib/libfftw3_omp.a
 %{tpls_prefix}/lib/libfftw3f.a
 %{tpls_prefix}/lib/libfftw3f_omp.a
+%{tpls_prefix}/lib/libfftw3_mpi.a
+%{tpls_prefix}/lib/libfftw3f_mpi.a
 %else
 %{tpls_prefix}/lib/libfftw3.so
 %{tpls_prefix}/lib/libfftw3.so.*
@@ -120,6 +131,10 @@ done
 %{tpls_prefix}/lib/libfftw3f.so.*
 %{tpls_prefix}/lib/libfftw3f_omp.so
 %{tpls_prefix}/lib/libfftw3f_omp.so.*
+%{tpls_prefix}/lib/libfftw3_mpi.so
+%{tpls_prefix}/lib/libfftw3_mpi.so.*
+%{tpls_prefix}/lib/libfftw3f_mpi.so
+%{tpls_prefix}/lib/libfftw3f_mpi.so.*
 %endif
 %{tpls_prefix}/lib/pkgconfig/fftw3.pc
 %{tpls_prefix}/lib/pkgconfig/fftw3f.pc

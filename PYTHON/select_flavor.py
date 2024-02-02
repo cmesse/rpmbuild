@@ -11,9 +11,28 @@ def read_yaml(file_path):
 
 
 def flavor(config):
-    flavor_order = ['host', 'compiler', 'mpi', 'gpu', 'libs', 'int']
-    return '-'.join([str(config['flavor'][key]) for key in flavor_order])
+    flavor_order = ['host', 'compiler', 'mpi' ]
 
+    flav =  '-'.join([str(config['flavor'][key]) for key in flavor_order])
+
+    gpu = config['flavor']['gpu']
+
+    if gpu == "lapack":
+        flav = "%s-debug".format(flav)
+    else:
+        flav = "%s-%s".format(flav, gpu )
+
+    libs = config['flavor']['libs']
+
+    if libs == "static":
+        flav = "%s-static".format(flav)
+
+
+    int = config['flavor']['int']
+
+    if int == "64" :
+        flav = "%s-ilp64".format(flav)
+    return flav
 
 def prefix(config):
     return '/opt/tpls/{:s}'.format( flavor(config) )
