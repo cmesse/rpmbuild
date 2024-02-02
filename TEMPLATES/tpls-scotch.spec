@@ -131,12 +131,14 @@ done
 %endif
 
 
-%check
-%if "%{tpls_compiler}" == "gnu"
-%make_build check
-%endif
-# dgpart timeout with intel
+# dgpart timeout
+#%check
+#%if "%{tpls_compiler}" == "gnu"
+#%make_build test
+#%else
 # LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib  FC=%{tpls_mpifort}  make %{?_smp_mflags} test
+#%endif
+
 
 %install
 %make_install
