@@ -57,7 +57,10 @@ sed -i 's|-fopenmp|-mp|g' configure
 
 for ((i=0; i<2; i++)) ; do
 mkdir build_${prec_name[i]} && cd build_${prec_name[i]}
-%{tpls_env} PATH=%{tpls_prefix}/bin:$PATH ../configure \
+
+%{tpls_env} \
+MPICC=%{tpls_mpicc} \
+PATH=%{tpls_prefix}/bin:$PATH ../configure \
 			--prefix=%{tpls_prefix} \
 %if "%{tpls_libs}" == "static"
             --enable-static  \
@@ -75,7 +78,6 @@ mkdir build_${prec_name[i]} && cd build_${prec_name[i]}
     make %{?_smp_mflags}
     cd ..
 done  
-            
 
 %install
 # Precisions to build
@@ -101,8 +103,6 @@ for ((i=0; i<2; i++)) ; do
 	PATH=%{tpls_prefix}/bin:$PATH make %{?_smp_mflags} check
 	cd ..
 done
-
-
 
 %files
 %{tpls_prefix}/bin/fftw-wisdom

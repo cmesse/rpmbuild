@@ -7,6 +7,16 @@ License:        (LGPLv2+ or BSD) and LGPLv2+ and GPLv2+
 URL:            http://faculty.cse.tamu.edu/davis/suitesparse.html
 Source0:        https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/refs/tags/v%{version}.tar.gz
 
+
+BuildRequires:  %{tpls_rpm_cc}   >= %{tpls_comp_minver}
+BuildRequires:  %{tpls_rpm_cxx}  >= %{tpls_comp_minver}
+BuildRequires:  %{tpls_rpm_fc}   >= %{tpls_comp_minver}
+
+%if "%{tpls_compiler}" == "intel"
+BuildRequires:  intel-oneapi-openmp  >= %{tpls_comp_minver}
+Requires:       intel-oneapi-openmp  >= %{tpls_comp_minver}
+%endif
+
 BuildRequires:  tpls-%{tpls_flavor}-cmake
 BuildRequires:  tpls-%{tpls_flavor}-gmp
 BuildRequires:  tpls-%{tpls_flavor}-mpfr

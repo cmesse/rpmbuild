@@ -138,6 +138,8 @@ cd build
 %exclude %{tpls_prefix}/lib/external_packages/MPI/MPIConfigVersion.cmake
 %exclude %{tpls_prefix}/lib/external_packages/Netcdf/NetcdfConfig.cmake
 %exclude %{tpls_prefix}/lib/external_packages/Netcdf/NetcdfConfigVersion.cmake
+%exclude %{tpls_prefix}/lib/tests
+%exclude %{tpls_prefix}/lib/*.py
 %if "%{tpls_libs}" == "static"
 %{tpls_prefix}/lib/libexodus.a
 %exclude %{tpls_prefix}/lib/libexoIIv2c.a

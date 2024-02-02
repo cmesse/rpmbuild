@@ -39,7 +39,33 @@ SLATE will provide coverage of existing LAPACK and ScaLAPACK functionality, incl
 
 SLATE is built on top of standards, such as MPI and OpenMP, and de facto-standard industry solutions such as NVIDIA CUDA and AMD HIP. SLATE also relies on high performance implementations of numerical kernels from vendor libraries, such as Intel MKL, IBM ESSL, NVIDIA cuBLAS, and AMD rocBLAS. SLATE interacts with these libraries through a layer of C++ APIs. This figure shows SLATE's position in the ECP software stack.
 
+
+
+
+%if "%{tpls_compiler}" == "intel"
+%if "%{tpls_libs}" == "static"
+%define slate_mpi_ldflags -L%{tpls_prefix}/lib -L%{tpls_comproot}/lib
+%else
+%define slate_mpi_ldflags -L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib
+%endif
+%else
+%if "%{tpls_libs}" == "static"
+%define slate_mpi_ldflags -L%{tpls_prefix}/lib
+%else
+%define slate_mpi_ldflags -L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib
+%endif
+%endif
+
+%if "%{tpls_gpu}" == "cuda"
+%if "%{tpls_libs}" == "static"
+%define slate_gpu_ldflags -L%{tpls_cuda}/lib64 -L%{tpls_cudamath}/lib64 %{tpls_cuda}/lib64/libcudart_static.a %{tpls_cudamath}/lib64/libcusolver_static.a
+%else
+%define slate_gpu_ldflags -L%{tpls_cuda}/lib64  -Wl,-rpath,%{tpls_cuda}/lib64 -L%{tpls_cudamath}/lib64 -Wl,-rpath,%{tpls_cudamath}/lib64 %{tpls_cuda}/lib64/libcudart.so %{tpls_cudamath}/lib64/libcusolver.so
+%endif
+%endif
+
 %prep
+
 
 if [ "%{tpls_gpu}" == "lapack" ]; then
     echo "Error: We only want to compile slate when using cuda or rocm"
@@ -50,6 +76,18 @@ fi
 %patch0 -p1
 
 %build
+
+%if "%{tpls_gpu}" == "cuda"
+%if "%{tpls_libs}" == "static"
+    sed -i "s|CUDA::cudart|%{tpls_cuda}/lib64/libcudart_static.a|g" CMakeLists.txt
+    sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas_static.a -llzma -lbz2 -lz|g" CMakeLists.txt
+    sed -i "s|CUDA::cusolver|%{tpls_cudamath}/lib64/libcusolver_static.a|g" CMakeLists.txt
+%else
+    sed -i "s|CUDA::cudart|%{tpls_cuda}/lib64/libcudart.so|g" CMakeLists.txt
+    sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas.so -llzma -lbz2 -lz|g" CMakeLists.txt
+    sed -i "s|CUDA::cusolver|%{tpls_cudamath}/lib64/libcusolver.so|g" CMakeLists.txt
+%endif
+%endif
 
 mkdir build && cd build
 %{tpls_env} \
@@ -100,18 +138,13 @@ mkdir build && cd build
 %else
 	-DBUILD_SHARED_LIBS=ON \
 	-DMKL_LINK=dynamic \
-%if "%{tpls_compiler}" == "intel"
-%if "%{tpls_mpi}" == "intelmpi"
-	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mpiproot}/lib -Wl,-rpath,%{tpls_mpiproot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
-	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mpiproot}/lib -Wl,-rpath,%{tpls_mpiroot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%if "%{tpls_gpu}" == "lapack"
+	-DCMAKE_SHARED_LINKER_FLAGS="%{slate_mpi_ldflags}" \
+	-DCMAKE_EXE_LINKER_FLAGS="%{slate_mpi_ldflags}" \
 %else
-	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
-	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_SHARED_LINKER_FLAGS="%{slate_gpu_ldflags} %{slate_mpi_ldflags}" \
+	-DCMAKE_EXE_LINKER_FLAGS="%{slate_gpu_ldflags} %{slate_mpi_ldflags}" \
 %endif
-%else
-	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
-	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
-%endif	
 %endif
 	-DMPI_CXX_COMPILER=%{tpls_mpicxx} \
 %if "%{tpls_mpi}" == "intelmpi"

@@ -7,6 +7,15 @@ License:        BSD-2-Clause
 URL:            https://petsc.org/
 Source:         https://web.cels.anl.gov/projects/petsc/download/release-snapshots/petsc-%{version}.tar.gz
 
+BuildRequires:  %{tpls_rpm_cc}   >= %{tpls_comp_minver}
+BuildRequires:  %{tpls_rpm_cxx}  >= %{tpls_comp_minver}
+BuildRequires:  %{tpls_rpm_fc}   >= %{tpls_comp_minver}
+
+%if "%{tpls_compiler}" == "intel"
+BuildRequires:  intel-oneapi-openmp  >= %{tpls_comp_minver}
+Requires:       intel-oneapi-openmp  >= %{tpls_comp_minver}
+%endif
+
 %if "%{tpls_gpu}" == "lapack"
 BuildRequires:  tpls-%{tpls_flavor}-blas
 BuildRequires:  tpls-%{tpls_flavor}-lapack
@@ -60,6 +69,7 @@ Examples for PETSC
 %build
 %{expand: %setup_tpls_env}
 
+echo comp: "%{tpls_compiler}"
 unset CC
 unset CXX
 unset FC
@@ -69,6 +79,7 @@ unset CXXFLAGS
 unset FFLAGS
 unset CPP
 unset AR
+unset PETSC_DIR
 ./configure \
     --prefix=%{tpls_prefix} \
 	--enable-cxx \
@@ -83,10 +94,14 @@ unset AR
 %endif
     --CPP="%{tpls_cc} -E" \
 	--CC=%{tpls_mpicc} \
-	--CFLAGS="%{tpls_cflags}" \
 	--CXXCPP=="%{tpls_cxx} -E" \
 	--CXX=%{tpls_mpicxx} \
+	--CFLAGS="%{tpls_cflags}" \
 	--CXXFLAGS="%{tpls_cxxflags}" \
+%if "%{tpls_gpu}" == "cuda"
+	--CUDAC=%{tpls_nvcc} \
+    --CUDAFLAGS="-I%{tpls_cudamath}/include -I%{tpls_cuda}/include" \
+%endif
 	--FC=%{tpls_mpifort} \
 	--FFLAGS="%{tpls_fcflags}" \
 %if "%{tpls_compiler}" == "gnu"
@@ -127,7 +142,7 @@ unset AR
 %if  "%{tpls_compiler}" == "intel"
     --CUDAFLAGS="%{tpls_nvccflags}" \
 %endif
-%elif  "%{tpls_gpu}" == "rocm"
+%elif "%{tpls_gpu}" == "rocm"
     --with-hip-dir=%{tpls_prefix} \
 %endif
 %if "%{tpls_gpu}" == "lapack"
@@ -156,36 +171,34 @@ unset AR
     --with-mpfr-dir=%{tpls_prefix} \
     --with-metis-include=%{tpls_prefix}/include \
     --with-parmetis-include=%{tpls_prefix}/include \
+    --with-zfp-include=%{tpls_prefix}/include \
     --with-strumpack-include=%{tpls_prefix}/include \
 %if "%{tpls_libs}" == "static"
     --with-metis-lib="%{tpls_prefix}/lib/libmetis.a" \
     --with-scotch-lib="%{tpls_prefix}/lib/libscotch.a,%{tpls_prefix}/lib/libscotcherr.a" \
     --with-parmetis-lib="%{tpls_prefix}/lib/libparmetis.a" \
+    --with-zfp-lib="%{tpls_prefix}/lib/libzfp.a" \
     --with-strumpack-lib="%{tpls_prefix}/lib/libstrumpack.a" \
 %else
     --with-metis-lib="%{tpls_prefix}/lib/libmetis.so" \
     --with-scotch-lib="%{tpls_prefix}/lib/libscotch.so,%{tpls_prefix}/lib/libscotcherr.so" \
     --with-parmetis-lib="%{tpls_prefix}/lib/libparmetis.so" \
+    --with-zfp-lib="%{tpls_prefix}/lib/libzfp.so" \
     --with-strumpack-lib="%{tpls_prefix}/lib/libstrumpack.so" \
 %endif
-%if "%{tpls_gpu}" == "cuda"
-    --with-slate-dir=%{tpls_prefix} \
-%elif "%{tpls_gpu}" == "rocm"
-    --with-slate-dir=%{tpls_prefix} \
-%endif
-    --with-superlu-dir=%{tpls_prefix} \
-    --with-zfp-dir=%{tpls_prefix} \
-%if  "%{tpls_compiler}" == "gnu"
+%if "%{tpls_compiler}" == "gnu"
     --with-openmp-include=/usr/include/ \
     --with-openmp-lib=/usr/lib64/libgomp.so.1 \
-%elif  "%{tpls_compiler}" == "intel"
+%endif
+%if "%{tpls_compiler}" == "intel"
     --with-openmp-include=%{tpls_comproot}/include \
 %if "%{tpls_libs}" == "static"
     --with-openmp-lib=%{tpls_comproot}/lib/libiomp5.a \
 %else
     --with-openmp-lib=%{tpls_comproot}/lib/libiomp5.so \
 %endif
-%elif  "%{tpls_compiler}" == "nvidia"
+%endif
+%if  "%{tpls_compiler}" == "nvidia"
     --with-openmp-include=%{tpls_comproot}/include \
 %if "%{tpls_libs}" == "static"
     --with-openmp-lib=%{tpls_comproot}/lib/libnvomp.a \
@@ -193,8 +206,8 @@ unset AR
     --with-openmp-lib=%{tpls_comproot}/lib/libnvomp.so \
 %endif
 %endif
-  --with-zlib-include=/usr/include \
-  --with-zlib-lib=/usr/lib64/libz.so
+    --with-zlib-include=/usr/include \
+    --with-zlib-lib=/usr/lib64/libz.so
 
 %make_build
 

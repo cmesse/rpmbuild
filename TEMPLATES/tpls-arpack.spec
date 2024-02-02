@@ -76,7 +76,7 @@ FC=%{tpls_mpifort} \
 	-DBUILD_STATIC_LIBS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
 	-DTESTS=ON \
-%if "%{tpls_int}" == 32
+%if "%{tpls_int}" == "32"
 	-DINTERFACE64=OFF \
 %else
 	-DINTERFACE64=ON \

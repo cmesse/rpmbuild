@@ -3,7 +3,7 @@ flavor:
   compiler: gnu
   mpi: mpich
   gpu: lapack
-  libs: static 
+  libs: shared
   int: 32
 
 flags:

@@ -14,14 +14,19 @@ Patch0:         cmake_icpx.patch
 
 BuildRequires:  %{tpls_rpm_cc}   >= %{tpls_comp_minver}
 BuildRequires:  %{tpls_rpm_cxx}  >= %{tpls_comp_minver}
-BuildRequires:  %{tpls_rpm_fc}  >= %{tpls_comp_minver}
+BuildRequires:  %{tpls_rpm_fc}   >= %{tpls_comp_minver}
+
+%if "%{tpls_compiler}" == "intel"
+BuildRequires:  intel-oneapi-openmp  >= %{tpls_comp_minver}
+Requires:       intel-oneapi-openmp  >= %{tpls_comp_minver}
+%endif
 
 BuildRequires:  sed
 BuildRequires:  git
 BuildRequires:  ncurses-devel
 
 Requires:       ncurses
-
+Requires:       intel-oneapi
 
 %description
 CMake is used to control the software compilation process using simple

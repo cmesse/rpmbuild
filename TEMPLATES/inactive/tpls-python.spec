@@ -24,6 +24,7 @@ BuildRequires:  intel-oneapi-compiler-dpcpp-cpp
 BuildRequires:  intel-oneapi-compiler-fortran
 BuildRequires:  intel-oneapi-mkl
 BuildRequires:  intel-oneapi-mkl-devel
+BuildRequires:  intel-oneapi
 
 %description
 Python %{pybasever} is an accessible, high-level, dynamically typed, interpreted

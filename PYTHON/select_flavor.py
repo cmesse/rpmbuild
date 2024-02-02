@@ -18,20 +18,20 @@ def flavor(config):
     gpu = config['flavor']['gpu']
 
     if gpu == "lapack":
-        flav = "%s-debug".format(flav)
+        flav = "{:s}-debug".format(flav)
     else:
-        flav = "%s-%s".format(flav, gpu )
+        flav = "{:s}-{:s}".format(flav, gpu )
 
     libs = config['flavor']['libs']
 
     if libs == "static":
-        flav = "%s-static".format(flav)
+        flav = "{:s}-static".format(flav)
 
 
     int = config['flavor']['int']
 
     if int == "64" :
-        flav = "%s-ilp64".format(flav)
+        flav = "{:s}-ilp64".format(flav)
     return flav
 
 def prefix(config):
@@ -192,17 +192,27 @@ def write_binaries(file,config):
 
 def write_mpi_binaries(file,config):
     file.write('\n# MPI wrappers\n')
+    libs = str(config['flavor']['libs'])
     if str(config['flavor']['mpi']) == 'intelmpi' :
         pref = mpiroot(config)
         file.write('%define tpls_mpicc   {:s}/bin/mpiicx \n'.format(pref ))
         file.write('%define tpls_mpicxx  {:s}/bin/mpiicpx \n'.format(pref))
         file.write('%define tpls_mpifort {:s}/bin/mpiifx \n'.format(pref))
         file.write('%define tpls_mpiroot {:s} \n'.format(pref))
+        if libs == 'static':
+            file.write('%define tpls_mpilib {:s}/lib/libmpi.a \n'.format(pref))
+        else:
+            file.write('%define tpls_mpilib {:s}/lib/libmpi.so \n'.format(pref))
     else:
         pref= prefix( config )
         file.write('%define tpls_mpicc   {:s}/bin/mpicc\n'.format(pref ))
         file.write('%define tpls_mpicxx  {:s}/bin/mpicxx \n'.format(pref))
         file.write('%define tpls_mpifort {:s}/bin/mpifort \n'.format(pref))
+        file.write('%define tpls_mpiroot {:s} \n'.format(pref))
+        if libs == 'static':
+            file.write('%define tpls_mpilib {:s}/lib/libmpi.a \n'.format(pref))
+        else:
+            file.write('%define tpls_mpilib {:s}/lib/libmpi.so \n'.format(pref))
 def write_compiler_flags( file, config ):
     file.write('\n# Compiler Flags\n')
     # flavor information
@@ -270,6 +280,8 @@ def write_compiler_flags( file, config ):
         ldflags += ' -L{:s}/lib64 -L{:s}/lib64'.format( cuda, math )
         rpath += ' -Wl,-rpath,{:s}/lib64 -Wl,-rpath,{:s}/lib64'.format( cuda, math )
         file.write('%define tpls_nvcc   {:s}/bin/nvcc\n'.format( cuda ) )
+        file.write('%define tpls_cuda  {:s}\n'.format(cuda))
+        file.write('%define tpls_cudamath  {:s}\n'.format(math))
         if compiler == 'intel' :
             file.write('%define tpls_nvccflags   -allow-unsupported-compiler\n')
     elif gpu == 'rocm' :
@@ -318,16 +330,22 @@ def write_mkl(file,config) :
     file.write('%define tpls_mkl_mpi_linker_flags  {:s}\n'.format(mkl_mpi_linker_flags(config)))
 
 
-def write_arpack(file, config ) :
+def write_libs(file, config ) :
     libs = str(config['flavor']['libs'])
     if libs == 'static':
         arpack = '{:s}/lib/libarpack.a'.format(prefix(config))
         parpack = '{:s}/lib/libparpack.a'.format(prefix(config))
+        superlu = '{:s}/lib/libsuperlu.a'.format(prefix(config))
+        metis = '{:s}/lib/libmetis.a'.format(prefix(config))
     else:
         arpack = '{:s}/lib/libarpack.so'.format(prefix(config))
         parpack = '{:s}/lib/libparpack.so'.format(prefix(config))
+        superlu = '{:s}/lib/libsuperlu.so'.format(prefix(config))
+        metis = '{:s}/lib/libmetis.so'.format(prefix(config))
     file.write('%define tpls_arpack {:s}\n'.format(arpack))
     file.write('%define tpls_parpack {:s}\n'.format(parpack))
+    file.write('%define tpls_superlu {:s}\n'.format(superlu))
+    file.write('%define tpls_metis {:s}\n'.format(metis))
 
 
 
@@ -349,7 +367,7 @@ def main():
         write_compiler_flags(file, config)
         write_netlib(file, config)
         write_mkl(file, config)
-        write_arpack(file, config)
+        write_libs(file, config)
 
 if __name__ == '__main__':
     main()

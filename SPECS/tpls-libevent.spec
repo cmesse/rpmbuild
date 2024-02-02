@@ -2,73 +2,79 @@
 # FLAVOR SPECIFIC DEFINES                                             #
 #######################################################################
 
-%define tpls_flavor skylake-gnu-mpich-lapack-static-32 
+%define tpls_flavor cascadelake-intel-intelmpi-cuda 
 
-%define tpls_host skylake 
-%define tpls_compiler gnu 
-%define tpls_mpi mpich 
-%define tpls_gpu lapack 
-%define tpls_libs static 
+%define tpls_host cascadelake 
+%define tpls_compiler intel 
+%define tpls_mpi intelmpi 
+%define tpls_gpu cuda 
+%define tpls_libs shared 
 %define tpls_int 32 
-%define tpls_comp_minver 11.4.1 
+%define tpls_comp_minver 2024.0.1 
 
-%define tpls_rpm_cc gcc 
-%define tpls_rpm_cxx gcc-c++ 
-%define tpls_rpm_fc gfortran 
+%define tpls_rpm_cc intel-oneapi-compiler-dpcpp-cpp 
+%define tpls_rpm_cxx intel-oneapi-compiler-dpcpp-cpp 
+%define tpls_rpm_fc intel-oneapi-compiler-fortran 
 %define tpls_auto_req_prov yes
 
 # important paths
-%define tpls_prefix /opt/tpls/skylake-gnu-mpich-lapack-static-32 
-%define tpls_includes /opt/tpls/skylake-gnu-mpich-lapack-static-32/includes 
-%define tpls_libdir /opt/tpls/skylake-gnu-mpich-lapack-static-32/lib 
-%define tpls_comproot /usr 
+%define tpls_prefix /opt/tpls/cascadelake-intel-intelmpi-cuda 
+%define tpls_includes /opt/tpls/cascadelake-intel-intelmpi-cuda/includes 
+%define tpls_libdir /opt/tpls/cascadelake-intel-intelmpi-cuda/lib 
+%define tpls_comproot /opt/intel/oneapi/compiler/latest 
 %define tpls_mklroot  /opt/intel/oneapi/mkl/latest 
 %define tpls_cuda  /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda 
 %define tpls_rocm  /opt/rocm 
-%define tpls_ld_library_path  /opt/tpls/skylake-gnu-mpich-lapack-static-32/lib 
+%define tpls_ld_library_path  /opt/tpls/cascadelake-intel-intelmpi-cuda/lib:/opt/intel/oneapi/mkl/latest/lib:/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64:/opt/intel/oneapi/compiler/latest/lib 
 
 # compiler executables
-%define tpls_cc gcc 
-%define tpls_cxx g++ 
-%define tpls_fc gfortran 
-%define tpls_ar ar 
-%define tpls_ld ld 
+%define tpls_cc icx 
+%define tpls_cxx icpx 
+%define tpls_fc ifx 
+%define tpls_ar xiar 
+%define tpls_ld xild 
 %define tpls_cpp ld -E 
 %define tpls_cxxcpp ld -E 
 
 # MPI wrappers
-%define tpls_mpicc   /opt/tpls/skylake-gnu-mpich-lapack-static-32/bin/mpicc
-%define tpls_mpicxx  /opt/tpls/skylake-gnu-mpich-lapack-static-32/bin/mpicxx 
-%define tpls_mpifort /opt/tpls/skylake-gnu-mpich-lapack-static-32/bin/mpifort 
+%define tpls_mpicc   /opt/intel/oneapi/mpi/latest/bin/mpiicx 
+%define tpls_mpicxx  /opt/intel/oneapi/mpi/latest/bin/mpiicpx 
+%define tpls_mpifort /opt/intel/oneapi/mpi/latest/bin/mpiifx 
+%define tpls_mpiroot /opt/intel/oneapi/mpi/latest 
+%define tpls_mpilib /opt/intel/oneapi/mpi/latest/lib/libmpi.so 
 
 # Compiler Flags
-%define tpls_cflags    -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-mpich-lapack-static-32/include
-%define tpls_cxxflags  -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-mpich-lapack-static-32/include
-%define tpls_fcflags   -O2 -m64 -fno-fast-math -mtune=skylake -m64 -I/opt/tpls/skylake-gnu-mpich-lapack-static-32/include
-%define tpls_ldflags    -L/opt/tpls/skylake-gnu-mpich-lapack-static-32/lib -lpciaccess
-%define tpls_arflags   -cru
-%define tpls_ompflag    -fopenmp
+%define tpls_nvcc   /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/bin/nvcc
+%define tpls_cuda  /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
+%define tpls_cudamath  /opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs
+%define tpls_nvccflags   -allow-unsupported-compiler
+%define tpls_cflags    -O3 -fp-model precise -Wl,--build-id -Wno-unused-command-line-argument -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_cxxflags  -O3 -fp-model precise -Wl,--build-id -Wno-unused-command-line-argument -fPIC -mtune=cascadelake -I/opt/tpls/cascadelake-intel-intelmpi-cuda/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_fcflags   -O3 -fp-model precise -fPIC -mtune=cascadelake -i4 -I/opt/tpls/cascadelake-intel-intelmpi-cuda/include -I/opt/intel/oneapi/mkl/latest/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/include -I/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/include
+%define tpls_ldflags    -L/opt/tpls/cascadelake-intel-intelmpi-cuda/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -L/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64  -Wl,-rpath,/opt/tpls/cascadelake-intel-intelmpi-cuda/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda/lib64 -Wl,-rpath,/opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs/lib64
+%define tpls_arflags   cru
+%define tpls_ompflag    -qopenmp
 
 # the netlib reference implementations
-%define tpls_blas   /opt/tpls/skylake-gnu-mpich-lapack-static-32/libblas.a
-%define tpls_lapack  /opt/tpls/skylake-gnu-mpich-lapack-static-32/liblapack.a
-%define tpls_scalapack /opt/tpls/skylake-gnu-mpich-lapack-static-32/libscalapack.a
+%define tpls_blas   /opt/tpls/cascadelake-intel-intelmpi-cuda/lib/libblas.so
+%define tpls_lapack  /opt/tpls/cascadelake-intel-intelmpi-cuda/lib/liblapack.so
+%define tpls_scalapack /opt/tpls/cascadelake-intel-intelmpi-cuda/lib/libscalapack.so
 
 # the MKL setup
-%define tpls_mkl_linker_flags    -Wl,--start-group /opt/intel/oneapi/mkl/latest/lib/libmkl_intel_lp64.a /opt/intel/oneapi/mkl/latest/lib/libmkl_gnu_thread.a /opt/intel/oneapi/mkl/latest/lib/libmkl_core.a -Wl,--end-group  -lgomp -lpthread -lm -ldl
-%define tpls_mkl_mpi_linker_flags  /opt/intel/oneapi/mkl/latest/lib/libmkl_scalapack_lp64.a  -Wl,--start-group /opt/intel/oneapi/mkl/latest/lib/libmkl_intel_lp64.a /opt/intel/oneapi/mkl/latest/lib/libmkl_gnu_thread.a /opt/intel/oneapi/mkl/latest/lib/libmkl_core.a -Wl,--end-group /opt/intel/oneapi/mkl/latest/lib/libmkl_blacs_intelmpi_lp64.a  -lgomp -lpthread -lm -ldl
-
+%define tpls_mkl_linker_flags   -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core /opt/intel/oneapi/compiler/latest/lib/libiomp5.so  -lpthread -lm -ldl
+%define tpls_mkl_mpi_linker_flags  -lmkl_scalapack_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blacs_intelmpi_lp64 /opt/intel/oneapi/compiler/latest/lib/libiomp5.so -lpthread -lm -ldl
+%define tpls_arpack /opt/tpls/cascadelake-intel-intelmpi-cuda/lib/libarpack.so
+%define tpls_parpack /opt/tpls/cascadelake-intel-intelmpi-cuda/lib/libparpack.so
+%define tpls_superlu /opt/tpls/cascadelake-intel-intelmpi-cuda/lib/libsuperlu.so
+%define tpls_metis /opt/tpls/cascadelake-intel-intelmpi-cuda/lib/libmetis.so
 ########################################################################
 # ENVIRONMENT SETUP                                                    #
 ########################################################################
 
-
 %global setup_tpls_env \
 # setup the Intel OneAPI \
-if [ "%{tpls_gpu}" != "lapack" ]; then \
-  if [ "$SETVARS_COMPLETED" != "1" ]; then \
-    source /opt/intel/oneapi/setvars.sh intel64; \
-  fi; \
+if [ "$SETVARS_COMPLETED" != "1" ]; then \
+  source /opt/intel/oneapi/setvars.sh intel64; \
 fi; \
 export LD=%{tpls_ld} \
 export AR=%{tpls_ar} \
@@ -83,10 +89,6 @@ export CFLAGS="%{tpls_cflags}" \
 export CXXFLAGS="%{tpls_cxxflags}" \
 export FFLAGS="%{tpls_fcflags}" \
 export FCLAGS="%{tpls_fcflags}" \
-# check if the compilers are in the path \
-if [[ ":$PATH:" != *:%{tpls_comproot}/bin* ]]; then \
-  export PATH="%{tpls_comproot}/bin:$PATH"; \
-fi; \
 # check if CUDA is used and in the path \
 if [ "%{tpls_gpu}" == "cuda" ]; then \
   if [[ ":$PATH:" != *:%{tpls_cuda}/bin* ]]; then \
@@ -102,7 +104,13 @@ fi; \
 # add the TPLS binary directory \
 if [[ ":$PATH:" != *:%{tpls_prefix}/bin* ]]; then \
   export PATH="%{tpls_prefix}/bin:$PATH"; \
-fi;
+fi; \
+if [ -f ./configure ]; then \
+    sed -i "s| -V ||g" ./configure \
+    sed -i "s| -qversion ||g" ./configure \
+    sed -i "s/|)/)/g" ./configure \
+fi
+
 ########################################################################
 # AUTOMATIC MACROS                                                     #
 ########################################################################

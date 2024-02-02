@@ -7,7 +7,6 @@ License:        ASL 2.0
 URL:            http://arma.sourceforge.net/
 Source:         http://sourceforge.net/projects/arma/files/armadillo-%{version}.tar.xz
 
-
 BuildRequires:  tpls-%{tpls_flavor}-arpack
 BuildRequires:  tpls-%{tpls_flavor}-superlu
 BuildRequires:  tpls-%{tpls_flavor}-metis
@@ -58,30 +57,25 @@ than another language like Matlab or Octave.
 # Compiler Settings
 %{expand: %setup_tpls_env}
 %{tpls_env} \
-LDFLAGS='%{tpls_ldflags} -lgfortran' \
+%if "%{tpls_gpu}" == "lapack"
+LDFLAGS="%{tpls_ldflags} %{tpls_metis} %{tpls_lapack} %{tpls_blas}" \
+%else
+LDFLAGS="%{tpls_ldflags} %{tpls_metis} %{tpls_mkl_linker_flags}" \
+%endif
+%if "%{tpls_compiler}" == "gnu"
+LDFLAGS+=" -lgfortran" \
+%endif
 %{tpls_cmake} . \
 %if "%{tpls_libs}" == "static"
 	-DBUILD_SHARED_LIBS=OFF \
-	-DARPACK_LIBRARY=%{tpls_prefix}/lib/libarpack.a \
-	-DSuperLU_LIBRARY=%{tpls_prefix}/lib/libsuperlu.a \
 %else
 	-DBUILD_SHARED_LIBS=ON \
-	-DARPACK_LIBRARY=%{tpls_prefix}/lib/libarpack.so \
-	-DSuperLU_LIBRARY=%{tpls_prefix}/lib/libsuperlu.so \
 %endif
+	-DARPACK_LIBRARY=%{tpls_arpack} \
+	-DSuperLU_LIBRARY=%{tpls_superlu} \
 %if "%{tpls_gpu}" == "lapack"
 	-DBLAS_LIBRARY="%{tpls_blas}" \
 	-DLAPACK_LIBRARY="%{tpls_lapack}" \
-%else
-	-DTPL_BLAS_LIBRARIES="%{tpls_mkl_linker_flags}" \
-%endif
-%if "%{tpls_libs}" == "static"
-%if "%{tpls_compiler}" == "gnu"
-	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -lgfortran" \
-%endif
-%else
-	-DCMAKE_SHARED_LINKER_FLAGS="%{tpls_prefix}/lib/libmetis.so %{tpls_mkl_linker_flags}" \
-	-DCMAKE_EXE_LINKER_FLAGS="%{tpls_prefix}/lib/libmetis.so %{tpls_mkl_linker_flags}" \
 %endif
 	-DALLOW_FLEXIBLAS_LINUX=OFF
 	

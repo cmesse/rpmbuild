@@ -8,9 +8,6 @@ URL:            https://icl.utk.edu/slate/
 Source0:        https://github.com/icl-utk-edu/blaspp/releases/download/v%{version}/blaspp-%{version}.tar.gz
 Patch0:         blaspp_no_testsweep.patch
 Patch1:         blaspp_fix_colors.patch
-Patch2:         blaspp_fix_cuda_static.patch
-Patch3:         blaspp_fix_cuda_shared.patch
-Patch4:         blaspp_fix_rocm_shared.patch
 
 BuildRequires:  tpls-%{tpls_flavor}-testsweeper
 BuildRequires:  %{tpls_rpm_cxx} >= %{tpls_comp_minver}
@@ -58,65 +55,63 @@ which provides a C++ API for LAPACK.
 %setup -q -n blaspp-%{version}
 %patch0 -p1
 %patch1 -p1
-%if "%{tpls_gpu}" == "cuda"
-%if "%{tpls_libs}" == "static"
-%patch2 -p1
-%else
-%patch3 -p1
-%endif
-%endif
-%if "%{tpls_gpu}" == "rocm"
-%patch4 -p1
-%endif
-
-sed -i 's|-O2||g' make.inc.in 
-sed -i 's|@CXXFLAGS@|@CXXFLAGS@ %{tpls_cxxflags} -I%{tpls_prefix}/include|g' make.inc.in 
-sed -i 's|@prefix@|%{tpls_prefix}|g' make.inc.in 
-sed -i 's|@CXX@|%{tpls_cxx}|g' make.inc.in 
-sed -i 's|@LDFLAGS@| @LDFLAGS@ %{tpls_ldflags}|g'  make.inc.in 
-%if "%{tpls_libs}" == "static"
-sed -i 's|static   =|static   = 1|g' make.inc.in 
-%endif
-
 
 %build
 
 %{expand: %setup_tpls_env}
-unset LD
-LDFLAGS="-L/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib"  \
-PATH=%{tpls_prefix}/bin:$PATH \
+
 %if "%{tpls_gpu}" == "cuda"
-python3 configure.py blas=mkl gpu_backend=cuda 
-%elif "%{tpls_gpu}" == "rocm"
-python3 configure.py blas=mkl gpu_backend=rocm 
-%else
 %if "%{tpls_libs}" == "static"
-BLAS_LIBRARIES="%{tpls_prefix}/lib/libcblas.a %{tpls_prefix}/lib/liblapack.a %{tpls_prefix}/lib/libblas.a -lgfortran" python3 configure.py blas=generic gpu_backend=none
+    sed -i "s|CUDA::cudart|%{tpls_cuda}/lib64/libcudart_static.a|g" CMakeLists.txt
+    sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas_static.a|g" CMakeLists.txt
 %else
-LD_LIBRARY_PATH="%{tpls_prefix}/lib" LDFLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix} -lcblas -llapack -lblas -lgfortran" BLAS_LIBRARIES=%{tpls_blas_shared} python3 configure.py blas=generic gpu_backend=none
+    sed -i "s|CUDA::cudart|%{tpls_cuda}/lib64/libcudart.so|g" CMakeLists.txt
+    sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas.so|g" CMakeLists.txt
 %endif
 %endif
 
-%if "%{tpls_compiler}" == "intel"
-sed -i 's|-fopenmp|-qopenmp|g' make.inc
+mkdir build && cd build
+%{tpls_env} \
+%if "%{tpls_gpu}" == "lapack"
+LDFLAGS="%{tpls_scalapack} %{tpls_lapack} %{tpls_blas}" \
+%else
+LDFLAGS="%{tpls_mkl_linker_flags}" \
 %endif
-%if "%{tpls_compiler}" == "nvidia"
-sed -i 's|-fopenmp|-mp|g' make.inc
+%{tpls_cmake}  \
+	-DCMAKE_C_COMPILER=%{tpls_cc} \
+    -DCMAKE_C_FLAGS="%{tpls_cflags}" \
+    -DCMAKE_CXX_COMPILER=%{tpls_cxx} \
+    -DCMAKE_CXX_FLAGS="%{tpls_cxxflags}" \
+%if "%{tpls_libs}" == "static"
+    -DBUILD_SHARED_LIBS=OFF \
+%else
+    -DBUILD_SHARED_LIBS=ON \
 %endif
-
-
+%if "%{tpls_gpu}" == "lapack"
+    -Dblas="generic" \
+    -Dgpu_backend=none \
+%elif "%{tpls_gpu}"== "cuda"
+    -Dblas="Intel MKL" \
+    -Dgpu_backend=cuda \
+%elif "%{tpls_gpu}" == "rocm"
+    -Dblas="Intel MKL" \
+    -Dgpu_backend=hip \
+%endif
+%if "%{tpls_int}" == "32"
+    -Dblas_int="int (LP64)" \
+%else
+    -Dblas_int="int64_t (ILP64)" \
+%endif
+    ..
 
 %make_build
 
-%if "%{tpls_libs}" == "static"
-%{tpls_ar} %{tpls_arflags} ./lib/libblaspp.a ./src/*.o
-ranlib  ./lib/libblaspp.a
-%endif
-
 %check
+cd build
 LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
 
 %install
+cd build
 %make_install
 %{tpls_remove_la_files}
 %if "%{tpls_libs}" == "static"
@@ -174,7 +169,7 @@ install -m 644 ./lib/libblaspp.a %{buildroot}%{tpls_prefix}/lib ;
 %else
 %{tpls_prefix}/lib/libblaspp.so
 %endif
-%{tpls_prefix}/lib/pkgconfig/blaspp.pc
+%{tpls_prefix}/lib/cmake/blaspp
 
 %changelog
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2023.11.05-1

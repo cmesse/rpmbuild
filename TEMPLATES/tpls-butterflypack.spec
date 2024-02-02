@@ -29,9 +29,9 @@ Requires:       tpls-%{tpls_flavor}-blas
 Requires:       tpls-%{tpls_flavor}-lapack
 Requires:       tpls-%{tpls_flavor}-scalapack
 %else
-BuildRequires:  intel-oneapi-mpi-mkl
-BuildRequires:  intel-oneapi-mpi-mkl-devel
-Requires:       intel-oneapi-mpi-mkl
+BuildRequires:  intel-oneapi-mkl
+BuildRequires:  intel-oneapi-mkl-devel
+Requires:       intel-oneapi-mkl
 %endif
 
 %description
@@ -56,18 +56,30 @@ mkdir build && cd build
 	-DTPL_LAPACK_LIBRARIES=%{tpls_lapack} \
 	-DTPL_SCALAPACK_LIBRARIES=%{tpls_scalapack} \
 %else
-    -DTPL_BLAS_LIBRARIES=%{tpls_mkl_linker_flags} \
-	-DTPL_LAPACK_LIBRARIES=%{tpls_mkl_linker_flags} \
-	-DTPL_SCALAPACK_LIBRARIES=%{tpls_mkl_mpi_linker_flags} \
+    -DTPL_BLAS_LIBRARIES="%{tpls_mkl_linker_flags}" \
+	-DTPL_LAPACK_LIBRARIES="%{tpls_mkl_linker_flags}" \
+	-DTPL_SCALAPACK_LIBRARIES="%{tpls_mkl_mpi_linker_flags}" \
 %endif
-    -DTPL_ARPACK_LIBRARIES="%{tpls_parpack};%{tpls_arpack}" \
+    -DTPL_ARPACK_LIBRARIES=%{tpls_arpack} \
 %if "%{tpls_libs}" == "static"
     -DBUILD_SHARED_LIBS=OFF \
 %else
     -DBUILD_SHARED_LIBS=ON \
 %endif
+%if "%{tpls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib %{tpls_parpack} %{tpls_arpack}" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib %{tpls_parpack} %{tpls_arpack}" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib %{tpls_parpack} %{tpls_arpack}" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib %{tpls_parpack} %{tpls_arpack}" \
+%endif
     ..
+
+%if "%{tpls_compiler}" == "intel"
+make
+%else
 %make_build
+%endif
 
 %install
 cd build
