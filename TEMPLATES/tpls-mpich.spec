@@ -113,6 +113,12 @@ Documentation files for OpenMPI
 %{tpls_prefix}/lib/libmpicxx.so.*
 %{tpls_prefix}/lib/libmpifort.so
 %{tpls_prefix}/lib/libmpifort.so.*
+%{tpls_prefix}/lib/libfmpich.so
+%{tpls_prefix}/lib/libmpich.so
+%{tpls_prefix}/lib/libmpichcxx.so
+%{tpls_prefix}/lib/libmpichf90.so
+%{tpls_prefix}/lib/libmpl.so
+%{tpls_prefix}/lib/libopa.so
 %endif
 %{tpls_prefix}/lib/pkgconfig/mpich.pc
 %{tpls_prefix}/share/man/man1/hydra*.1

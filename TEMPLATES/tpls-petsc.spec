@@ -212,7 +212,9 @@ unset PETSC_DIR
 %make_build
 
 %install
-%make_install
+#make PETSC_DIR=%{buildroot}%{tpls_prefix} PETSC_ARCH=arch-linux-c-opt install
+unset PETSC_DIR
+%make_install PETSC_ARCH=arch-linux-c-opt
 
 for f in $(grep "/usr/bin" %{buildroot}%{tpls_prefix}/lib/petsc/bin -rHl ); do
     echo "checking $f"
