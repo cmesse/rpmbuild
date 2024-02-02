@@ -59,8 +59,9 @@ The objective of LAPACK++ is to provide a convenient, performance oriented API f
     sed -i "s|CUDA::cusolver|%{tpls_cudamath}/lib64/libcusolver.so|g" CMakeLists.txt
 %endif
 %elif "%{tpls_gpu}" == "rocm"
-	sed -i "s|roc::rocblas|%{tpls_rocm}/lib/librocblas.so|g" CMakeLists.txt
+	sed -i "s|roc::rocblas|%{tpls_rocm}/lib/librocblas.so %{tpls_rocm}/lib/libhipblas.so %{tpls_rocm}/lib/libhsa-runtime64.so %{tpls_rocm}/lib/libamdhip64.so|g" CMakeLists.txt
 %endif
+
 
 mkdir build && cd build
 %{tpls_env} \
