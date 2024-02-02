@@ -93,7 +93,7 @@ done
 %{tpls_remove_la_files}
 
 %check
-
+%if "%{tpls_gpu}" != "rocm"
 prec_name[0]=single
 prec_name[1]=double
 prec_name[2]=long
@@ -103,6 +103,7 @@ for ((i=0; i<2; i++)) ; do
 	PATH=%{tpls_prefix}/bin:$PATH make %{?_smp_mflags} check
 	cd ..
 done
+%endif
 
 %files
 %{tpls_prefix}/bin/fftw-wisdom

@@ -12,15 +12,25 @@ Patch1:         lapackpp_fix_colors.patch
 BuildRequires:  tpls-%{tpls_flavor}-blaspp == %{version}
 Requires:       tpls-%{tpls_flavor}-blaspp == %{version}
 
-%if "%{tpls_gpu}" == "lapack"
-BuildRequires:  tpls-%{tpls_flavor}-blas
-BuildRequires:  tpls-%{tpls_flavor}-cblas
-BuildRequires:  tpls-%{tpls_flavor}-lapack
-BuildRequires:  tpls-%{tpls_flavor}-lapacke
-Requires:  tpls-%{tpls_flavor}-blas
-Requires:  tpls-%{tpls_flavor}-cblas
-Requires:  tpls-%{tpls_flavor}-lapack
-Requires:  tpls-%{tpls_flavor}-lapacke
+%if "%{tpls_gpu}" == "rocm"
+AutoReqProv: no
+BuildRequires: rocm-hip-sdk
+BuildRequires: rocsolver-devel
+BuildRequires: rocblas-devel
+BuildRequires: hip-runtime-amd
+Requires: rocm-hip-sdk
+Requires: rocsolver-devel
+Requires: rocblas-devel
+Requires: hip-runtime-amd
+Requires: hipblas
+Requires: rocblas
+BuildRequires: intel-oneapi-mkl
+BuildRequires: intel-oneapi-mkl-devel
+Requires:      intel-oneapi-mkl
+%else
+BuildRequires: intel-oneapi-mkl
+BuildRequires: intel-oneapi-mkl-devel
+Requires:      intel-oneapi-mkl
 %endif
 
 %description

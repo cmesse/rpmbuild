@@ -12,17 +12,7 @@ Patch1:         blaspp_fix_colors.patch
 BuildRequires:  tpls-%{tpls_flavor}-testsweeper
 BuildRequires:  %{tpls_rpm_cxx} >= %{tpls_comp_minver}
 
-%if "%{tpls-gpu}" == "lapack"
-BuildRequires:  tpls-%{tpls_flavor}-blas
-BuildRequires:  tpls-%{tpls_flavor}-cblas
-BuildRequires:  tpls-%{tpls_flavor}-lapack
-%elif "%{tpls-gpu}" == "cuda" 
-BuildRequires: nvhpc-cuda-multi
-Requires:      nvhpc-cuda-multi
-BuildRequires: intel-oneapi-mkl
-BuildRequires: intel-oneapi-mkl-devel
-Requires:       intel-oneapi-mkl
-%elif "%{tpls_gpu}" == "rocm"
+%if "%{tpls_gpu}" == "rocm"
 AutoReqProv: no
 BuildRequires: rocm-hip-sdk
 BuildRequires: rocsolver-devel
@@ -37,7 +27,12 @@ Requires: rocblas
 BuildRequires: intel-oneapi-mkl
 BuildRequires: intel-oneapi-mkl-devel
 Requires:      intel-oneapi-mkl
+%else
+BuildRequires: intel-oneapi-mkl
+BuildRequires: intel-oneapi-mkl-devel
+Requires:      intel-oneapi-mkl
 %endif
+
 
 %description
 The Basic Linear Algebra Subprograms (BLAS) have been around for many
