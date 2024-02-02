@@ -82,8 +82,9 @@ LDFLAGS+=" -lgfortran" \
 %make_build
 
 %check
+%if "%{tpls_gpu}" == "cuda"
 LD_LIBRARY_PATH=%{tpls_ld_library_path} make test
-
+%endif
 
 %install
 %make_install
