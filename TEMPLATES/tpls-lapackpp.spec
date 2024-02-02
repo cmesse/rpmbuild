@@ -48,6 +48,8 @@ The objective of LAPACK++ is to provide a convenient, performance oriented API f
     sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas.so|g" CMakeLists.txt
     sed -i "s|CUDA::cusolver|%{tpls_cudamath}/lib64/libcusolver.so|g" CMakeLists.txt
 %endif
+%elif "%{tpls_gpu}" == "rocm"
+	sed -i "s|roc::rocblas|%{tpls_rocm}/lib/librocblas.so|g" CMakeLists.txt
 %endif
 
 mkdir build && cd build
@@ -78,8 +80,10 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
 %endif
 %if "%{tpls_gpu}"== "cuda"
     -Dgpu_backend=cuda \
+    -Dbuild_tests=ON \
 %elif "%{tpls_gpu}" == "rocm"
     -Dgpu_backend=hip \
+    -Dbuild_tests=OFF \
 %endif
 %endif
 %if "%{tpls_gpu}" == "lapack"
@@ -105,10 +109,7 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
 
 
 %check
-cd build
-%if "%{tpls-gpu}" == "lapack"
-LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
-%else
+%if "%{tpls_gpu}" == "cuda"
 LD_LIBRARY_PATH=%{tpls_ld_library_path}:%{tpls_mklroot}/lib make %{?_smp_mflags} check
 %endif
 

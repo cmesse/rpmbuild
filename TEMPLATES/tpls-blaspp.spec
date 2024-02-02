@@ -23,6 +23,7 @@ BuildRequires: intel-oneapi-mkl
 BuildRequires: intel-oneapi-mkl-devel
 Requires:       intel-oneapi-mkl
 %elif "%{tpls_gpu}" == "rocm"
+AutoReqProv: no
 BuildRequires: rocm-hip-sdk
 BuildRequires: rocsolver-devel
 BuildRequires: rocblas-devel
@@ -31,6 +32,8 @@ Requires: rocm-hip-sdk
 Requires: rocsolver-devel
 Requires: rocblas-devel
 Requires: hip-runtime-amd
+Requires: hipblas
+Requires: rocblas
 BuildRequires: intel-oneapi-mkl
 BuildRequires: intel-oneapi-mkl-devel
 Requires:      intel-oneapi-mkl
@@ -74,6 +77,8 @@ which provides a C++ API for LAPACK.
     sed -i "s|CUDA::cudart|%{tpls_cuda}/lib64/libcudart.so|g" CMakeLists.txt
     sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas.so|g" CMakeLists.txt
 %endif
+%elif "%{tpls_gpu}" == "rocm"
+	sed -i "s|roc::rocblas|%{tpls_rocm}/lib/librocblas.so %{tpls_rocm}/lib/libhipblas.so %{tpls_rocm}/lib/libhsa-runtime64.so %{tpls_rocm}/lib/libamdhip64.so|g" CMakeLists.txt
 %endif
 
 mkdir build && cd build
@@ -99,9 +104,11 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
 %elif "%{tpls_gpu}"== "cuda"
     -Dblas="Intel MKL" \
     -Dgpu_backend=cuda \
+    -Dbuild_tests=ON \
 %elif "%{tpls_gpu}" == "rocm"
     -Dblas="Intel MKL" \
     -Dgpu_backend=hip \
+    -Dbuild_tests=OFF \
 %endif
 %if "%{tpls_int}" == "32"
     -Dblas_int="int (LP64)" \
@@ -129,13 +136,12 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
 
 %make_build
 
+%if "%{tpls_gpu}" == "cuda"
 %check
 cd build
-%if "%{tpls-gpu}" == "lapack"
 LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
-%else
-LD_LIBRARY_PATH=%{tpls_ld_library_path}:%{tpls_mklroot}/lib make %{?_smp_mflags} check
 %endif
+
 %install
 cd build
 %make_install
