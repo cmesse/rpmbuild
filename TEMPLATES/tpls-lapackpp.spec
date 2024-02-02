@@ -12,15 +12,25 @@ Patch1:         lapackpp_fix_colors.patch
 BuildRequires:  tpls-%{tpls_flavor}-blaspp == %{version}
 Requires:       tpls-%{tpls_flavor}-blaspp == %{version}
 
-%if "%{tpls_gpu}" == "lapack"
-BuildRequires:  tpls-%{tpls_flavor}-blas
-BuildRequires:  tpls-%{tpls_flavor}-cblas
-BuildRequires:  tpls-%{tpls_flavor}-lapack
-BuildRequires:  tpls-%{tpls_flavor}-lapacke
-Requires:  tpls-%{tpls_flavor}-blas
-Requires:  tpls-%{tpls_flavor}-cblas
-Requires:  tpls-%{tpls_flavor}-lapack
-Requires:  tpls-%{tpls_flavor}-lapacke
+%if "%{tpls_gpu}" == "rocm"
+AutoReqProv: no
+BuildRequires: rocm-hip-sdk
+BuildRequires: rocsolver-devel
+BuildRequires: rocblas-devel
+BuildRequires: hip-runtime-amd
+Requires: rocm-hip-sdk
+Requires: rocsolver-devel
+Requires: rocblas-devel
+Requires: hip-runtime-amd
+Requires: hipblas
+Requires: rocblas
+BuildRequires: intel-oneapi-mkl
+BuildRequires: intel-oneapi-mkl-devel
+Requires:      intel-oneapi-mkl
+%else
+BuildRequires: intel-oneapi-mkl
+BuildRequires: intel-oneapi-mkl-devel
+Requires:      intel-oneapi-mkl
 %endif
 
 %description
@@ -48,6 +58,8 @@ The objective of LAPACK++ is to provide a convenient, performance oriented API f
     sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas.so|g" CMakeLists.txt
     sed -i "s|CUDA::cusolver|%{tpls_cudamath}/lib64/libcusolver.so|g" CMakeLists.txt
 %endif
+%elif "%{tpls_gpu}" == "rocm"
+	sed -i "s|roc::rocblas|%{tpls_rocm}/lib/librocblas.so|g" CMakeLists.txt
 %endif
 
 mkdir build && cd build
@@ -78,8 +90,27 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
 %endif
 %if "%{tpls_gpu}"== "cuda"
     -Dgpu_backend=cuda \
+    -Dbuild_tests=ON \
 %elif "%{tpls_gpu}" == "rocm"
     -Dgpu_backend=hip \
+    -Dbuild_tests=OFF \
+%endif
+%endif
+%if "%{tpls_gpu}" == "lapack"
+%if "%{tpls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib" \
+%endif
+%else
+%if "%{tpls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib  -L%{tpls_comproot}/lib -Wl,-rpath,%{tpls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib " \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{tpls_prefix}/lib -Wl,-rpath,%{tpls_prefix}/lib -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib " \
 %endif
 %endif
     ..
@@ -88,8 +119,9 @@ LDFLAGS="%{tpls_mkl_linker_flags}" \
 
 
 %check
-cd build
-LD_LIBRARY_PATH=%{tpls_ld_library_path} make %{?_smp_mflags} check
+%if "%{tpls_gpu}" == "cuda"
+LD_LIBRARY_PATH=%{tpls_ld_library_path}:%{tpls_mklroot}/lib make %{?_smp_mflags} check
+%endif
 
 %install
 cd build

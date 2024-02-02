@@ -8,7 +8,7 @@ Release:        1%{?dist}
 Summary:        Basic linear algebra for distributed memory systems
 License:        BSD-3-Clause
 URL:            https://icl.bitbucket.io/slate/
-Source0:        https://github.com/icl-utk-edu/slate/releases/download/v%{version}/v%{version}.tar.gz
+Source0:        https://github.com/icl-utk-edu/slate/releases/download/v%{version}/slate-%{version}.tar.gz
 Patch0:         slate_cmake.patch
 
 %if   "%{tpls_mpi}" == "openmpi"
@@ -22,6 +22,28 @@ BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
 Requires:       intel-oneapi-mpi
 %endif
+
+%if "%{tpls_gpu}" == "rocm"
+AutoReqProv: no
+BuildRequires: rocm-hip-sdk
+BuildRequires: rocsolver-devel
+BuildRequires: rocblas-devel
+BuildRequires: hip-runtime-amd
+Requires: rocm-hip-sdk
+Requires: rocsolver-devel
+Requires: rocblas-devel
+Requires: hip-runtime-amd
+Requires: hipblas
+Requires: rocblas
+BuildRequires: intel-oneapi-mkl
+BuildRequires: intel-oneapi-mkl-devel
+Requires:      intel-oneapi-mkl
+%else
+BuildRequires: intel-oneapi-mkl
+BuildRequires: intel-oneapi-mkl-devel
+Requires:      intel-oneapi-mkl
+%endif
+
 
 BuildRequires:  tpls-%{tpls_flavor}-cmake
 BuildRequires:  tpls-%{tpls_flavor}-testsweeper
@@ -64,6 +86,14 @@ SLATE is built on top of standards, such as MPI and OpenMP, and de facto-standar
 %endif
 %endif
 
+%if "%{tpls_gpu}" == "rocm"
+%if "%{tpls_libs}" == "static"
+%define slate_gpu_ldflags -L/opt/rocm/lib -L%{tpls_mklroot}/lib
+%else
+%define slate_gpu_ldflags -L/opt/rocm/lib -Wl,-rpath,/opt/rocm/lib  -L%{tpls_mklroot}/lib -Wl,-rpath,%{tpls_mklroot}/lib
+%endif
+%endif
+
 %prep
 
 
@@ -87,6 +117,8 @@ fi
     sed -i "s|CUDA::cublas|%{tpls_cudamath}/lib64/libcublas.so -llzma -lbz2 -lz|g" CMakeLists.txt
     sed -i "s|CUDA::cusolver|%{tpls_cudamath}/lib64/libcusolver.so|g" CMakeLists.txt
 %endif
+%elif "%{tpls_gpu}" == "rocm"
+	sed -i "s|roc::rocblas|%{tpls_rocm}/lib/librocblas.so|g" CMakeLists.txt
 %endif
 
 mkdir build && cd build

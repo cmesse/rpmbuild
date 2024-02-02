@@ -100,7 +100,11 @@ FC=%{tpls_mpifort} \
 
 %check
 %if "%{tpls_libs}" == "shared"
+%if "%{tpls_gpu}" == "lapack"
 make %{?_smp_mflags} test
+%elif "%{tpls_gpu}" == "cuda"
+make %{?_smp_mflags} test
+%endif
 %endif
 
 %install
