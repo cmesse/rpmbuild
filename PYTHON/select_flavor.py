@@ -210,9 +210,9 @@ def write_mpi_binaries(file,config):
         file.write('%define tpls_mpifort {:s}/bin/mpifort \n'.format(pref))
         file.write('%define tpls_mpiroot {:s} \n'.format(pref))
         if libs == 'static':
-            file.write('%define tpls_mpilib {:s}/lib/libmpi.a \n'.format(pref))
+            file.write('%define tpls_mpilib {:s}/lib/libmpicxx.a {:s}/lib/libmpifort.a {:s}/lib/libmpi.a \n'.format(pref,pref,pref))
         else:
-            file.write('%define tpls_mpilib {:s}/lib/libmpi.so \n'.format(pref))
+            file.write('%define tpls_mpilib {:s}/lib/libmpicxx.so {:s}/lib/libmpifort.so {:s}/lib/libmpi.so \n'.format(pref,pref,pref))
 def write_compiler_flags( file, config ):
     file.write('\n# Compiler Flags\n')
     # flavor information
