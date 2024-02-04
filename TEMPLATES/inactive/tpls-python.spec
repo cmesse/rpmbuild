@@ -4,9 +4,9 @@
 
 %global pybasever 3.12
 
-%define  tpls_host cascadelake
+%define  scls_host cascadelake
 
-Name:           tpls-%{tpls_host}-python
+Name:           scls-%{scls_host}-python
 Version:        3.12.1
 Release:        1%{?dist}
 Summary:        Summary: Python %{version} interpreter compiled with icx
@@ -18,7 +18,7 @@ Source0:        https://www.python.org/ftp/python/%{version}/Python-%{version}.t
 Patch0:         python-3.12.1-shebang.patch
 
 Requires:  intel-oneapi-mkl
-Requires:  tpls-%{tpls_host}-openssl == %{opensslversion}
+Requires:  scls-%{scls_host}-openssl == %{opensslversion}
 
 BuildRequires:  intel-oneapi-compiler-dpcpp-cpp
 BuildRequires:  intel-oneapi-compiler-fortran
@@ -56,8 +56,8 @@ export CXXCPP="icpx -E"
 export FC="ifx -rpath /opt/intel/oneapi/mkl/latest/lib:/opt/intel/oneapi/compiler/latest/lib"
 export F77=$FC
 
-CFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC  -qmkl=parallel " \
-CXXFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC  -qmkl=parallel " \
+CFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC  -qmkl=parallel " \
+CXXFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC  -qmkl=parallel " \
 LIBS="-lpthread /opt/intel/oneapi/compiler/latest/lib/libimf.so /opt/intel/oneapi/compiler/latest/lib/libirc.so -L/opt/python/%{version}/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/intel/oneapi/compiler/latest/lib -Wl,-rpath,/opt/python/%{version}/lib -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/intel/oneapi/compiler/latest/lib/" \
 ./configure \
 	--prefix=/opt/python/%{version} \

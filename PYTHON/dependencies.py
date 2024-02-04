@@ -64,7 +64,7 @@ G = nx.DiGraph()
 LAPACK = True
 OPENMPI = False
 MPICH = True
-SLATE = False
+SLATE = True
 
 lapack = [ "lapack", "fspblas", "scalapack" ]
 slate = [ "testsweeper", "lapackpp", "blaspp", "slate"]
@@ -141,6 +141,8 @@ dependencies = [
     ("googletest", "cmake"),
     ("vtk", "cmake"),
     ("butterflypack", "cmake"),
+    ("butterflypack", "arpack"),
+    ("butterflypack", "zfp"),
     ("strumpack", "cmake"),
     ("strumpack", "butterflypack"),
     ("strumpack", "metis"),
@@ -248,7 +250,7 @@ for rank, package in compilation_order_with_ranks:
     if rank != current_rank:
         current_rank = rank
         print("--- Group ", rank+1, "---")
-    print("#", package)
+    print(package)
     count += 1
 
 print( len( packages ))

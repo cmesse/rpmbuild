@@ -2,14 +2,14 @@ flavor:
   host: cascadelake
   compiler: intel
   mpi: intelmpi
-  gpu: cuda
+  math: cuda
   libs: shared
   int: 32
 
 flags:
-  cc: "-O3 -fp-model precise -Wl,--build-id -Wno-unused-command-line-argument"
-  cxx: "-O3 -fp-model precise -Wl,--build-id -Wno-unused-command-line-argument"
-  fc: "-O3 -fp-model precise"
+  cc: "-fp-model precise -Wl,--build-id -Wno-unused-command-line-argument"
+  cxx: "-fp-model precise -Wl,--build-id -Wno-unused-command-line-argument"
+  fc: "-fp-model precise"
   ar: "cru"
 
 rpm:
@@ -23,8 +23,7 @@ system:
   comp: /opt/intel/oneapi/compiler/latest
   mkl:  /opt/intel/oneapi/mkl/latest
   mpi:  /opt/intel/oneapi/mpi/latest
-  cuda: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
-  math: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs
+  cuda: 24.1
   rocm: /opt/rocm
 
 binaries:

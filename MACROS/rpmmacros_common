@@ -3,27 +3,27 @@
 # AUTOMATIC MACROS                                                     #
 ########################################################################
 
-%define tpls_maxprocs 64
+%define scls_maxprocs 64
 
-%define tpls_env \
-    PKG_CONFIG_PATH=%{tpls_prefix}lib/pkgconfig \
-	LD=%{tpls_ld}   \
-	AR=%{tpls_ar}   \
-	CC=%{tpls_cc}   \
-	CXX=%{tpls_cxx} \
-	FC=%{tpls_fc}   \
-	FF=%{tpls_fc}   \
-	F77=%{tpls_fc} \
-    CFLAGS="%{tpls_cflags}" \
-	CXXFLAGS="%{tpls_cxxflags}" \
-	FCFLAGS="%{tpls_fcflags}"
+%define scls_env \
+    PKG_CONFIG_PATH=%{scls_prefix}lib/pkgconfig \
+	LD=%{scls_ld}   \
+	AR=%{scls_ar}   \
+	CC=%{scls_cc}   \
+	CXX=%{scls_cxx} \
+	FC=%{scls_fc}   \
+	FF=%{scls_fc}   \
+	F77=%{scls_fc} \
+    CFLAGS="%{scls_cflags}" \
+	CXXFLAGS="%{scls_cxxflags}" \
+	FCFLAGS="%{scls_fcflags}"
 		
 # fix the qversion bug in configure
-%define tpls_remove_qversion    sed -i 's| -qversion||'g ./configure ;
+%define scls_remove_qversion    sed -i 's| -qversion||'g ./configure ;
 
 # cmake
-%define tpls_cmake %{tpls_prefix}/bin/cmake -DCMAKE_INSTALL_PREFIX=%{tpls_prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib
+%define scls_cmake %{scls_prefix}/bin/cmake -DCMAKE_INSTALL_PREFIX=%{scls_prefix} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_LIBDIR=lib
 
 
 # delete-la-tool
-%define tpls_remove_la_files    find %{buildroot} -name '*.la' -delete
+%define scls_remove_la_files    find %{buildroot} -name '*.la' -delete

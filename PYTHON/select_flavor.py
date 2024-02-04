@@ -11,16 +11,10 @@ def read_yaml(file_path):
 
 
 def flavor(config):
-    flavor_order = ['host', 'compiler', 'mpi' ]
+    flavor_order = ['host','compiler','mpi', 'math' ]
 
     flav =  '-'.join([str(config['flavor'][key]) for key in flavor_order])
 
-    gpu = config['flavor']['gpu']
-
-    if gpu == "lapack":
-        flav = "{:s}-debug".format(flav)
-    else:
-        flav = "{:s}-{:s}".format(flav, gpu )
 
     libs = config['flavor']['libs']
 
@@ -35,20 +29,25 @@ def flavor(config):
     return flav
 
 def prefix(config):
-    return '/opt/tpls/{:s}'.format( flavor(config) )
+    return '/opt/scls/{:s}'.format( flavor(config) )
 
 def ld_library_path(config):
     path = '{:s}/lib'.format( prefix(config) )
-    gpu = str(config['flavor']['gpu'])
+    math = str(config['flavor']['math'])
     compiler = str(config['flavor']['compiler'])
 	
-    if gpu != 'lapack' :
+    if math != 'lapack' :
         path += ':{:s}/lib'.format( mklroot( config ) )
-    if gpu == 'cuda' :
-        path += ':{:s}/lib64'.format(config['system']['cuda'])
-    elif gpu == 'rocm' :
-        path += ':{:s}/lib'.format(config['system']['rocm'])
-	
+    if math == 'cuda' :
+
+        cudaver = str( str(config['system']['cuda']))
+
+        cuda = '/opt/nvidia/hpc_sdk/Linux_x86_64/{:s}/cuda'.format( str( cudaver ) )
+        math = '/opt/nvidia/hpc_sdk/Linux_x86_64/{:s}/math_libs'.format(str(cudaver))
+
+        path += ':{:s}/lib64'.format(cuda)
+        path += ':{:s}/lib64'.format(math)
+
     if compiler != "gnu" :
         path += ':{:s}/lib'.format(config['system']['comp'])
 		
@@ -151,74 +150,79 @@ def write_flavor(file, config):
     file.write('#######################################################################\n')
     file.write('# FLAVOR SPECIFIC DEFINES                                             #\n')
     file.write('#######################################################################\n\n')
-    file.write('%define tpls_flavor {:s} \n\n'.format(flavor(config)))
-    file.write('%define tpls_host {:s} \n'.format(str(config['flavor']['host'])))
-    file.write('%define tpls_compiler {:s} \n'.format(str(config['flavor']['compiler'])))
-    file.write('%define tpls_mpi {:s} \n'.format(str(config['flavor']['mpi'])))
-    file.write('%define tpls_gpu {:s} \n'.format(str(config['flavor']['gpu'])))
-    file.write('%define tpls_libs {:s} \n'.format(str(config['flavor']['libs'])))
-    file.write('%define tpls_int {:s} \n'.format(str(config['flavor']['int'])))
-    file.write('%define tpls_comp_minver {:s} \n\n'.format(str(config['rpm']['version'])))
-    file.write('%define tpls_rpm_cc {:s} \n'.format(str(config['rpm']['cc'])))
-    file.write('%define tpls_rpm_cxx {:s} \n'.format(str(config['rpm']['cxx'])))
-    file.write('%define tpls_rpm_fc {:s} \n'.format(str(config['rpm']['fc'])))
+    file.write('%define scls_flavor {:s}\n\n'.format(flavor(config)))
+    file.write('%define scls_host {:s}\n'.format(str(config['flavor']['host'])))
+    file.write('%define scls_compiler {:s}\n'.format(str(config['flavor']['compiler'])))
+    file.write('%define scls_mpi {:s}\n'.format(str(config['flavor']['mpi'])))
+    file.write('%define scls_math {:s}\n'.format(str(config['flavor']['math'])))
+    file.write('%define scls_libs {:s}\n'.format(str(config['flavor']['libs'])))
+    file.write('%define scls_index_size {:s}\n'.format(str(config['flavor']['int'])))
+    file.write('%define scls_comp_minver {:s}\n\n'.format(str(config['rpm']['version'])))
+    file.write('%define scls_rpm_cc {:s}\n'.format(str(config['rpm']['cc'])))
+    file.write('%define scls_rpm_cxx {:s}\n'.format(str(config['rpm']['cxx'])))
+    file.write('%define scls_rpm_fc {:s}\n'.format(str(config['rpm']['fc'])))
 
     if  bool(config['rpm']['auto_req_prov']) :
-        file.write('%define tpls_auto_req_prov yes\n')
+        file.write('%define scls_auto_req_prov yes\n')
     else:
-        file.write('%define tpls_auto_req_prov no\n')
+        file.write('%define scls_auto_req_prov no\n')
 
 def write_paths(file, config):
+
+    cuda = str(config['system']['cuda'])
+
     file.write('\n# important paths\n')
 
-    file.write('%define tpls_prefix {:s} \n'.format(prefix(config)))
-    file.write('%define tpls_includes {:s}/includes \n'.format(prefix(config)))
-    file.write('%define tpls_libdir {:s}/lib \n'.format(prefix(config)))
+    file.write('%define scls_prefix {:s}\n'.format(prefix(config)))
+    file.write('%define scls_includes {:s}/includes\n'.format(prefix(config)))
+    file.write('%define scls_libdir {:s}/lib\n'.format(prefix(config)))
 
-    file.write('%define tpls_comproot {:s} \n'.format( str(config['system']['comp'])) )
-    file.write('%define tpls_mklroot  {:s} \n'.format(str(config['system']['mkl'])))
-    file.write('%define tpls_cuda  {:s} \n'.format(str(config['system']['cuda'])))
-    file.write('%define tpls_rocm  {:s} \n'.format(str(config['system']['rocm'])))
-    file.write('%define tpls_ld_library_path  {:s} \n'.format(ld_library_path(config)))
+    file.write('%define scls_comproot {:s}\n'.format( str(config['system']['comp'])) )
+    file.write('%define scls_mklroot  {:s}\n'.format(str(config['system']['mkl'])))
+    file.write('%define scls_cuda      /opt/nvidia/hpc_sdk/Linux_x86_64/{:s}/cuda\n'.format(str(cuda)))
+    file.write('%define scls_cudamath  /opt/nvidia/hpc_sdk/Linux_x86_64/{:s}/math_libs\n'.format(str(cuda)))
+    file.write('%define scls_cuda_version  {:s}\n'.format(str(cuda).replace('.', '-')))
+    file.write('%define scls_cuda_architectures  50;52;53;60;61;62;70;72;75;80;86;87;90\n')
+    file.write('%define scls_ld_library_path  {:s}\n'.format(ld_library_path(config)))
 
 def write_binaries(file,config):
     file.write('\n# compiler executables\n')
     binaries = ['cc', 'cxx', 'fc', 'ar', 'ld' ]
     for key in binaries:
-        file.write('%define tpls_{:s} {:s} \n'.format( key, str(config['binaries'][key] ) ) )
+        file.write('%define scls_{:s} {:s}\n'.format( key, str(config['binaries'][key] ) ) )
 
-    file.write('%define tpls_cpp {:s} -E \n'.format( key, str(config['binaries']['cc'] ) ) )
-    file.write('%define tpls_cxxcpp {:s} -E \n'.format( key, str(config['binaries']['cxx'] ) ) )
+    file.write('%define scls_cpp {:s} -E\n'.format( key, str(config['binaries']['cc'] ) ) )
+    file.write('%define scls_cxxcpp {:s} -E\n'.format( key, str(config['binaries']['cxx'] ) ) )
 
 def write_mpi_binaries(file,config):
     file.write('\n# MPI wrappers\n')
     libs = str(config['flavor']['libs'])
     if str(config['flavor']['mpi']) == 'intelmpi' :
         pref = mpiroot(config)
-        file.write('%define tpls_mpicc   {:s}/bin/mpiicx \n'.format(pref ))
-        file.write('%define tpls_mpicxx  {:s}/bin/mpiicpx \n'.format(pref))
-        file.write('%define tpls_mpifort {:s}/bin/mpiifx \n'.format(pref))
-        file.write('%define tpls_mpiroot {:s} \n'.format(pref))
+        file.write('%define scls_mpicc   {:s}/bin/mpiicx\n'.format(pref ))
+        file.write('%define scls_mpicxx  {:s}/bin/mpiicpx\n'.format(pref))
+        file.write('%define scls_mpifort {:s}/bin/mpiifx\n'.format(pref))
+        file.write('%define scls_mpiroot {:s}\n'.format(pref))
         if libs == 'static':
-            file.write('%define tpls_mpilib {:s}/lib/libmpi.a \n'.format(pref))
+            file.write('%define scls_mpilib {:s}/lib/libmpi.a\n'.format(pref))
         else:
-            file.write('%define tpls_mpilib {:s}/lib/libmpi.so \n'.format(pref))
+            file.write('%define scls_mpilib {:s}/lib/libmpi.so\n'.format(pref))
     else:
         pref= prefix( config )
-        file.write('%define tpls_mpicc   {:s}/bin/mpicc\n'.format(pref ))
-        file.write('%define tpls_mpicxx  {:s}/bin/mpicxx \n'.format(pref))
-        file.write('%define tpls_mpifort {:s}/bin/mpifort \n'.format(pref))
-        file.write('%define tpls_mpiroot {:s} \n'.format(pref))
+        file.write('%define scls_mpicc   {:s}/bin/mpicc\n'.format(pref ))
+        file.write('%define scls_mpicxx  {:s}/bin/mpicxx\n'.format(pref))
+        file.write('%define scls_mpifort {:s}/bin/mpifort\n'.format(pref))
+        file.write('%define scls_mpiroot {:s}\n'.format(pref))
         if libs == 'static':
-            file.write('%define tpls_mpilib {:s}/lib/libmpicxx.a {:s}/lib/libmpifort.a {:s}/lib/libmpi.a \n'.format(pref,pref,pref))
+            file.write('%define scls_mpilibs {:s}/lib/libmpicxx.a {:s}/lib/libmpifort.a {:s}/lib/libmpi.a\n'.format(pref,pref,pref))
         else:
-            file.write('%define tpls_mpilib {:s}/lib/libmpicxx.so {:s}/lib/libmpifort.so {:s}/lib/libmpi.so \n'.format(pref,pref,pref))
+            file.write('%define scls_mpilibs {:s}/lib/libmpicxx.so {:s}/lib/libmpifort.so {:s}/lib/libmpi.so\n'.format(pref,pref,pref))
 def write_compiler_flags( file, config ):
     file.write('\n# Compiler Flags\n')
     # flavor information
     host     = str(config['flavor']['host'])
     compiler = str(config['flavor']['compiler'])
-    gpu      = str(config['flavor']['gpu'])
+    math      = str(config['flavor']['math'])
     libs     = str(config['flavor']['libs'])
     intsize  = int(config['flavor']['int'])
 
@@ -240,7 +244,7 @@ def write_compiler_flags( file, config ):
     fcflags  += ' -mtune={:s}'.format(host)
 
     # check for the MKL interface flag
-    if gpu != 'lapack' and intsize == 64 :
+    if math != 'lapack' and intsize == 64 :
         cflags += ' -DMKL_ILP64'
         cxxflags += ' -DMKL_ILP64'
         fcflags += ' -DMKL_ILP64'
@@ -267,29 +271,24 @@ def write_compiler_flags( file, config ):
     rpath   = ' -Wl,-rpath,{:s}/lib'.format(prefix(config))
 
     # check if we add the mkl includes
-    if gpu != 'lapack' :
+    if math != 'lapack' :
         mkl = mklroot( config )
         includes += ' -I{:s}/include'.format( mkl )
         ldflags += ' -L{:s}/lib'.format( mkl )
         rpath += ' -Wl,-rpath,{:s}/lib'.format(mkl)
 
-    if gpu == 'cuda' :
-        cuda = str( str(config['system']['cuda']))
-        math = str( str(config['system']['math']))
+    if math == 'cuda' :
+        cudaver = str( str(config['system']['cuda']))
+
+        cuda = '/opt/nvidia/hpc_sdk/Linux_x86_64/{:s}/cuda'.format( str( cudaver ) )
+        math = '/opt/nvidia/hpc_sdk/Linux_x86_64/{:s}/math_libs'.format(str(cudaver))
+
         includes += ' -I{:s}/include -I{:s}/include'.format(cuda, math )
         ldflags += ' -L{:s}/lib64 -L{:s}/lib64'.format( cuda, math )
         rpath += ' -Wl,-rpath,{:s}/lib64 -Wl,-rpath,{:s}/lib64'.format( cuda, math )
-        file.write('%define tpls_nvcc   {:s}/bin/nvcc\n'.format( cuda ) )
-        file.write('%define tpls_cuda  {:s}\n'.format(cuda))
-        file.write('%define tpls_cudamath  {:s}\n'.format(math))
-        if compiler == 'intel' :
-            file.write('%define tpls_nvccflags   -allow-unsupported-compiler\n')
-    elif gpu == 'rocm' :
-        rocm = str( str(config['system']['rocm']))
-        includes += ' -I{:s}/include'.format(rocm)
-        ldflags += ' -L{:s}/lib'.format( rocm )
-        rpath += ' -Wl,-rpath,{:s}/lib'.format( rocm )
-    
+        file.write('%define scls_nvcc   {:s}/bin/nvcc\n'.format( cuda ) )
+        file.write('%define scls_nvccflags  -I{:s}/include -I{:s}/include -I{:s}/include\n'.format(prefix( config ), cuda, math ))
+
     if libs == 'shared' :
         ldflags += ' {:s}'.format( rpath )
     else:
@@ -302,12 +301,12 @@ def write_compiler_flags( file, config ):
     fcflags  += includes
 
     # write the flags
-    file.write('%define tpls_cflags    {:s}\n'.format( cflags ))
-    file.write('%define tpls_cxxflags  {:s}\n'.format(cxxflags))
-    file.write('%define tpls_fcflags   {:s}\n'.format(fcflags))
-    file.write('%define tpls_ldflags   {:s}\n'.format(ldflags))
-    file.write('%define tpls_arflags   {:s}\n'.format(str(config['flags']['ar'])))
-    file.write('%define tpls_ompflag   {:s}\n'.format(ompflag(config)))
+    file.write('%define scls_cflags    {:s}\n'.format( cflags ))
+    file.write('%define scls_cxxflags  {:s}\n'.format(cxxflags))
+    file.write('%define scls_fcflags   {:s}\n'.format(fcflags))
+    file.write('%define scls_ldflags   {:s}\n'.format(ldflags))
+    file.write('%define scls_arflags   {:s}\n'.format(str(config['flags']['ar'])))
+    file.write('%define scls_ompflag   {:s}\n'.format(ompflag(config)))
 def write_netlib(file,config) :
     file.write('\n# the netlib reference implementations\n')
     libs  = str(config['flavor']['libs'])
@@ -320,32 +319,24 @@ def write_netlib(file,config) :
         lapack = '{:s}/lib/liblapack.so'.format(prefix(config))
         scalapack = '{:s}/lib/libscalapack.so'.format(prefix(config))
 
-    file.write('%define tpls_blas   {:s}\n'.format(blas))
-    file.write('%define tpls_lapack  {:s}\n'.format(lapack))
-    file.write('%define tpls_scalapack {:s}\n'.format(scalapack))
+    file.write('%define scls_blas   {:s}\n'.format(blas))
+    file.write('%define scls_lapack  {:s}\n'.format(lapack))
+    file.write('%define scls_scalapack {:s}\n'.format(scalapack))
 
 def write_mkl(file,config) :
     file.write('\n# the MKL setup\n')
-    file.write('%define tpls_mkl_linker_flags   {:s}\n'.format(mkl_linker_flags(config)))
-    file.write('%define tpls_mkl_mpi_linker_flags  {:s}\n'.format(mkl_mpi_linker_flags(config)))
+    file.write('%define scls_mkl_linker_flags   {:s}\n'.format(mkl_linker_flags(config)))
+    file.write('%define scls_mkl_mpi_linker_flags  {:s}\n'.format(mkl_mpi_linker_flags(config)))
 
 
-def write_libs(file, config ) :
-    libs = str(config['flavor']['libs'])
-    if libs == 'static':
-        arpack = '{:s}/lib/libarpack.a'.format(prefix(config))
-        parpack = '{:s}/lib/libparpack.a'.format(prefix(config))
-        superlu = '{:s}/lib/libsuperlu.a'.format(prefix(config))
-        metis = '{:s}/lib/libmetis.a'.format(prefix(config))
-    else:
-        arpack = '{:s}/lib/libarpack.so'.format(prefix(config))
-        parpack = '{:s}/lib/libparpack.so'.format(prefix(config))
-        superlu = '{:s}/lib/libsuperlu.so'.format(prefix(config))
-        metis = '{:s}/lib/libmetis.so'.format(prefix(config))
-    file.write('%define tpls_arpack {:s}\n'.format(arpack))
-    file.write('%define tpls_parpack {:s}\n'.format(parpack))
-    file.write('%define tpls_superlu {:s}\n'.format(superlu))
-    file.write('%define tpls_metis {:s}\n'.format(metis))
+def write_libs(file, config):
+    lib_type = 'a' if config['flavor']['libs'] == 'static' else 'so'
+    prefix_path = prefix(config)
+    libs = ['arpack', 'sbutterflypack', 'dbutterflypack', 'cbutterflypack', 'zbutterflypack', 'parpack', 'superlu', 'parmetis', 'metis', 'zfp', 'ptscotch', 'ptscotcherr', 'ptscotcherrexit',  'scotch', 'scotcherr', 'scotcherrexit', 'slate', 'suitesparse', 'strumpack' ]
+
+    for lib in libs:
+        lib_path = f"{prefix_path}/lib/lib{lib}.{lib_type}"
+        file.write(f'%define scls_{lib} {lib_path}\n')
 
 
 
@@ -355,7 +346,7 @@ def main():
         sys.exit(1)
 
     yaml_file =  os.path.expanduser("~") + '/rpmbuild/PYTHON/' + sys.argv[1] + '.yaml' # Get YAML file path from command-line argument
-    output_file = '.tplsmacros'  # Output file name
+    output_file = '.sclsmacros'  # Output file name
     config = read_yaml(yaml_file)
 
     # write the configuration

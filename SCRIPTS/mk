@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-cat ~/.tplsmacros > ~/rpmbuild/SPECS/tpls-$1.spec
-cat ~/rpmbuild/TEMPLATES/tpls-$1.spec >> ~/rpmbuild/SPECS/tpls-$1.spec
-mock -r tpls --rebuild  ~/rpmbuild/SPECS/tpls-$1.spec
+cat ~/.sclsmacros > ~/rpmbuild/SPECS/scls-$1.spec
+cat ~/rpmbuild/TEMPLATES/scls-$1.spec >> ~/rpmbuild/SPECS/scls-$1.spec
+mock -r scls --rebuild  ~/rpmbuild/SPECS/scls-$1.spec

@@ -1,10 +1,10 @@
 %define          pythonversion  3.12.1
-%define          tpls_host cascadelake
+%define          scls_host cascadelake
 %define          pybin /opt/python/%{pythonversion}/bin/python3
 %define          comproot /opt/intel/oneapi/compiler/latest
 %define          mklroot  /opt/intel/oneapi/mkl/latest
 
-Name:           tpls-%{tpls_host}-numpy
+Name:           scls-%{scls_host}-numpy
 Version:        1.26.2
 Release:        1%{?dist}
 Summary:        Python Numpy Library compiled against MKL
@@ -17,9 +17,9 @@ BuildRequires:  intel-oneapi-compiler-dpcpp-cpp
 BuildRequires:  intel-oneapi-compiler-fortran
 BuildRequires:  intel-oneapi-mkl
 BuildRequires:  intel-oneapi-mkl-devel
-BuildRequires:  tpls-%{tpls_host}-python == %{pythonversion}
+BuildRequires:  scls-%{scls_host}-python == %{pythonversion}
 
-Requires:       tpls-%{tpls_host}-python == %{pythonversion}
+Requires:       scls-%{scls_host}-python == %{pythonversion}
 Requires:       intel-oneapi-mkl
 
 %description
@@ -70,8 +70,8 @@ FC=ifx \
 F77=ifx \
 FF=ifx \
 LDFLAGS="-L/opt/python/%{pythonversion}/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/intel/oneapi/compiler/latest/lib  -Wl,-rpath,/opt/python/%{pythonversion}/lib  -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/intel/oneapi/compiler/latest/lib" \
-CFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC -qmkl=parallel" \
-CXXFLAGS="-O3 -fp-model precise -march=%{tpls_host}  -std=c++17 -fPIC  -qmkl=parallel " \
+CFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC -qmkl=parallel" \
+CXXFLAGS="-O3 -fp-model precise -march=%{scls_host}  -std=c++17 -fPIC  -qmkl=parallel " \
 python setup.py build
 
 %install
@@ -82,8 +82,8 @@ FC=ifx \
 F77=ifx \
 FF=ifx \
 LDFLAGS="-L/opt/python/%{pythonversion}/lib -L/opt/intel/oneapi/mkl/latest/lib -L/opt/intel/oneapi/compiler/latest/lib  -Wl,-rpath,/opt/python/%{pythonversion}/lib  -Wl,-rpath,/opt/intel/oneapi/mkl/latest/lib -Wl,-rpath,/opt/intel/oneapi/compiler/latest/lib" \
-CFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC -qmkl=parallel" \
-CXXFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC -std=c++17 -qmkl=parallel" \
+CFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC -qmkl=parallel" \
+CXXFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC -std=c++17 -qmkl=parallel" \
 python setup.py install
 
 

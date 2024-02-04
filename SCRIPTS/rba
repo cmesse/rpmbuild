@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 
-cat ~/.tplsmacros > ~/rpmbuild/SPECS/tpls-$1.spec
-cat ~/rpmbuild/TEMPLATES/tpls-$1.spec >> ~/rpmbuild/SPECS/tpls-$1.spec
-spectool -g -R ~/rpmbuild/SPECS/tpls-$1.spec
-rpmbuild -ba ~/rpmbuild/SPECS/tpls-$1.spec
-
+# Check if no arguments are passed
+if [ "$#" -eq 0 ]; then
+  # Proceed with the rest of the script if a parameter is passed
+  cat ~/.sclsmacros > ~/rpmbuild/SPECS/scls.spec
+  cat ~/rpmbuild/TEMPLATES/scls.spec >> ~/rpmbuild/SPECS/scls.spec
+  spectool -g -R ~/rpmbuild/SPECS/scls.spec
+  rpmbuild -ba ~/rpmbuild/SPECS/scls.spec
+else
+  cat ~/.sclsmacros > ~/rpmbuild/SPECS/scls-$1.spec
+  cat ~/rpmbuild/TEMPLATES/scls-$1.spec >> ~/rpmbuild/SPECS/scls-$1.spec
+  spectool -g -R ~/rpmbuild/SPECS/scls-$1.spec
+  rpmbuild -ba ~/rpmbuild/SPECS/scls-$1.spec
+fi

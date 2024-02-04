@@ -18,15 +18,15 @@ case "$1" in
 esac
 
 # Remove the current ~/.rpmmacros if it exists
-if [ -e ~/.tplsmacros ]; then
-  rm ~/.tplsmacros
+if [ -e ~/.sclsmacros ]; then
+  rm ~/.sclsmacros
 fi
 
 # Create the macro file
 python3 ~/rpmbuild/PYTHON/select_flavor.py $FLAVOR
-cat ~/rpmbuild/MACROS/rpmmacros_${FLAVOR} >> .tplsmacros
-cat ~/rpmbuild/MACROS/rpmmacros_common >> .tplsmacros
-mv .tplsmacros ~/
+cat ~/rpmbuild/MACROS/rpmmacros_${FLAVOR} >> .sclsmacros
+cat ~/rpmbuild/MACROS/rpmmacros_common >> .sclsmacros
+mv .sclsmacros ~/
 
 #clear
 

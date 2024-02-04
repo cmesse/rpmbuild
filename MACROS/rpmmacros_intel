@@ -2,39 +2,31 @@
 # ENVIRONMENT SETUP                                                    #
 ########################################################################
 
-%global setup_tpls_env \
+%global setup_scls_env \
 # setup the Intel OneAPI \
 if [ "$SETVARS_COMPLETED" != "1" ]; then \
   source /opt/intel/oneapi/setvars.sh intel64; \
 fi; \
-export LD=%{tpls_ld} \
-export AR=%{tpls_ar} \
-export CC=%{tpls_cc} \
-export CPP="%{tpls_cc} -E" \
-export CXXCPP="%{tpls_cxx} -E" \
-export CXX=%{tpls_cxx} \
-export FC=%{tpls_fc} \
-export F77=%{tpls_fc} \
-export FF=%{tpls_fc} \
-export CFLAGS="%{tpls_cflags}" \
-export CXXFLAGS="%{tpls_cxxflags}" \
-export FFLAGS="%{tpls_fcflags}" \
-export FCLAGS="%{tpls_fcflags}" \
-# check if CUDA is used and in the path \
-if [ "%{tpls_gpu}" == "cuda" ]; then \
-  if [[ ":$PATH:" != *:%{tpls_cuda}/bin* ]]; then \
-    export PATH="%{tpls_cuda}/bin:$PATH"; \
+export LD=%{scls_ld} \
+export AR=%{scls_ar} \
+export CC=%{scls_cc} \
+export CPP="%{scls_cc} -E" \
+export CXXCPP="%{scls_cxx} -E" \
+export CXX=%{scls_cxx} \
+export FC=%{scls_fc} \
+export F77=%{scls_fc} \
+export FF=%{scls_fc} \
+export CFLAGS="%{scls_cflags}" \
+export CXXFLAGS="%{scls_cxxflags}" \
+export FFLAGS="%{scls_fcflags}" \
+export FCLAGS="%{scls_fcflags}" \
+if [ "%{scls_gpu}" == "cuda" ]; then \
+  if [[ ":$PATH:" != *:%{scls_cuda}/bin* ]]; then \
+    export PATH="%{scls_cuda}/bin:$PATH"; \
   fi; \
 fi; \
-# check if ROCM is used and in the path \
-if [ "%{tpls_gpu}" == "rocm" ]; then \
-  if [[ ":$PATH:" != *:%{tpls_rocm}/bin* ]]; then \
-    export PATH="%{tpls_rocm}/bin:$PATH"; \
-  fi; \
-fi; \
-# add the TPLS binary directory \
-if [[ ":$PATH:" != *:%{tpls_prefix}/bin* ]]; then \
-  export PATH="%{tpls_prefix}/bin:$PATH"; \
+if [[ ":$PATH:" != *:%{scls_prefix}/bin* ]]; then \
+  export PATH="%{scls_prefix}/bin:$PATH"; \
 fi; \
 if [ -f ./configure ]; then \
     sed -i "s| -V ||g" ./configure \

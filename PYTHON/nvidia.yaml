@@ -2,14 +2,14 @@ flavor:
   host: cascadelake
   compiler: nvidia
   mpi: openmpi
-  gpu: cuda
+  math: cuda
   libs: shared
   int: 32
 
 flags:
-  cc: "-O3 -fp-model precise -no-ftz"
-  cxx: "-O3 -fp-model precise -no-ftz"
-  fc: "-O3 -fp-model precise -no-ftz"
+  cc: "-Kieee -prec-div=true -prec-sqrt=true"
+  cxx: "-Kieee -prec-div=true -prec-sqrt=true"
+  fc: "-Kieee -prec-div=true -prec-sqrt=true"
   ar: "-cru"
 
 rpm:
@@ -22,8 +22,7 @@ rpm:
 system:
   comp:  /opt/nvidia/hpc_sdk/Linux_x86_64/latest/compilers
   mkl: /opt/intel/oneapi/mkl/latest
-  cuda: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
-  math: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs
+  cuda: 24.1
   rocm: /opt/rocm
 
 binaries:

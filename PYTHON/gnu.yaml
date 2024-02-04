@@ -1,15 +1,15 @@
 flavor:
   host: skylake
   compiler: gnu
-  mpi: mpich
-  gpu: rocm
+  mpi: openmpi
+  math: mkl
   libs: shared
   int: 32
 
 flags:
-  cc: "-O2 -m64 -fno-fast-math"
-  cxx: "-O2 -m64 -fno-fast-math"
-  fc: "-O2 -m64 -fno-fast-math"
+  cc: "-m64 -fno-fast-math"
+  cxx: "-m64 -fno-fast-math"
+  fc: "-m64 -fno-fast-math"
   ar: "-cru"
 
 rpm:
@@ -22,8 +22,7 @@ rpm:
 system:
   comp: /usr
   mkl: /opt/intel/oneapi/mkl/latest
-  cuda: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/cuda
-  math: /opt/nvidia/hpc_sdk/Linux_x86_64/latest/math_libs
+  cuda: 24.1
   rocm: /opt/rocm
 
 binaries:

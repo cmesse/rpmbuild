@@ -1,7 +1,7 @@
 %define  opensslversion 3.2.0
 %define  pythonversion  3.12.1
 
-Name:           tpls-%{tpls_host}-openssl
+Name:           scls-%{scls_host}-openssl
 Version:        %{opensslversion}
 Release:        1%{?dist}
 Summary:        Utilities from the general purpose cryptography library with TLS implementation
@@ -63,9 +63,9 @@ export CPP="icx -E"
 export CXXCPP="icpx -E"
 export FC="ifx -rpath /opt/intel/oneapi/mkl/latest/lib:/opt/intel/oneapi/compiler/latest/lib"
 export F77=$FC
-export CFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC  -qmkl=parallel -DPURIFY -Wa,--noexecstack -Wl,--allow-multiple-definition"
-export CXXFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC  -qmkl=parallel -DPURIFY -Wa,--noexecstack -Wl,--allow-multiple-definition"
-export FCFLAGS="-O3 -fp-model precise -march=%{tpls_host} -fPIC  -qmkl=parallel "
+export CFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC  -qmkl=parallel -DPURIFY -Wa,--noexecstack -Wl,--allow-multiple-definition"
+export CXXFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC  -qmkl=parallel -DPURIFY -Wa,--noexecstack -Wl,--allow-multiple-definition"
+export FCFLAGS="-O3 -fp-model precise -march=%{scls_host} -fPIC  -qmkl=parallel "
 export F77FLAGS=$FCFLAGS
 export FFLAGS=$FCFLAGS
 export LIBDIR=lib
@@ -98,7 +98,7 @@ cd build && %make_install
 /opt/python/%{pythonversion}/lib/pkgconfig/libcrypto.pc
 /opt/python/%{pythonversion}/lib/pkgconfig/libssl.pc
 /opt/python/%{pythonversion}/lib/pkgconfig/openssl.pc
-%if "%{tpls_libs}" == "static"
+%if "%{scls_libs}" == "static"
 %exclude /opt/python/%{pythonversion}/lib/engines-3/afalg.so
 %exclude /opt/python/%{pythonversion}/lib/engines-3/capi.so
 %exclude /opt/python/%{pythonversion}/lib/engines-3/loader_attic.so
