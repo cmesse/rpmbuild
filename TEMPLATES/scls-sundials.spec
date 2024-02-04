@@ -31,6 +31,8 @@ BuildRequires:  intel-oneapi-openmp  >= %{scls_comp_minver}
 Requires:       intel-oneapi-openmp  >= %{scls_comp_minver}
 %endif
 
+BuildRequires:  scls-%{scls_flavor}-petsc
+Requires:       scls-%{scls_flavor}-petsc
 BuildRequires:  scls-%{scls_flavor}-suitesparse
 Requires:       scls-%{scls_flavor}-suitesparse
 
@@ -106,8 +108,6 @@ LDFLAGS+="%{scls_strumpack} %{scls_slate}  %{scls_sbutterflypack} %{scls_dbutter
     -DSUNDIALS_INSTALL_CMAKEDIR=lib/cmake/sundials \
     -DENABLE_MPI=ON \
     -DENABLE_OPENMP=ON \
-    -DENABLE_PETSC=OFF \
-    -DENABLE_KLU=ON  \
     -DEXAMPLES_ENABLE_C=ON \
     -DEXAMPLES_ENABLE_CXX=ON \
     -DEXAMPLES_INSTALL=ON \
@@ -155,7 +155,10 @@ LDFLAGS+="%{scls_strumpack} %{scls_slate}  %{scls_sbutterflypack} %{scls_dbutter
 %endif
 %endif
 %endif
+    -DENABLE_PETSC=ON \
+    -DENABLE_KLU=ON  \
     -DKLU_INCLUDE_DIR=%{scls_prefix}/include/suitesparse \
+    -DPETSC_DIR=%{scls_prefix} \
 %if "%{scls_libs}" == "static"
     -DKLU_LIBRARY=%{scls_prefix}/lib/libklu.a \
 %else

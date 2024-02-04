@@ -11,10 +11,6 @@ Source0:       https://src.fedoraproject.org/lookaside/pkgs/arpack/arpack-ng-3.9
 
 BuildRequires:  scls-%{scls_flavor}-cmake
 
-%if   "%{scls_mpi}" == "openmpi"
-BuildRequires:  scls-%{scls_flavor}-openmpi
-Requires:       scls-%{scls_flavor}-openmpi
-
 %if "%{scls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
@@ -77,6 +73,11 @@ FC=%{scls_mpifort} \
 	-DLAPACK_LIBRARIES="%{scls_mkl_linker_flags}" \
 %endif
 	-DMPI=ON \
+%if "%{scls_index_size}" == "32"
+	-DINTERFACE64=OFF \
+%else
+	-DINTERFACE64=ON \
+%endif
 %if "%{scls_libs}" == "static"
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -85,11 +86,6 @@ FC=%{scls_mpifort} \
 	-DBUILD_STATIC_LIBS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
 	-DTESTS=ON \
-%if "%{scls_index_size}" == "32"
-	-DINTERFACE64=OFF \
-%else
-	-DINTERFACE64=ON \
-%endif
 %if "%{scls_compiler}" == "intel"
 %if "%{scls_mpi}" == "intelmpi"
 	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mpiproot}/lib -Wl,-rpath,%{scls_mpiproot}/lib -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
@@ -103,7 +99,7 @@ FC=%{scls_mpifort} \
 	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
 %endif
 %endif
-	.
+    .
 
 %make_build
 

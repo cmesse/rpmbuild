@@ -47,7 +47,6 @@ BuildRequires:  scls-%{scls_flavor}-fftw
 BuildRequires:  scls-%{scls_flavor}-hdf5
 BuildRequires:  scls-%{scls_flavor}-metis
 BuildRequires:  scls-%{scls_flavor}-scotch
-BuildRequires:  scls-%{scls_flavor}-strumpack
 BuildRequires:  scls-%{scls_flavor}-googletest
 
 %if "%{scls_math}" == "cuda"
@@ -172,7 +171,6 @@ unset PETSC_DIR
 %else
 	--with-64-bit-blas-indices=1 \
 %endif
-    --with-butterflypack-dir=%{scls_prefix} \
     --with-cmake-dir=%{scls_prefix} \
     --with-fftw-dir=%{scls_prefix} \
     --with-gmp-dir=%{scls_prefix} \
@@ -183,19 +181,16 @@ unset PETSC_DIR
     --with-metis-include=%{scls_prefix}/include \
     --with-parmetis-include=%{scls_prefix}/include \
     --with-zfp-include=%{scls_prefix}/include \
-    --with-strumpack-include=%{scls_prefix}/include \
 %if "%{scls_libs}" == "static"
     --with-metis-lib="%{scls_prefix}/lib/libmetis.a" \
     --with-scotch-lib="%{scls_prefix}/lib/libscotch.a,%{scls_prefix}/lib/libscotcherr.a" \
     --with-parmetis-lib="%{scls_prefix}/lib/libparmetis.a" \
     --with-zfp-lib="%{scls_prefix}/lib/libzfp.a" \
-    --with-strumpack-lib="%{scls_prefix}/lib/libstrumpack.a" \
 %else
     --with-metis-lib="%{scls_prefix}/lib/libmetis.so" \
     --with-scotch-lib="%{scls_prefix}/lib/libscotch.so,%{scls_prefix}/lib/libscotcherr.so" \
     --with-parmetis-lib="%{scls_prefix}/lib/libparmetis.so" \
     --with-zfp-lib="%{scls_prefix}/lib/libzfp.so" \
-    --with-strumpack-lib="%{scls_prefix}/lib/libstrumpack.so" \
 %endif
 %if "%{scls_compiler}" == "gnu"
     --with-openmp-include=/usr/include/ \
