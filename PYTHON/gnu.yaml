@@ -2,7 +2,7 @@ flavor:
   host: skylake
   compiler: gnu
   mpi: openmpi
-  math: lapack
+  math: cuda
   libs: shared
   int: 32
 

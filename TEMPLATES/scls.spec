@@ -51,7 +51,11 @@ Requires:       scls-%{scls_flavor}-blaze
 %if "%{scls_math}" == "lapack"
 Requires:       scls-%{scls_flavor}-fspblas
 %endif
+%if "%{scls_mpi}" != "intelmpi"
+BuildRequires:  scls-%{scls_flavor}-pmix
+%endif
 
+# layer 4
 %if "%{scls_mpi}" == "intelmpi"
 BuildRequires:  intel-oneapi-mpi
 BuildRequires:  intel-oneapi-mpi-devel
@@ -62,7 +66,7 @@ Requires:       scls-%{scls_flavor}-%{scls_mpi}
 %endif
 
 
-# layer 4
+# layer 5
 Requires:       scls-%{scls_flavor}-fftw
 Requires:       scls-%{scls_flavor}-hdf5
 Requires:       scls-%{scls_flavor}-lapackpp
@@ -73,26 +77,26 @@ Requires:       scls-%{scls_flavor}-nlopt
 Requires:       scls-%{scls_flavor}-scalapack
 %endif
 
-# layer 5
+# layer 6
 Requires:       scls-%{scls_flavor}-arpack
 Requires:       scls-%{scls_flavor}-netcdf
 Requires:       scls-%{scls_flavor}-scotch
 Requires:       scls-%{scls_flavor}-slate
 
 
-# layer 6
+# layer 7
 Requires:       scls-%{scls_flavor}-superlu
 Requires:       scls-%{scls_flavor}-butterflypack
 Requires:       scls-%{scls_flavor}-exodus
 Requires:       scls-%{scls_flavor}-mumps
 Requires:       scls-%{scls_flavor}-suitesparse
 
-# layer 7
+# layer 8
 Requires:       scls-%{scls_flavor}-armadillo
 Requires:       scls-%{scls_flavor}-strumpack
 Requires:       scls-%{scls_flavor}-petsc
 
-# layer 8
+# layer 9
 Requires:       scls-%{scls_flavor}-sundials
 
 
