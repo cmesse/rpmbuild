@@ -34,8 +34,6 @@ the Department of Energy as part of its Exascale Computing Initiative
 mkdir -p build && cd build
 %{scls_env} \
 %{scls_cmake} \
-    -DCMAKE_C_COMPILER=%{scls_cc} \
-    -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
     -DCMAKE_CXX_COMPILER=%{scls_cxx} \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
     -Dbuild_tests=ON \

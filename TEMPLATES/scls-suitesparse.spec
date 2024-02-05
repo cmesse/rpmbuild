@@ -95,7 +95,11 @@ matrices.  The package includes the following libraries:
 	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
 %endif
 %endif
+%if "%{scls_math}" != "cuda"
 	-DSUITESPARSE_USE_CUDA=OFF \
+%else
+	-DSUITESPARSE_USE_CUDA=ON \
+%endif
 %if "%{scls_index_size}" == "32"
 	-DSUITESPARSE_USE_64BIT_BLAS=OFF \
 %else
@@ -106,122 +110,38 @@ matrices.  The package includes the following libraries:
 
 %make_build
 
+%check
+%if "%{scls_math}" == "lapack"
+%make_build test
+%else
+LD_LIBRARY_PATH=%{scls_ld_library_path} %make_build test
+%endif
+
 %install
 %make_install
 %{scls_remove_la_files}
 
 %files
 %{scls_prefix}/bin/suitesparse_mongoose
-%{scls_prefix}/include/suitesparse/GraphBLAS.h
-%{scls_prefix}/include/suitesparse/LAGraph.h
-%{scls_prefix}/include/suitesparse/LAGraphX.h
-%{scls_prefix}/include/suitesparse/Mongoose.hpp
-%{scls_prefix}/include/suitesparse/ParU.hpp
-%{scls_prefix}/include/suitesparse/ParU_C.h
-%{scls_prefix}/include/suitesparse/ParU_definitions.h
-%{scls_prefix}/include/suitesparse/RBio.h
-%{scls_prefix}/include/suitesparse/SPEX.h
-%{scls_prefix}/include/suitesparse/SuiteSparseQR.hpp
-%{scls_prefix}/include/suitesparse/SuiteSparseQR_C.h
-%{scls_prefix}/include/suitesparse/SuiteSparseQR_definitions.h
-%{scls_prefix}/include/suitesparse/SuiteSparse_config.h
-%{scls_prefix}/include/suitesparse/amd.h
-%{scls_prefix}/include/suitesparse/btf.h
-%{scls_prefix}/include/suitesparse/camd.h
-%{scls_prefix}/include/suitesparse/ccolamd.h
-%{scls_prefix}/include/suitesparse/cholmod.h
-%{scls_prefix}/include/suitesparse/colamd.h
-%{scls_prefix}/include/suitesparse/cs.h
-%{scls_prefix}/include/suitesparse/klu.h
-%{scls_prefix}/include/suitesparse/klu_cholmod.h
-%{scls_prefix}/include/suitesparse/ldl.h
-%{scls_prefix}/include/suitesparse/umfpack.h
-%{scls_prefix}/lib/cmake/AMD/AMDConfig.cmake
-%{scls_prefix}/lib/cmake/AMD/AMDConfigVersion.cmake
-%{scls_prefix}/lib/cmake/AMD/AMDTargets-release.cmake
-%{scls_prefix}/lib/cmake/AMD/AMDTargets.cmake
-%{scls_prefix}/lib/cmake/BTF/BTFConfig.cmake
-%{scls_prefix}/lib/cmake/BTF/BTFConfigVersion.cmake
-%{scls_prefix}/lib/cmake/BTF/BTFTargets-release.cmake
-%{scls_prefix}/lib/cmake/BTF/BTFTargets.cmake
-%{scls_prefix}/lib/cmake/CAMD/CAMDConfig.cmake
-%{scls_prefix}/lib/cmake/CAMD/CAMDConfigVersion.cmake
-%{scls_prefix}/lib/cmake/CAMD/CAMDTargets-release.cmake
-%{scls_prefix}/lib/cmake/CAMD/CAMDTargets.cmake
-%{scls_prefix}/lib/cmake/CCOLAMD/CCOLAMDConfig.cmake
-%{scls_prefix}/lib/cmake/CCOLAMD/CCOLAMDConfigVersion.cmake
-%{scls_prefix}/lib/cmake/CCOLAMD/CCOLAMDTargets-release.cmake
-%{scls_prefix}/lib/cmake/CCOLAMD/CCOLAMDTargets.cmake
-%{scls_prefix}/lib/cmake/CHOLMOD/CHOLMODConfig.cmake
-%{scls_prefix}/lib/cmake/CHOLMOD/CHOLMODConfigVersion.cmake
-%{scls_prefix}/lib/cmake/CHOLMOD/CHOLMODTargets-release.cmake
-%{scls_prefix}/lib/cmake/CHOLMOD/CHOLMODTargets.cmake
-%{scls_prefix}/lib/cmake/COLAMD/COLAMDConfig.cmake
-%{scls_prefix}/lib/cmake/COLAMD/COLAMDConfigVersion.cmake
-%{scls_prefix}/lib/cmake/COLAMD/COLAMDTargets-release.cmake
-%{scls_prefix}/lib/cmake/COLAMD/COLAMDTargets.cmake
-%{scls_prefix}/lib/cmake/CXSparse/CXSparseConfig.cmake
-%{scls_prefix}/lib/cmake/CXSparse/CXSparseConfigVersion.cmake
-%{scls_prefix}/lib/cmake/CXSparse/CXSparseTargets-release.cmake
-%{scls_prefix}/lib/cmake/CXSparse/CXSparseTargets.cmake
-%{scls_prefix}/lib/cmake/GraphBLAS/GraphBLASConfig.cmake
-%{scls_prefix}/lib/cmake/GraphBLAS/GraphBLASConfigVersion.cmake
-%{scls_prefix}/lib/cmake/GraphBLAS/GraphBLASTargets-release.cmake
-%{scls_prefix}/lib/cmake/GraphBLAS/GraphBLASTargets.cmake
-%{scls_prefix}/lib/cmake/KLU/KLUConfig.cmake
-%{scls_prefix}/lib/cmake/KLU/KLUConfigVersion.cmake
-%{scls_prefix}/lib/cmake/KLU/KLUTargets-release.cmake
-%{scls_prefix}/lib/cmake/KLU/KLUTargets.cmake
-%{scls_prefix}/lib/cmake/KLU_CHOLMOD/KLU_CHOLMODConfig.cmake
-%{scls_prefix}/lib/cmake/KLU_CHOLMOD/KLU_CHOLMODConfigVersion.cmake
-%{scls_prefix}/lib/cmake/KLU_CHOLMOD/KLU_CHOLMODTargets-release.cmake
-%{scls_prefix}/lib/cmake/KLU_CHOLMOD/KLU_CHOLMODTargets.cmake
-%{scls_prefix}/lib/cmake/LAGraph/FindGraphBLAS.cmake
-%{scls_prefix}/lib/cmake/LAGraph/LAGraphConfig.cmake
-%{scls_prefix}/lib/cmake/LAGraph/LAGraphConfigVersion.cmake
-%{scls_prefix}/lib/cmake/LAGraph/LAGraphTargets-release.cmake
-%{scls_prefix}/lib/cmake/LAGraph/LAGraphTargets.cmake
-%{scls_prefix}/lib/cmake/LDL/LDLConfig.cmake
-%{scls_prefix}/lib/cmake/LDL/LDLConfigVersion.cmake
-%{scls_prefix}/lib/cmake/LDL/LDLTargets-release.cmake
-%{scls_prefix}/lib/cmake/LDL/LDLTargets.cmake
-%{scls_prefix}/lib/cmake/ParU/ParUConfig.cmake
-%{scls_prefix}/lib/cmake/ParU/ParUConfigVersion.cmake
-%{scls_prefix}/lib/cmake/ParU/ParUTargets-release.cmake
-%{scls_prefix}/lib/cmake/ParU/ParUTargets.cmake
-%{scls_prefix}/lib/cmake/RBio/RBioConfig.cmake
-%{scls_prefix}/lib/cmake/RBio/RBioConfigVersion.cmake
-%{scls_prefix}/lib/cmake/RBio/RBioTargets-release.cmake
-%{scls_prefix}/lib/cmake/RBio/RBioTargets.cmake
-%{scls_prefix}/lib/cmake/SPEX/FindGMP.cmake
-%{scls_prefix}/lib/cmake/SPEX/FindMPFR.cmake
-%{scls_prefix}/lib/cmake/SPEX/SPEXConfig.cmake
-%{scls_prefix}/lib/cmake/SPEX/SPEXConfigVersion.cmake
-%{scls_prefix}/lib/cmake/SPEX/SPEXTargets-release.cmake
-%{scls_prefix}/lib/cmake/SPEX/SPEXTargets.cmake
-%{scls_prefix}/lib/cmake/SPQR/SPQRConfig.cmake
-%{scls_prefix}/lib/cmake/SPQR/SPQRConfigVersion.cmake
-%{scls_prefix}/lib/cmake/SPQR/SPQRTargets-release.cmake
-%{scls_prefix}/lib/cmake/SPQR/SPQRTargets.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse/SuiteSparseBLAS.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse/SuiteSparseBLAS32.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse/SuiteSparseBLAS64.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse/SuiteSparseLAPACK.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse/SuiteSparsePolicy.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse/SuiteSparseReport.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse/SuiteSparse__thread.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_Mongoose/SuiteSparse_MongooseConfig.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_Mongoose/SuiteSparse_MongooseConfigVersion.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_Mongoose/SuiteSparse_MongooseTargets-release.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_Mongoose/SuiteSparse_MongooseTargets.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_config/SuiteSparse_configConfig.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_config/SuiteSparse_configConfigVersion.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_config/SuiteSparse_configTargets-release.cmake
-%{scls_prefix}/lib/cmake/SuiteSparse_config/SuiteSparse_configTargets.cmake
-%{scls_prefix}/lib/cmake/UMFPACK/UMFPACKConfig.cmake
-%{scls_prefix}/lib/cmake/UMFPACK/UMFPACKConfigVersion.cmake
-%{scls_prefix}/lib/cmake/UMFPACK/UMFPACKTargets-release.cmake
-%{scls_prefix}/lib/cmake/UMFPACK/UMFPACKTargets.cmake
+%{scls_prefix}/include/suitesparse
+%{scls_prefix}/lib/cmake/AMD
+%{scls_prefix}/lib/cmake/BTF
+%{scls_prefix}/lib/cmake/CAMD
+%{scls_prefix}/lib/cmake/CCOLAMD
+%{scls_prefix}/lib/cmake/CHOLMOD
+%{scls_prefix}/lib/cmake/COLAMD
+%{scls_prefix}/lib/cmake/CXSparse
+%{scls_prefix}/lib/cmake/GraphBLAS
+%{scls_prefix}/lib/cmake/KLU
+%{scls_prefix}/lib/cmake/KLU_CHOLMOD
+%{scls_prefix}/lib/cmake/LAGraph
+%{scls_prefix}/lib/cmake/LDL
+%{scls_prefix}/lib/cmake/ParU
+%{scls_prefix}/lib/cmake/RBio
+%{scls_prefix}/lib/cmake/SPEX
+%{scls_prefix}/lib/cmake/SPQR
+%{scls_prefix}/lib/cmake/SuiteSparse
+%{scls_prefix}/lib/cmake/UMFPACK
 %if "%{scls_libs}" == "static"
 %{scls_prefix}/lib/libamd.a
 %{scls_prefix}/lib/libbtf.a
@@ -304,6 +224,8 @@ matrices.  The package includes the following libraries:
 %{scls_prefix}/lib/pkgconfig/SuiteSparse_Mongoose.pc
 %{scls_prefix}/lib/pkgconfig/SuiteSparse_config.pc
 %{scls_prefix}/lib/pkgconfig/UMFPACK.pc
+%{scls_prefix}/lib/cmake/SuiteSparse_Mongoose
+%{scls_prefix}/lib/cmake/SuiteSparse_config
 
 %changelog
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 7.5.1-1

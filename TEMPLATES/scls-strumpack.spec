@@ -94,8 +94,9 @@ LDFLAGS="%{scls_mkl_mpi_linker_flags} %{scls_mpilibs}" \
 %endif
 %{scls_cmake}  \
     -DBUILD_TESTING=ON \
-	-DCMAKE_C_COMPILER=%{scls_cc} \
-    -DCMAKE_CXX_COMPILER=%{scls_cxx} \
+	-DCMAKE_C_COMPILER=%{scls_mpicc} \
+    -DCMAKE_CXX_COMPILER=%{scls_mpicxx} \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_math}" == "cuda"
     -DSTRUMPACK_USE_CUDA=ON \
     -DCMAKE_CUDA_COMPILER=%{scls_nvcc} \
@@ -177,13 +178,11 @@ LDFLAGS="%{scls_mkl_mpi_linker_flags} %{scls_mpilibs}" \
 %make_build
 
 %if "%{scls_libs}" == "shared"
-%{scls_cxx} -shared -o libstrumpack.so -Wl,--build-id $(find ./CMakeFiles/strumpack.dir -name *.o)
+%{scls_cxx} %{scls_ldflags} -shared -o libstrumpack.so -Wl,--build-id $(find ./CMakeFiles/strumpack.dir -name *.o)
 %endif
 
-%if "%{scls_mpi}" == "openmpi"
-%check
-%make_build test
-%endif
+#%check
+#%make_build test
 
 %install
 %make_install

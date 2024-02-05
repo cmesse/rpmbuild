@@ -25,7 +25,8 @@ binaries, libraries, and development headers, so that you can use them.
 %setup -q -n gperftools-%{version}
 
 %build
-%{scls_env} ./configure \
+%{scls_env} \
+./configure \
     --prefix=%{scls_prefix} \
 %if "%{scls_libs}" == "static"
 	--enable-static \

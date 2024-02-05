@@ -55,7 +55,7 @@ The objective of LAPACK++ is to provide a convenient, performance oriented API f
 mkdir build && cd build
 %{scls_env} \
 %if "%{scls_math}" == "lapack"
-LDFLAGS="%{scls_scalapack} %{scls_lapack} %{scls_blas}" \
+LDFLAGS="%{scls_scalapack} %{scls_lapack} %{scls_blas} %{scls_mpilibs}" \
 %else
 LDFLAGS="%{scls_mkl_linker_flags}" \
 %endif
@@ -79,8 +79,14 @@ LDFLAGS+=" -L%{scls_cudamath}/lib64 -Wl,-rpath,%{scls_cudamath}/lib64 -L%{scls_c
 %if "%{scls_math}" == "lapack"
     -Dblas="generic" \
     -Dgpu_backend=none \
+    -DBLA_VENDOR="Generic" \
 %elif "%{scls_math}"== "cuda"
     -Dblas="Intel MKL" \
+%if "%{scls_index_size}" == "32"
+    -DBLA_VENDOR="Intel10_64lp" \
+%else
+    -DBLA_VENDOR="Intel10_64ilp" \
+%endif
     -Dgpu_backend=cuda \
     -DCMAKE_CUDA_COMPILER=%{scls_nvcc} \
     -DCMAKE_CUDA_FLAGS=%{scls_nvccflags} \
@@ -90,11 +96,6 @@ LDFLAGS+=" -L%{scls_cudamath}/lib64 -Wl,-rpath,%{scls_cudamath}/lib64 -L%{scls_c
 %elif "%{scls_math}" == "mkl"
     -Dblas="Intel MKL" \
     -Dgpu_backend=none \
-%endif
-%if "%{scls_index_size}" == "32"
-    -DBLA_VENDOR="Intel10_64lp" \
-%else
-    -DBLA_VENDOR="Intel10_64ilp" \
 %endif
 %if "%{scls_libs}" == "shared"
 %if "%{scls_math}" == "lapack"

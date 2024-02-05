@@ -31,8 +31,6 @@ BuildRequires:  intel-oneapi-openmp  >= %{scls_comp_minver}
 Requires:       intel-oneapi-openmp  >= %{scls_comp_minver}
 %endif
 
-BuildRequires:  scls-%{scls_flavor}-petsc
-Requires:       scls-%{scls_flavor}-petsc
 BuildRequires:  scls-%{scls_flavor}-suitesparse
 Requires:       scls-%{scls_flavor}-suitesparse
 
@@ -46,14 +44,6 @@ codes. The primary design goals were to require minimal information from the
 user, allow users to easily supply their own data structures underneath the
 solvers, and allow for easy incorporation of user-supplied linear solvers and
 preconditioners.
-
-%package examples
-Summary:       Example files for SUNDIALS
-Requires:      scls-%{scls_flavor}-sundials == %{version}
-
-%description examples
-Example files for SUNDIALS
-
 
 %prep
 %setup -q -n sundials-%{version}
@@ -80,7 +70,7 @@ done
 
 mkdir build && cd build
 %{scls_env} \
-LDFLAGS+="%{scls_strumpack} %{scls_slate}  %{scls_sbutterflypack} %{scls_dbutterflypack} %{scls_zbutterflypack} %{scls_cbutterflypack} %{scls_zfp}  %{scls_ptscotch} %{scls_ptscotcherr} %{scls_ptscotcherrexit} %{scls_scotch} %{scls_scotcherr} %{scls_scotcherrexit} %{scls_parmetis} %{scls_metis}" \
+LDFLAGS+="%{scls_ptscotch} %{scls_ptscotcherr} %{scls_ptscotcherrexit} %{scls_scotch} %{scls_scotcherr} %{scls_scotcherrexit} %{scls_parmetis} %{scls_metis} -llzma -lbz2 -lz" \
 %{scls_cmake} \
 	-DCMAKE_C_COMPILER=%{scls_mpicc} \
     -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
@@ -88,6 +78,7 @@ LDFLAGS+="%{scls_strumpack} %{scls_slate}  %{scls_sbutterflypack} %{scls_dbutter
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
     -DCMAKE_Fortran_COMPILER=%{scls_mpifort} \
     -DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_libs}" == "static"
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -106,12 +97,10 @@ LDFLAGS+="%{scls_strumpack} %{scls_slate}  %{scls_sbutterflypack} %{scls_dbutter
 	-DCMAKE_CUDA_ARCHITECTURES="%{scls_cuda_architectures}" \
 %endif
     -DSUNDIALS_INSTALL_CMAKEDIR=lib/cmake/sundials \
-    -DENABLE_MPI=ON \
     -DENABLE_OPENMP=ON \
-    -DEXAMPLES_ENABLE_C=ON \
-    -DEXAMPLES_ENABLE_CXX=ON \
-    -DEXAMPLES_INSTALL=ON \
-    -DEXAMPLES_INSTALL_PATH=%{scls_prefix}/share/sundials \
+    -DEXAMPLES_ENABLE_C=OFF \
+    -DEXAMPLES_ENABLE_CXX=OFF \
+    -DEXAMPLES_INSTALL=OFF \
 %if "%{scls_index_size}" == "32"
     -DSUNDIALS_INDEX_SIZE=32 \
 %else
@@ -155,10 +144,10 @@ LDFLAGS+="%{scls_strumpack} %{scls_slate}  %{scls_sbutterflypack} %{scls_dbutter
 %endif
 %endif
 %endif
-    -DENABLE_PETSC=ON \
+    -DENABLE_PETSC=OFF \
+    -DENABLE_MPI=ON \
     -DENABLE_KLU=ON  \
     -DKLU_INCLUDE_DIR=%{scls_prefix}/include/suitesparse \
-    -DPETSC_DIR=%{scls_prefix} \
 %if "%{scls_libs}" == "static"
     -DKLU_LIBRARY=%{scls_prefix}/lib/libklu.a \
 %else
@@ -186,7 +175,6 @@ cd build
 %{scls_prefix}/include/nvector
 %{scls_prefix}/include/sunadaptcontroller
 %{scls_prefix}/include/sundials
-%{scls_prefix}/include/sundials
 %{scls_prefix}/include/sunlinsol
 %{scls_prefix}/include/sunmatrix
 %{scls_prefix}/include/sunmemory
@@ -198,9 +186,7 @@ cd build
 %{scls_prefix}/lib/libsundials_*.so
 %{scls_prefix}/lib/libsundials_*.so.*
 %endif
-
-%files examples
-%{scls_prefix}/share/sundials
+%exclude %{scls_prefix}/examples
 
 %changelog
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 6.7.0-1

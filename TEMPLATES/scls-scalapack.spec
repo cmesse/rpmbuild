@@ -83,9 +83,14 @@ routines resemble their LAPACK equivalents as much as possible.
 
 %{expand: %setup_scls_env}
 
-CC=%{scls_prefix}/bin/mpicc \
-FC=%{scls_prefix}/bin/mpifort \
- cmake \
+%{scls_cmake}  \
+    -DCMAKE_C_COMPILER=%{scls_mpicc} \
+    -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
+    -DCMAKE_CXX_COMPILER=%{scls_mpicxx} \
+    -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
+    -DCMAKE_Fortran_COMPILER=%{scls_mpifort} \
+    -DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 	-DCMAKE_INSTALL_PREFIX=%{scls_prefix} \
 	-DMPI_BASE_DIR=%{scls_prefix} \
     -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
@@ -118,10 +123,7 @@ FC=%{scls_prefix}/bin/mpifort \
 %make_install
 
 %files
-%{scls_prefix}/lib/cmake/scalapack-%{version}/scalapack-config-version.cmake
-%{scls_prefix}/lib/cmake/scalapack-%{version}/scalapack-config.cmake
-%{scls_prefix}/lib/cmake/scalapack-%{version}/scalapack-targets-noconfig.cmake
-%{scls_prefix}/lib/cmake/scalapack-%{version}/scalapack-targets.cmake
+%{scls_prefix}/lib/cmake/scalapack-%{version}/scalapack*.cmake
 %if "%{scls_libs}" == "static"
 %{scls_prefix}/lib/libscalapack.a
 %exclude %{scls_prefix}/lib/libblas.a

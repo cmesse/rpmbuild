@@ -96,7 +96,8 @@ packages = [
          "vtk",
          "butterflypack",
          "strumpack",
-         "petsc"]
+         "petsc",
+         "pmix"]
 
 
 if( LAPACK ):
@@ -199,6 +200,7 @@ if (OPENMPI or MPICH):
 
     mpi_dependencies = [
         (mpiimpl, "hwloc"),
+        (mpiimpl, "pmix"),
         ("hdf5", mpiimpl ),
         ("metis", mpiimpl ),
         ("scotch", mpiimpl ),
@@ -209,6 +211,7 @@ if (OPENMPI or MPICH):
         ("petsc", mpiimpl),
         ("fftw", mpiimpl),
         ("butterflypack", mpiimpl),
+        ("zfp", mpiimpl),
     ]
 
     for p in mpi:

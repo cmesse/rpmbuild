@@ -71,6 +71,7 @@ mkdir build && cd build
     -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
     -DCMAKE_CXX_COMPILER=%{scls_mpicxx} \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 	-DENABLE_DAP=OFF \
 	-DENABLE_DAP2=OFF \
 	-DENABLE_DAP4=OFF \

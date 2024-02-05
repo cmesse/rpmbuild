@@ -69,6 +69,7 @@ mkdir build && cd build
     -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
     -DCMAKE_CXX_COMPILER=%{scls_cxx} \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_libs}" == "static"
 	-DBUILD_SHARED_LIBS=OFF \
 	-DZFP_ENABLE_PIC=OFF \

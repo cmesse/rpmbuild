@@ -6,7 +6,8 @@
 %define scls_maxprocs 64
 
 %define scls_env \
-    PKG_CONFIG_PATH=%{scls_prefix}lib/pkgconfig \
+    PATH=%{scls_prefix}/bin:$PATH \
+    PKG_CONFIG_PATH=%{scls_prefix}/lib/pkgconfig \
 	LD=%{scls_ld}   \
 	AR=%{scls_ar}   \
 	CC=%{scls_cc}   \
@@ -16,7 +17,8 @@
 	F77=%{scls_fc} \
     CFLAGS="%{scls_cflags}" \
 	CXXFLAGS="%{scls_cxxflags}" \
-	FCFLAGS="%{scls_fcflags}"
+	FCFLAGS="%{scls_fcflags}" \
+	LDFLAGS="%{scls_ldflags}" \
 		
 # fix the qversion bug in configure
 %define scls_remove_qversion    sed -i 's| -qversion||'g ./configure ;

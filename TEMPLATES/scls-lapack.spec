@@ -1,3 +1,4 @@
+%define scls_oflags -O2
 
 Summary: Numerical linear algebra package libraries
 Name: scls-%{scls_flavor}-lapack
@@ -82,7 +83,7 @@ fi
 
 %build
 %{expand: %setup_scls_env}
-
+%{scls_env}
 unset CFLAGS
 unset CXXFLAGS
 unset FCFLAGS
@@ -92,20 +93,25 @@ mkdir -p build && cd build && %{scls_env} %{scls_cmake} \
 %else
 mkdir -p build && cd build && LDFLAGS="%{scls_comp_ldflags} %{scls_comp_rpath}" %{scls_env} %{scls_cmake} \
 %endif
--DCMAKE_INSTALL_PREFIX=%{scls_prefix} \
+	-DCMAKE_C_COMPILER=%{scls_cc} \
+    -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
+    -DCMAKE_CXX_COMPILER=%{scls_cxx} \
+    -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
+    -DCMAKE_Fortran_COMPILER=%{scls_fc} \
+    -DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
 %if "%{scls_compiler}" == "intel"
 -DCMAKE_Fortran_COMPILER_ID="Intel" \
 %if "%{scls_libs}" == "static"
--DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -assume protect_parens -recursive -diag-disable 10121" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -assume protect_parens -recursive -diag-disable 10121 %{scls_oflags}" \
 %else
--DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -assume protect_parens -recursive  -fPIC -diag-disable 10121" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -assume protect_parens -recursive  -fPIC -diag-disable 10121 %{scls_oflags}" \
 %endif
 %else
 -DCMAKE_Fortran_COMPILER_ID="GNU" \
 %if "%{scls_libs}" == "static"
--DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -frecursive" \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -frecursive %{scls_oflags}" \
 %else
--DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -frecursive -fPIC " \
+-DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -frecursive -fPIC %{scls_oflags}" \
 %endif
 %endif
 -DCBLAS=ON \

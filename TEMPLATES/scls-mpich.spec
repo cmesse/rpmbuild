@@ -9,6 +9,11 @@ License:        MIT
 URL:            https://www.mpich.org/
 Source0:        https://www.mpich.org/static/downloads/%{version}/mpich-%{version}.tar.gz
 
+BuildRequires: libpsm2-devel
+BuildRequires: numactl-devel
+BuildRequires: libuuid-devel
+BuildRequires: libnl3-devel
+
 BuildRequires:  scls-%{scls_flavor}-hwloc
 Requires:       scls-%{scls_flavor}-hwloc
 
@@ -37,6 +42,9 @@ mpich-autoload package.
 Summary:       Documentation files for MPICH
 Requires:      scls-%{scls_flavor}-mpich == %{version}
 
+BuildRequires: scls-%{scls_flavor}-pmix
+Requires:      scls-%{scls_flavor}-pmix
+
 %description doc
 Documentation files for OpenMPI
 
@@ -61,6 +69,8 @@ CXXFLAGS+=" %{scls_oflags}"  \
 		--enable-shared \
 		--disable-static \
 %endif
+        --with-pmix-include=%{scls_prefix}/include \
+        --with-pmix-lib=%{scls_prefix}/lib \
 		--with-hwloc-include=%{scls_prefix}/include \
 		--with-hwloc-lib=%{scls_prefix}/lib
 

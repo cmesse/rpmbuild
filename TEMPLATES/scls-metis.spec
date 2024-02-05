@@ -102,6 +102,7 @@ make config \
 
 pushd build/Linux-x86_64
 
+%{scls_env} \
 CC=%{scls_mpicc} \
 CXX=%{scls_mpicxx} \
 FC=%{scls_mpifort} \
@@ -112,6 +113,7 @@ FC=%{scls_mpifort} \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags}}" \
     -DCMAKE_Fortran_COMPILER=%{scls_fc} \
     -DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_libs}" == "static"
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -157,7 +159,11 @@ LDFLAGS="${I_MPI_ROOT}/lib/libmpi.a %{scls_ldflags}" \
 LDFLAGS="${I_MPI_ROOT}/lib/libmpi.so %{scls_ldflags}" \
 %endif
 %endif
-%{scls_cmake} . \
+%{scls_env} \
+CC=%{scls_mpicc} \
+CXX=%{scls_mpicxx} \
+FC=%{scls_mpifort} \
+%{scls_cmake}  \
     -DCMAKE_C_FLAGS="%{scls_cflags} -DNDEBUG" \
     -DCMAKE_C_FLAGS_RELEASE="%{scls_cflags} -DNDEBUG %{scls_oflags}" \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} -DNDEBUG %{scls_oflags}" \
@@ -172,12 +178,20 @@ LDFLAGS="${I_MPI_ROOT}/lib/libmpi.so %{scls_ldflags}" \
 	-DBUILD_STATIC_LIBS=OFF \
 	-DBUILD_SHARED_LIBS=ON \
 %endif
+%if "%{scls_compiler}" == "intel"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
+%endif \
+    ..
 
 
 make %{?_smp_mflags}
 
 # manually create the shared file
-%{scls_cc} -shared -o ./libparmetis/libparmetis.so libparmetis/CMakeFiles/parmetis.dir/*.o
+%{scls_cc} %{scls_ldflags} -shared -o ./libparmetis/libparmetis.so libparmetis/CMakeFiles/parmetis.dir/*.o
 
 %install
 

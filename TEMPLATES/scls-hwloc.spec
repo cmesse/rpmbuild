@@ -46,7 +46,6 @@ Documentation files for hwloc
 %{setup_scls_env}
 
 %{scls_env}
-
 %if "%{scls_libs}" == "static"
 CFLAGS+="  -DHAVE_UNIX_BYTESWAP %{scls_oflags}" \
 CXXFLAGS+=" -DHAVE_UNIX_BYTESWAP %{scls_oflags}" \

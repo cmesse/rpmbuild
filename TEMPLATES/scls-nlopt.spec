@@ -40,6 +40,15 @@ Source0:        https://github.com/stevengj/nlopt/archive/v%{version}.tar.gz
 BuildRequires:  scls-%{scls_flavor}-cmake
 BuildRequires:  ncurses-devel
 
+%if "%{scls_mpi}" == "intelmpi"
+BuildRequires:  intel-oneapi-mpi
+BuildRequires:  intel-oneapi-mpi-devel
+Requires:       intel-oneapi-mpi
+%else
+BuildRequires:  scls-%{scls_flavor}-%{scls_mpi}
+Requires:       scls-%{scls_flavor}-%{scls_mpi}
+%endif
+
 %description
 NLopt is a library for nonlinear local and global optimization, for
 functions with and without gradient information.  It is designed as
@@ -53,17 +62,18 @@ been made with C++-support enabled.
 %setup -q -n nlopt-%{version}
 
 %build
+%{expand: %setup_scls_env}
+
 mkdir build && cd build
-CC=%{scls_mpicc} \
-CXX=%{scls_mpicxx} \
-FC=%{scls_mpifort} \
+%{scls_env} \
 %{scls_cmake} \
-	-DCMAKE_C_COMPILER=%{scls_cc} \
+	-DCMAKE_C_COMPILER=%{scls_mpicc} \
     -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
-    -DCMAKE_CXX_COMPILER=%{scls_cxx} \
+    -DCMAKE_CXX_COMPILER=%{scls_mpicxx} \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
-    -DCMAKE_Fortran_COMPILER=%{scls_fc} \
+    -DCMAKE_Fortran_COMPILER=%{scls_mpifort} \
     -DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_libs}" == "static"
 	-DBUILD_SHARED_LIBS=OFF \
 %else

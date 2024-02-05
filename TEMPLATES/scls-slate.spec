@@ -101,14 +101,19 @@ mkdir build && cd build
 %{scls_env} \
 %{scls_cmake} \
 	-G "Unix Makefiles" \
-    -DCMAKE_CXX_COMPILER=%{scls_cxx} \
+    -DCMAKE_CXX_COMPILER=%{scls_mpicxx} \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags}" \
-    -DCMAKE_Fortran_COMPILER=%{scls_fc} \
+    -DCMAKE_Fortran_COMPILER=%{scls_mpifort} \
     -DCMAKE_Fortran_FLAGS="%{scls_fcflags}" \
     -DCMAKE_INSTALL_RPATH=%{scls_prefix}/lib \
     -Dblaspp_DIR=%{scls_prefix} \
+%if "%{scls_math}" == "lapack"
+	-DSCALAPACK_LIBRARIES="%{scls_scalapack};%{scls_lapack};%{scls_blas};%{scls_mpilib}" \
+%else
 	-DSCALAPACK_LIBRARIES="%{scls_mkl_mpi_linker_flags}" \
+%endif
 	-Dgpu_backend="none" \
+	-DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_libs}" == "static"
 %if "%{scls_math}" != "lapack"
 	-DMKL_MPI=%{scls_mpi} \
@@ -117,6 +122,20 @@ mkdir build && cd build
 %if "%{scls_math}" == "lapack"
 	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
 	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
+%else
+%if "%{scls_math}" == "mkl"
+%if "%{scls_compiler}" == "intel"
+%if "%{scls_mpi}" == "intelmpi"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib -L%{scls_mpiroot}/lib -Wl,-rpath,%{scls_mpiroot}/lib  -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib  -L%{scls_mpiroot}/lib -Wl,-rpath,%{scls_mpiroot}/lib -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+%else
+    -DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib  -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+%endif
+%else
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib" \
+%endif
 %else
 %if "%{scls_compiler}" == "intel"
 %if "%{scls_mpi}" == "intelmpi"
@@ -129,6 +148,7 @@ mkdir build && cd build
 %else
 	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib %{slate_math_ldflags} %{slate_math_libs} -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib" \
 	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib %{slate_math_ldflags} %{slate_math_libs} -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib" \
+%endif
 %endif
 %endif
 %endif

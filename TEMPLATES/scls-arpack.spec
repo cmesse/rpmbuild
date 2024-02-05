@@ -59,12 +59,13 @@ CC=%{scls_mpicc} \
 CXX=%{scls_mpicxx} \
 FC=%{scls_mpifort} \
 %{scls_cmake} \
-	-DCMAKE_C_COMPILER=%{scls_cc} \
+	-DCMAKE_C_COMPILER=%{scls_mpicc} \
     -DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
-    -DCMAKE_CXX_COMPILER=%{scls_cxx} \
+    -DCMAKE_CXX_COMPILER=%{scls_mpicxx} \
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
-    -DCMAKE_Fortran_COMPILER=%{scls_fc} \
+    -DCMAKE_Fortran_COMPILER=%{scls_mpifort} \
     -DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_math}" == "lapack"
 	-DBLAS_LIBRARIES=%{scls_blas} \
 	-DLAPACK_LIBRARIES=%{scls_lapack} \
@@ -105,7 +106,11 @@ FC=%{scls_mpifort} \
 
 %check
 %if "%{scls_libs}" == "shared"
-make %{?_smp_mflags} test
+%if   "%{scls_math}"== "lapack"
+PATH=%{scls_prefix}/bin:$PATH make %{?_smp_mflags} test
+%else
+LD_LIBRARY_PATH="%{scls_ld_library_path}" PATH=%{scls_prefix}/bin:$PATH make %{?_smp_mflags} test
+%endif
 %endif
 
 %install

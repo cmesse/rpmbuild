@@ -52,6 +52,7 @@ mkdir build && cd build
     -DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
     -DCMAKE_Fortran_COMPILER=%{scls_mpifort} \
     -DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_math}" == "lapack"
     -DTPL_BLAS_LIBRARIES=%{scls_blas} \
 	-DTPL_LAPACK_LIBRARIES=%{scls_lapack} \

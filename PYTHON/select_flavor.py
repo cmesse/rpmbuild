@@ -197,26 +197,41 @@ def write_binaries(file,config):
 def write_mpi_binaries(file,config):
     file.write('\n# MPI wrappers\n')
     libs = str(config['flavor']['libs'])
-    if str(config['flavor']['mpi']) == 'intelmpi' :
+    mpi = str(config['flavor']['mpi'])
+    if mpi == 'intelmpi' :
         pref = mpiroot(config)
         file.write('%define scls_mpicc   {:s}/bin/mpiicx\n'.format(pref ))
         file.write('%define scls_mpicxx  {:s}/bin/mpiicpx\n'.format(pref))
         file.write('%define scls_mpifort {:s}/bin/mpiifx\n'.format(pref))
         file.write('%define scls_mpiroot {:s}\n'.format(pref))
-        if libs == 'static':
-            file.write('%define scls_mpilib {:s}/lib/libmpi.a\n'.format(pref))
-        else:
-            file.write('%define scls_mpilib {:s}/lib/libmpi.so\n'.format(pref))
+        file.write('%define scls_mpiexec {:s}/bin/mpiexec.hydra\n'.format(pref))
+
     else:
         pref= prefix( config )
         file.write('%define scls_mpicc   {:s}/bin/mpicc\n'.format(pref ))
         file.write('%define scls_mpicxx  {:s}/bin/mpicxx\n'.format(pref))
         file.write('%define scls_mpifort {:s}/bin/mpifort\n'.format(pref))
         file.write('%define scls_mpiroot {:s}\n'.format(pref))
-        if libs == 'static':
-            file.write('%define scls_mpilibs {:s}/lib/libmpicxx.a {:s}/lib/libmpifort.a {:s}/lib/libmpi.a\n'.format(pref,pref,pref))
-        else:
-            file.write('%define scls_mpilibs {:s}/lib/libmpicxx.so {:s}/lib/libmpifort.so {:s}/lib/libmpi.so\n'.format(pref,pref,pref))
+        file.write('%define scls_mpiexec {:s}/bin/mpiexec\n'.format(pref))
+
+        # Define library types and their extensions based on 'libs'
+        lib_ext = '.a' if libs == 'static' else '.so'
+        lib_separator = ';'  # Separator used in defining scls_mpilib
+
+        # Define libraries based on 'mpi'
+        if mpi == "mpich":
+            lib_names = ['libmpicxx', 'libmpifort', 'libmpi']
+        else:  # Assuming the else condition is meant for another MPI implementation
+            lib_names = ['libmpi_usempif08', 'libmpi_usempi_ignore_tkr', 'libmpi_mpifh', 'libmpi']
+
+        # Build the library paths
+        lib_paths = ['{:s}/lib/{:s}{:s}'.format(pref, lib_name, lib_ext) for lib_name in lib_names]
+
+        # Write to file
+        file.write('%define scls_mpilibs ' + ' '.join(lib_paths) + '\n')
+        file.write('%define scls_mpilib ' + lib_separator.join(lib_paths) + '\n')
+
+
 def write_compiler_flags( file, config ):
     file.write('\n# Compiler Flags\n')
     # flavor information

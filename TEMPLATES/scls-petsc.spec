@@ -81,7 +81,8 @@ Examples for PETSC
 %build
 %{expand: %setup_scls_env}
 
-echo comp: "%{scls_compiler}"
+
+
 unset CC
 unset CXX
 unset FC
@@ -117,8 +118,11 @@ unset PETSC_DIR
 	--FC=%{scls_mpifort} \
 	--FFLAGS="%{scls_fcflags}" \
 %if "%{scls_compiler}" == "gnu"
-	--CC_LINKER_FLAGS="-lgfortran" \
-	--CXX_LINKER_FLAGS="-lgfortran" \
+	--CC_LINKER_FLAGS="%{scls_ldflags} -lgfortran" \
+	--CXX_LINKER_FLAGS="%{scls_ldflags} -lgfortran" \
+%else
+	--CC_LINKER_FLAGS="%{scls_ldflags}" \
+	--CXX_LINKER_FLAGS="%{scls_ldflags}" \
 %endif
 %if   "%{scls_mpi}" == "openmpi"
     --with-mpiexec=%{scls_prefix}/bin/orterun \
@@ -130,8 +134,8 @@ unset PETSC_DIR
     --with-mpi-lib=%{scls_prefix}/lib/libmpi.so \
     --LDFLAGS="%{scls_ldflags}"\
 %endif
+    --with-mpiexec=%{scls_mpiexec} \
 %elif   "%{scls_mpi}" == "mpich"
-    --with-mpiexec=%{scls_prefix}/bin/mpiexec.hydra \
     --with-mpi-include=%{scls_prefix}/include \
 %if "%{scls_libs}" == "static"
     --with-mpi-lib=%{scls_prefix}/lib/libmpi.a \
@@ -140,7 +144,6 @@ unset PETSC_DIR
 %endif
     --LDFLAGS="%{scls_ldflags} -latomic -lpthread -ldl -latomic -lpthread -ldl"\
 %elif   "%{scls_mpi}" == "openmpi"
-    --with-mpiexec=%{scls_mpiroot}/bin/mpiexec.hydra \
     --with-mpi-include=%{scls_mpiroot}/include \
 %if "%{scls_libs}" == "static"
     --with-mpi-lib="%{scls_mpiroot}/lib/libmpi.a" \

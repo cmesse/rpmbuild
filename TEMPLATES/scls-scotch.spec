@@ -58,9 +58,7 @@ sparse matrix ordering. The parallel scotch libraries are packaged in the
 pwd
 
 %{scls_env} \
-CC=%{scls_mpicc} \
-CXX=%{scls_mpicxx} \
-FC=%{scls_mpifort} \
+
 %{scls_cmake} . \
 %if "%{scls_libs}" == "static"
 	-DBUILD_STATIC_LIBS=ON \
@@ -85,7 +83,9 @@ FC=%{scls_mpifort} \
  	-DCMAKE_Fortran_FLAGS_RELEASE=-DNDEBUG \
  	-DINSTALL_METIS_HEADERS=OFF \
  	-DMPIEXEC_MAX_NUMPROCS=%{scls_maxprocs} \
+ 	-DMPIEXEC_EXECUTABLE=%{scls_prefix}/bin/mpiexec \
  	-DTHREADS=OFF \
+ 	-DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %if "%{scls_index_size}" == "32"
 	-DINTSIZE=32 \
 %else
@@ -93,9 +93,9 @@ FC=%{scls_mpifort} \
 %endif
 %if "%{scls_libs}" == "shared"
     -DCMAKE_SKIP_RPATH=ON \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,${I_MPI_ROOT}/lib -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id" \
+    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,${scls_mpiroot}/lib -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id" \
 %if "%{scls_mpi}" == "intelmpi"
- 	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${I_MPI_ROOT}/lib -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id"
+ 	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${scls_mpiroot}/lib -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id"
 %else
  	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${scls_prefix}/lib -Wl,--build-id"
 %endif
@@ -131,14 +131,10 @@ done
 %endif
 
 
-# dgpart timeout
 %check
-%if "%{scls_compiler}" == "gnu"
-%make_build test
-%else
- LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib  FC=%{scls_mpifort}  make %{?_smp_mflags} test
-%endif
-
+export LD_LIBRARY_PATH=%{buildroot}/%{scls_prefix}/lib
+export FC=%{scls_mpifort}
+make %{?_smp_mflags} test
 
 %install
 %make_install

@@ -35,6 +35,7 @@ preordering for sparsity is completely separate from the factorization.
     -DCMAKE_C_FLAGS_RELEASE="%{scls_cflags} -DNDEBUG %{scls_oflags}" \
     -DCMAKE_Fortran_FLAGS="%{scls_fcflags} -DNDEBUG %{scls_oflags}" \
     -DCMAKE_Fortran_FLAGS_RELEASE="%{scls_fcflags} -DNDEBUG %{scls_oflags}" \
+    -DMPIEXEC_EXECUTABLE=%{scls_mpiexec} \
 %else
     -DCMAKE_C_FLAGS="%{scls_cflags} -fPIC -DNDEBUG %{scls_oflags}" \
     -DCMAKE_C_FLAGS_RELEASE="%{scls_cflags}  -fPIC -DNDEBUG %{scls_oflags}" \
@@ -55,8 +56,8 @@ preordering for sparsity is completely separate from the factorization.
 %endif
 %if "%{scls_libs}" == "static"
 %else
-	-DCMAKE_SHARED_LINKER_FLAGS="%{scls_mkl_linker_flags}" \
-	-DCMAKE_EXE_LINKER_FLAGS="%{scls_mkl_linker_flags}" \
+	-DCMAKE_SHARED_LINKER_FLAGS="%{scls_ldflags} %{scls_mkl_linker_flags}" \
+	-DCMAKE_EXE_LINKER_FLAGS="%{scls_ldflags} %{scls_mkl_linker_flags}" \
 %endif
 	-DTPL_ENABLE_METISLIB=ON \
 	-DTPL_METIS_INCLUDE_DIRS=%{scls_prefix}/include \
@@ -73,8 +74,8 @@ preordering for sparsity is completely separate from the factorization.
 
 # manually create shared libs
 %if "%{scls_libs}" == "shared"
-%{scls_cc} -shared -o ./SRC/libsuperlu.so ./SRC/CMakeFiles/superlu.dir/*.o
-%{scls_fc} -shared -o ./FORTRAN/libsuperlu_fortran.so ./FORTRAN/CMakeFiles/superlu_fortran.dir/*.o
+%{scls_cc} %{scls_ldflags} -shared -o ./SRC/libsuperlu.so ./SRC/CMakeFiles/superlu.dir/*.o
+%{scls_fc} %{scls_ldflags} -shared -o ./FORTRAN/libsuperlu_fortran.so ./FORTRAN/CMakeFiles/superlu_fortran.dir/*.o
 %endif
 
 %check
