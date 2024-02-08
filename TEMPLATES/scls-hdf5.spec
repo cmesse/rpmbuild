@@ -26,7 +26,7 @@ BuildRequires:  intel-oneapi-mpi-devel
 Requires:       intel-oneapi-mpi
 %endif
 
-
+BuildRequires:  zlib-devel
 
 %description
 HDF5 is a general purpose library and file format for storing scientific data.

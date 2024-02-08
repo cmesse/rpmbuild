@@ -37,7 +37,13 @@ Requires:       scls-%{scls_flavor}-hwloc
 Requires:       scls-%{scls_flavor}-mpfr
 Requires:       scls-%{scls_flavor}-testsweeper
 Requires:       scls-%{scls_flavor}-tinyxml2
+
+# we assume that for rhel 8 and amazon, no visualization is there
+%if 0%{?rhel} == 9
 Requires:       scls-%{scls_flavor}-vtk
+%endif
+
+
 %if "%{scls_math}" == "lapack"
 Requires:  scls-%{scls_flavor}-blas
 Requires:  scls-%{scls_flavor}-cblas
@@ -73,6 +79,7 @@ Requires:       scls-%{scls_flavor}-lapackpp
 Requires:       scls-%{scls_flavor}-metis
 Requires:       scls-%{scls_flavor}-zfp
 Requires:       scls-%{scls_flavor}-nlopt
+
 %if "%{scls_math}" == "lapack"
 Requires:       scls-%{scls_flavor}-scalapack
 %endif
@@ -114,9 +121,8 @@ Scientific Core Libraries
 %build
 %{expand: %setup_scls_env}
 
-mkdir -p %{buildroot}/path/to/your/scripts
-cat <<'EOF' >%{buildroot}/path/to/your/scripts/setup-environment.sh
-#!/usr/bin/bash
+cat <<'EOF' > activate
+#!/usr/bin/env bash
 export PATH=\$(echo \$PATH | tr ':' '\\n' | grep -v '^/opt/scls/.*/bin' | tr '\\n' ':' | sed 's/:\$//')
 export PATH=%{scls_prefix}/bin:\$PATH
 if [ -z "\$PKG_CONFIG_PATH" ]; then
@@ -142,9 +148,6 @@ echo '--------------------------------------------------------------------------
 echo '    Scientific Core Libraries skylake-gnu-mpich-lapack'
 echo '--------------------------------------------------------------------------------'
 EOF
-
-chmod +x %{buildroot}/path/to/your/scripts/setup-environment.sh
-
 
 chmod +x activate
 

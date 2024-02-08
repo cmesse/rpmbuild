@@ -43,11 +43,12 @@ Requires:       scls-%{scls_flavor}-%{scls_mpi}
 %endif
 
 BuildRequires:  scls-%{scls_flavor}-metis
+BuildRequires:  scls-%{scls_flavor}-parmetis
 BuildRequires:  scls-%{scls_flavor}-scotch
 
 Requires:       scls-%{scls_flavor}-metis
 Requires:       scls-%{scls_flavor}-scotch
-
+Requires:       scls-%{scls_flavor}-parmetis
 
 %description
 MUMPS implements a direct solver for large sparse linear systems, with a

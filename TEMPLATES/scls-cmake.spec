@@ -26,7 +26,7 @@ Requires:       intel-oneapi-openmp  >= %{scls_comp_minver}
 BuildRequires:  sed
 BuildRequires:  git
 BuildRequires:  ncurses-devel
-
+BuildRequires:  openssl-devel
 Requires:       ncurses
 
 %description

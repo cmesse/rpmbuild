@@ -9,11 +9,13 @@ License:        CeCILL-C
 URL:            https://www.labri.fr/perso/pelegrin/scotch/
 Source0:        https://gitlab.inria.fr/scotch/scotch/-/archive/v%{version}/scotch-v%{version}.tar.bz2
 
+
 # taken from debian
 Patch1:         metis-header.patch
 Patch2:         include_headers.patch
 Patch3:         default_metis_v5.patch     
 
+Patch4:         scotch-shared.patch
 
 BuildRequires:  %{scls_rpm_cc}  >= %{scls_comp_minver}
 BuildRequires:  %{scls_rpm_fc}  >= %{scls_comp_minver}
@@ -51,6 +53,10 @@ sparse matrix ordering. The parallel scotch libraries are packaged in the
 %patch2 -p1
 %patch3 -p1
 
+%if "%{scls_libs}" == "shared"
+%patch4 -p1
+%endif
+
 %build
 
 %{expand: %setup_scls_env}
@@ -58,8 +64,7 @@ sparse matrix ordering. The parallel scotch libraries are packaged in the
 pwd
 
 %{scls_env} \
-
-%{scls_cmake} . \
+%{scls_cmake} \
 %if "%{scls_libs}" == "static"
 	-DBUILD_STATIC_LIBS=ON \
 	-DBUILD_SHARED_LIBS=OFF \
@@ -72,14 +77,24 @@ pwd
  	-DBUILD_PTSCOTCH=ON \
  	-DINTSIZE=%{scls_index_size} \
  	-DCMAKE_C_COMPILER=%{scls_mpicc} \
- 	-DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
  	-DCMAKE_C_FLAGS_RELEASE=-DNDEBUG \
  	-DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
  	-DCMAKE_CXX_COMPILER=%{scls_mpicxx} \
- 	-DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
  	-DCMAKE_CXX_FLAGS_RELEASE=-DNDEBUG \
  	-DCMAKE_Fortran_COMPILER=%{scls_mpifort} \
+%if "%{scls_compiler}" != "intel"
+ 	-DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
+ 	-DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
  	-DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+%elif "%{scls_libs}" == "static"
+ 	-DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags}" \
+ 	-DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags}" \
+ 	-DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags}" \
+%else
+ 	-DCMAKE_C_FLAGS="%{scls_cflags} %{scls_oflags} -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id" \
+ 	-DCMAKE_CXX_FLAGS="%{scls_cxxflags} %{scls_oflags} -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id" \
+ 	-DCMAKE_Fortran_FLAGS="%{scls_fcflags} %{scls_oflags} -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id" \
+%endif
  	-DCMAKE_Fortran_FLAGS_RELEASE=-DNDEBUG \
  	-DINSTALL_METIS_HEADERS=OFF \
  	-DMPIEXEC_MAX_NUMPROCS=%{scls_maxprocs} \
@@ -92,57 +107,34 @@ pwd
 	-DINTSIZE=64 \
 %endif
 %if "%{scls_libs}" == "shared"
-    -DCMAKE_SKIP_RPATH=ON \
-    -DCMAKE_EXE_LINKER_FLAGS="-Wl,-rpath,${scls_mpiroot}/lib -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id" \
+%if "%{scls_math}" == "lapack"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib" \
+%endif
+%if "%{scls_compiler}" == "intel"
 %if "%{scls_mpi}" == "intelmpi"
- 	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${scls_mpiroot}/lib -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id"
+	-DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib -L%{scls_mpiroot}/lib -Wl,-rpath,%{scls_mpiroot}/lib  -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib  -L%{scls_mpiroot}/lib -Wl,-rpath,%{scls_mpiroot}/lib -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
 %else
- 	-DCMAKE_SHARED_LINKER_FLAGS="-Wl,-rpath,${scls_prefix}/lib -Wl,--build-id"
+    -DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib  -L%{scls_comproot}/lib -Wl,-rpath,%{scls_comproot}/lib" \
+%endif
+%else
+    -DCMAKE_SHARED_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib" \
+	-DCMAKE_EXE_LINKER_FLAGS="-L%{scls_prefix}/lib -Wl,-rpath,%{scls_prefix}/lib -L%{scls_mklroot}/lib -Wl,-rpath,%{scls_mklroot}/lib" \
 %endif
 %endif
+    .
 
 %make_build
 
-# build the static libraries
-%if "%{scls_libs}" == "shared"
-echo "Building shared libraries"
-
-# Loop for building esmumps and ptesmumps libraries
-for l in esmumps ptesmumps; do
-    echo "Building lib${l}.so"
-    # Compile and link the library
-    %{scls_mpicc} -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/esmumps/CMakeFiles/${l}.dir/*.o
-done
-
-# Loop for building ptscotch libraries
-for l in ptscotch ptscotcherr ptscotcherrexit scotch scotcherr scotcherrexit; do
-    echo "Building lib${l}.so"
-    # Compile and link the library
-    %{scls_mpicc} -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/libscotch/CMakeFiles/${l}.dir/*.o
-done
-
-# Loop for building scotchmetis libraries
-#for l in ptscotchparmetisv3 scotchmetisv3 scotchmetisv5; do
-#    echo "Building lib${l}.so"
-#    # Compile and link the library
-#    %{scls_mpicc} -Wl,-rpath,${scls_prefix}/lib -Wl,--build-id -shared -o ./lib/lib${l}.so ./src/libscotchmetis/CMakeFiles/${l}.dir/*.o
-#done
-
-%endif
 
 
 %check
-export LD_LIBRARY_PATH=%{buildroot}/%{scls_prefix}/lib
-export FC=%{scls_mpifort}
-make %{?_smp_mflags} test
+LD_LIBRARY_PATH=$(pwd)/lib:%{scls_ld_library_path} make %{?_smp_mflags} test
 
 %install
 %make_install
-
-%if "%{scls_libs}" == "shared"
-mkdir -p %{buildroot}/%{scls_prefix}/lib/
-install -m 755 ./lib/*.so %{buildroot}/%{scls_prefix}/lib/
-%endif
 
 %files
 %{scls_prefix}/bin/acpl

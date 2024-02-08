@@ -183,6 +183,7 @@ def write_paths(file, config):
     file.write('%define scls_cudamath  /opt/nvidia/hpc_sdk/Linux_x86_64/{:s}/math_libs\n'.format(str(cuda)))
     file.write('%define scls_cuda_version  {:s}\n'.format(str(cuda).replace('.', '-')))
     file.write('%define scls_cuda_architectures  50;52;53;60;61;62;70;72;75;80;86;87;90\n')
+    file.write('%define scls_cuda_arch           50,52,53,60,61,62,70,72,75,80,86,87,90\n')
     file.write('%define scls_ld_library_path  {:s}\n'.format(ld_library_path(config)))
 
 def write_binaries(file,config):

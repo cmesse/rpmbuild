@@ -81,8 +81,6 @@ Examples for PETSC
 %build
 %{expand: %setup_scls_env}
 
-
-
 unset CC
 unset CXX
 unset FC
@@ -93,9 +91,11 @@ unset FFLAGS
 unset CPP
 unset AR
 unset PETSC_DIR
+unset SLEPC_DIR
+unset STRUMPACK_DIR
 ./configure \
     --prefix=%{scls_prefix} \
-	--enable-cxx \
+	--with-debugging=0 \
 %if "%{scls_libs}" == "static"
 	--enable-static \
 	--disable-shared \
@@ -107,16 +107,27 @@ unset PETSC_DIR
 %endif
     --CPP="%{scls_cc} -E" \
 	--CC=%{scls_mpicc} \
-	--CXXCPP=="%{scls_cxx} -E" \
+	--CXXPP="%{scls_cxx} -E" \
 	--CXX=%{scls_mpicxx} \
-	--CFLAGS="%{scls_cflags} %{scls_oflags}" \
-	--CXXFLAGS="%{scls_cxxflags} %{scls_oflags}" \
+	--CFLAGS="%{scls_cflags} %{scls_oflags} %{scls_ldflags}" \
+	--CXXFLAGS="%{scls_cxxflags} %{scls_oflags} %{scls_ldflags}" \
 %if "%{scls_math}" == "cuda"
-	--CUDAC=%{scls_nvcc} \
-    --CUDAFLAGS="-I%{scls_cudamath}/include -I%{scls_cuda}/include" \
+    --with-cuda=1 \
+    --CUDAC=%{scls_nvcc} \
+%if "%{scls_compiler}" == "intel"
+    --CUDAFLAGS="%{scls_nvccflags} -allow-unsupported-compiler" \
+%else
+    --CUDAFLAGS="%{scls_nvccflags}" \
+%endif
+    --CUDA-VERSION="%{scls_cuda_ver}" \
+    --with-cuda-arch="%{scls_cuda_arch}" \
+    --with-cuda-dir="%{scls_cuda}" \
+%else
+    --with-cuda=0 \
 %endif
 	--FC=%{scls_mpifort} \
-	--FFLAGS="%{scls_fcflags}" \
+	--FPP="%{scls_fc} -E" \
+	--FFLAGS="%{scls_fcflags} %{scls_oflags} %{scls_ldflags}" \
 %if "%{scls_compiler}" == "gnu"
 	--CC_LINKER_FLAGS="%{scls_ldflags} -lgfortran" \
 	--CXX_LINKER_FLAGS="%{scls_ldflags} -lgfortran" \
@@ -124,6 +135,8 @@ unset PETSC_DIR
 	--CC_LINKER_FLAGS="%{scls_ldflags}" \
 	--CXX_LINKER_FLAGS="%{scls_ldflags}" \
 %endif
+      --with-cmake-exec=%{scls_prefix}/bin/cmake \
+      --with-ctest-exec=%{scls_prefix}/bin/ctest \
 %if   "%{scls_mpi}" == "openmpi"
     --with-mpiexec=%{scls_prefix}/bin/orterun \
     --with-mpi-include=%{scls_prefix}/include \
@@ -152,20 +165,14 @@ unset PETSC_DIR
 %endif
     --LDFLAGS="%{scls_ldflags}"\
 %endif
-%if "%{scls_math}" == "cuda"
-    --CUDAC=%{scls_nvcc} \
-%if  "%{scls_compiler}" == "intel"
-    --CUDAFLAGS="%{scls_nvccflags}" \
-%endif
-%endif
 %if "%{scls_math}" == "lapack"
 	--with-blas-lib=%{scls_blas} \
 	--with-lapack-lib=%{scls_lapack} \
 	--with-scalapack-include=%{scls_prefix}/include \
 	--with-scalapack-lib=%{scls_scalapack} \
 %else
-	--with-blas-lib="%{scls_mkl_linker_flags}" \
-	--with-lapack-lib="%{scls_mkl_linker_flags}" \
+	--with-blaslapack-include="%{scls_mklroot}/include" \
+	--with-blaslapack-lib="%{scls_mkl_linker_flags}" \
 	--with-scalapack-include=%{scls_mklroot}/include \
 	--with-scalapack-lib="%{scls_mkl_mpi_linker_flags}" \
 %endif
@@ -200,11 +207,16 @@ unset PETSC_DIR
     --with-openmp-lib=/usr/lib64/libgomp.so.1 \
 %endif
 %if "%{scls_compiler}" == "intel"
+%if "%{scls_math}" == "cuda"
+    --with-openmp=0 \
+%else
+    --with-openmp=1 \
     --with-openmp-include=%{scls_comproot}/include \
 %if "%{scls_libs}" == "static"
     --with-openmp-lib=%{scls_comproot}/lib/libiomp5.a \
 %else
     --with-openmp-lib=%{scls_comproot}/lib/libiomp5.so \
+%endif
 %endif
 %endif
 %if  "%{scls_compiler}" == "nvidia"
@@ -218,10 +230,12 @@ unset PETSC_DIR
     --with-zlib-include=/usr/include \
     --with-zlib-lib=/usr/lib64/libz.so
 
-%make_build
+make PETSC_DIR=$(pwd) PETSC_ARCH=arch-linux-c-opt
+
+#%check
+#make PETSC_ARCH=arch-linux-c-opt PETSC_DIR=$(pwd) alltests
 
 %install
-#make PETSC_DIR=%{buildroot}%{scls_prefix} PETSC_ARCH=arch-linux-c-opt install
 unset PETSC_DIR
 %make_install PETSC_ARCH=arch-linux-c-opt
 

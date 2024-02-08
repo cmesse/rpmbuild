@@ -174,9 +174,9 @@ sed -i 's|slate testsweeper|slate slate_lapack_api testsweeper |g' ../unit_test/
 
 %make_build
 
-#%check # causes a timeout
+#%check # causes a timeout in heev
 #cd build
-#%make_build check
+#LD_LIBRARY_PATH=%{scls_ld_library_path} %make_build check
 
 %install
 cd build
