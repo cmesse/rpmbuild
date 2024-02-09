@@ -123,20 +123,48 @@ Scientific Core Libraries
 
 cat <<'EOF' > activate
 #!/usr/bin/env bash
-export PATH=\$(echo \$PATH | tr ':' '\\n' | grep -v '^/opt/scls/.*/bin' | tr '\\n' ':' | sed 's/:\$//')
-export PATH=%{scls_prefix}/bin:\$PATH
-if [ -z "\$PKG_CONFIG_PATH" ]; then
-   export PKG_CONFIG_PATH=%{scls_prefix}/lib/pkgconfig
-else
-   export PKG_CONFIG_PATH=\$(echo \$PKG_CONFIG_PATH | tr ':' '\\n' | grep -v '^/opt/scls/.*/lib/pkgconfig' | tr '\\n' ':' | sed 's/:\$//')
-   export PKG_CONFIG_PATH=%{scls_prefix}/lib/pkgconfig:\$PKG_CONFIG_PATH
-fi
-if [ -z "\$CMAKE_PREFIX_PATH" ]; then
-   export CMAKE_PREFIX_PATH=%{scls_prefix}/lib/cmake
-else
-   export CMAKE_PREFIX_PATH=\$(echo \$CMAKE_PREFIX_PATH | tr ':' '\\n' | grep -v '^/opt/scls/.*/lib/cmake' | tr '\\n' ':' | sed 's/:\$//')
-   export CMAKE_PREFIX_PATH=%{scls_prefix}/lib/cmake:\$CMAKE_PREFIX_PATH
-fi
+
+# Function to remove specific paths from a colon-separated variable
+remove_from_var() {
+    local var_name=$1
+    local pattern=$2
+    if [[ -n "${!var_name}" ]]; then
+        # Convert the variable into an array of paths, filter out unwanted paths, then reassemble
+        IFS=':' read -ra paths <<< "${!var_name}"
+        local new_paths=()
+        for path in "${paths[@]}"; do
+            if [[ ! $path =~ $pattern ]]; then
+                new_paths+=("$path")
+            fi
+        done
+        # Re-join the paths and export the variable
+        export "$var_name"="$(IFS=:; echo "${new_paths[*]}")"
+    fi
+}
+
+# Function to safely append to any colon-separated variable
+add_to_var() {
+    local var_name=$1
+    local new_path=$2
+    if [[ ":${!var_name}:" != *":$new_path:"* ]]; then
+        if [[ -z "${!var_name}" ]]; then
+            export "$var_name"="$new_path"
+        else
+            export "$var_name"="$new_path:${!var_name}"
+        fi
+    fi
+}
+
+# Remove unwanted paths
+remove_from_var PATH '^/opt/scls/.*/bin$'
+remove_from_var PKG_CONFIG_PATH '^/opt/scls/.*/lib/pkgconfig$'
+remove_from_var CMAKE_PREFIX_PATH '^/opt/scls/.*/lib/cmake$'
+
+# Add new paths
+add_to_var PATH "%{scls_prefix}/bin"
+add_to_var PKG_CONFIG_PATH "%{scls_prefix}/lib/pkgconfig"
+add_to_var CMAKE_PREFIX_PATH "%{scls_prefix}/lib/cmake"
+
 export CC=%{scls_cc}
 export CXX=%{scls_cxx}
 export FC=%{scls_fc}

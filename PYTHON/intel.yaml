@@ -2,7 +2,7 @@ flavor:
   host: cascadelake
   compiler: intel
   mpi: intelmpi
-  math: mkl
+  math: cuda
   libs: shared
   int: 32
 
