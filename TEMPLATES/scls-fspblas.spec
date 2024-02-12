@@ -137,20 +137,21 @@ popd
 
 
 %install
-mkdir -p  %{buildroot}%{scls_prefix}/%{scls_libdir}
+mkdir -p  %{buildroot}%{scls_libdir}
 %if "%{scls_libs}" == "static"
-install -m 0644 %{_builddir}/fspblas-%{version}/libfspblas.a %{buildroot}%{scls_prefix}/%{scls_libdir}/
+install -m 0644 %{_builddir}/fspblas-%{version}/libfspblas.a %{buildroot}%{scls_libdir}/
 %else
-install -m 0644 %{_builddir}/fspblas-%{version}/libfspblas.so %{buildroot}%{scls_prefix}/%{scls_libdir}/
+install -m 0755 %{_builddir}/fspblas-%{version}/libfspblas.so %{buildroot}%{scls_libdir}/
 %endif
 
 %files
 %if "%{scls_libs}" == "static"
-%{scls_prefix}/%{scls_libdir}/libfspblas.a
+%{scls_libdir}/libfspblas.a
 %else
-%{scls_prefix}/%{scls_libdir}/libfspblas.so
+%{scls_libdir}/libfspblas.so
 %endif
 
 %changelog
+
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 0.5.0-1
 - Initial Package
