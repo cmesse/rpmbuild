@@ -60,6 +60,7 @@ than another language like Matlab or Octave.
 %{expand: %setup_scls_env}
 %{scls_env} \
 %if "%{scls_math}" == "lapack"
+unset MKLROOT
 LDFLAGS="%{scls_ldflags} %{scls_metis} %{scls_lapack} %{scls_blas}" \
 %else
 LDFLAGS="%{scls_ldflags} %{scls_metis} %{scls_mkl_linker_flags}" \
