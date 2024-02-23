@@ -1,8 +1,8 @@
 %define scls_oflags -O3
 
 Name:           scls-%{scls_flavor}-armadillo
-Version:        12.6.7
-Release:        1%{?dist}
+Version:        12.8.0
+Release:        2%{?dist}
 Summary:        Fast C++ matrix library with syntax similar to MATLAB and Octave
 
 License:        ASL 2.0
@@ -114,5 +114,9 @@ LD_LIBRARY_PATH=%{scls_ld_library_path} make test
 
 
 %changelog
-* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 12.6.7
+* Thu Feb 15 2024 Christian Messe <cmesse@lbl.gov> - 12.8.0-2
+- Update to version 12.8.0
+- Do not link against MKL when in LAPACK flavor
+
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 12.6.7-1
 - Initial Package

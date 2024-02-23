@@ -6,7 +6,7 @@ Name:           scls-%{scls_flavor}-mumps
 %define minor_version 6
 %define patch_version 2
 Version:        %{major_version}.%{minor_version}.%{patch_version}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        A MUltifrontal Massively Parallel sparse direct Solver
 
 License:        CeCILL-C
@@ -179,8 +179,15 @@ for f in *.so ; do
 done ; 
 %endif
 popd
+pushd include
+mkdir -p %{buildroot}%{scls_prefix}/include/mumps
+for f in *.h ; do
+   install -m 644 $f %{buildroot}%{scls_prefix}/include/mumps ;
+done ;
+popd
 
 %files
+%{scls_prefix}/include/mumps
 %if "%{scls_libs}" == "static"
 %{scls_prefix}/lib/libcmumps.a
 %{scls_prefix}/lib/libdmumps.a
@@ -198,5 +205,8 @@ popd
 %endif
 
 %changelog
+* Thu Feb 22 2024 Christian Messe <cmesse@lbl.gov> - 5.6.2-2
+- also install include files
+
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 5.6.2-1
 - Initial Package

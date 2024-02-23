@@ -2,7 +2,7 @@
 
 Name:           scls-%{scls_flavor}-fspblas
 Version:        0.5
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        The NIST Reference Implementation of the Fortran Sparse Matrix Toolkit
 
 
@@ -152,6 +152,8 @@ install -m 0755 %{_builddir}/fspblas-%{version}/libfspblas.so %{buildroot}%{scls
 %endif
 
 %changelog
+* Thu Feb 15 2024 Christian Messe <cmesse@lbl.gov> - 0.5.0-2
+- Do not link against MKL!
 
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 0.5.0-1
 - Initial Package
