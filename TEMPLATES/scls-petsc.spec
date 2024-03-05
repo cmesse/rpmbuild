@@ -45,8 +45,10 @@ BuildRequires:  scls-%{scls_flavor}-gmp
 BuildRequires:  scls-%{scls_flavor}-mpfr
 BuildRequires:  scls-%{scls_flavor}-hdf5
 BuildRequires:  scls-%{scls_flavor}-metis
+BuildRequires:  scls-%{scls_flavor}-parmetis
 BuildRequires:  scls-%{scls_flavor}-scotch
 BuildRequires:  scls-%{scls_flavor}-googletest
+BuildRequires:  scls-%{scls_flavor}-zfp
 
 %if "%{scls_math}" == "cuda"
 BuildRequires: nvhpc-%{scls_cuda_version}
