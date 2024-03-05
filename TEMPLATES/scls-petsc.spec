@@ -1,8 +1,8 @@
 %define scls_oflags -O2
 
 Name:           scls-%{scls_flavor}-petsc
-Version:        3.20.4
-Release:        1%{?dist}
+Version:        3.20.5
+Release:        2%{?dist}
 Summary:        Portable Extensible Toolkit for Scientific Computation
 
 License:        BSD-2-Clause
@@ -43,7 +43,6 @@ Requires:       scls-%{scls_flavor}-%{scls_mpi}
 BuildRequires:  scls-%{scls_flavor}-cmake
 BuildRequires:  scls-%{scls_flavor}-gmp
 BuildRequires:  scls-%{scls_flavor}-mpfr
-BuildRequires:  scls-%{scls_flavor}-fftw
 BuildRequires:  scls-%{scls_flavor}-hdf5
 BuildRequires:  scls-%{scls_flavor}-metis
 BuildRequires:  scls-%{scls_flavor}-scotch
@@ -182,7 +181,6 @@ unset STRUMPACK_DIR
 	--with-64-bit-blas-indices=1 \
 %endif
     --with-cmake-dir=%{scls_prefix} \
-    --with-fftw-dir=%{scls_prefix} \
     --with-gmp-dir=%{scls_prefix} \
     --with-googletest-dir=%{scls_prefix} \
     --with-hdf5-dir=%{scls_prefix} \
@@ -275,5 +273,9 @@ done
 %{scls_prefix}/share/petsc/xml
 
 %changelog
+* Mon Mar  4 2024 Christian Messe <cmesse@lbl.gov> - 3.20.5-2
+- Update to 3.20.5
+- remove FFTW
+
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 3.20.4-1
 - Initial Package

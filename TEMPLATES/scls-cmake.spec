@@ -1,12 +1,12 @@
 %global major_version 3
 %global minor_version 28
-%global patch_version 2
+%global patch_version 3
 
 %define scls_oflags -O2
 
 Name:           scls-%{scls_flavor}-cmake
 Version:        %{major_version}.%{minor_version}.%{patch_version}
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Cross-platform make system
 
 License:        BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0
@@ -88,5 +88,8 @@ cd build
 %{scls_prefix}/share/vim/vimfiles/syntax/cmake.vim
 
 %changelog
-* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 3.28.1
+* Mon Mar  4 2024 Christian Messe <cmesse@lbl.gov> - 3.28.3-2
+- Update to 3.28.3
+
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 3.28.2-1
 - Initial Package

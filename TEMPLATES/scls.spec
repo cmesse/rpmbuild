@@ -1,6 +1,6 @@
 Name:           scls-%{scls_flavor}
 Version:        2024
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Scientific Core Libraries
 
 License:        Various
@@ -73,7 +73,7 @@ Requires:       scls-%{scls_flavor}-%{scls_mpi}
 
 
 # layer 5
-Requires:       scls-%{scls_flavor}-fftw
+#Requires:       scls-%{scls_flavor}-fftw
 Requires:       scls-%{scls_flavor}-hdf5
 Requires:       scls-%{scls_flavor}-lapackpp
 Requires:       scls-%{scls_flavor}-metis
@@ -205,5 +205,8 @@ echo ""
 echo " to set the environment variables."
 
 %changelog
-* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2024
+* Mon Mar  4 2024 Christian Messe <cmesse@lbl.gov> - 2024-2
+- remove FFTW
+
+* Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 2024-1
 - Initial Package

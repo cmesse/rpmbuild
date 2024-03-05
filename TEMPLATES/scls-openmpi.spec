@@ -1,8 +1,8 @@
 %define scls_oflags -O2
 
 Name:           scls-%{scls_flavor}-openmpi
-Version:        5.0.1
-Release:        1%{?dist}
+Version:        5.0.2
+Release:        2%{?dist}
 Summary:        A powerful implementation of MPI/SHMEM
 
 License:        BSD
@@ -122,29 +122,22 @@ make %{?_smp_mflags} test
 %{scls_prefix}/bin/ompi_info
 %{scls_prefix}/bin/opal_wrapper
 %{scls_prefix}/bin/os*
-%{scls_prefix}/bin/p*
 %{scls_prefix}/bin/sh*
 %{scls_prefix}/etc/openmpi-mca-params.conf
 %{scls_prefix}/etc/openmpi-totalview.tcl
-%{scls_prefix}/etc/prte-default-hostfile
-%{scls_prefix}/etc/prte-mca-params.conf
-%{scls_prefix}/etc/prte.conf
 %{scls_prefix}/include/mpi*.h
 %{scls_prefix}/include/openmpi
-%{scls_prefix}/include/prte
 %{scls_prefix}/include/mpp
 %{scls_prefix}/include/openshmem
 %{scls_prefix}/include/p*.h
 %{scls_prefix}/include/s*.h
 %{scls_prefix}/include/shmem.fh
-
 %if "%{scls_libs}" == "static"
 %{scls_prefix}/lib/libmpi.a
 %{scls_prefix}/lib/libmpi_mpifh.a
 %{scls_prefix}/lib/libmpi_usempi_ignore_tkr.a
 %{scls_prefix}/lib/libmpi_usempif08.a
 %{scls_prefix}/lib/libopen-pal.a
-%{scls_prefix}/lib/libprrte.a
 %{scls_prefix}/lib/openmpi/libompi_dbg_msgq.a
 %{scls_prefix}/lib/liboshmem.a
 %else
@@ -158,8 +151,6 @@ make %{?_smp_mflags} test
 %{scls_prefix}/lib/libmpi_usempif08.so.*
 %{scls_prefix}/lib/libopen-pal.so
 %{scls_prefix}/lib/libopen-pal.so.*
-%{scls_prefix}/lib/libprrte.so
-%{scls_prefix}/lib/libprrte.so.*
 %{scls_prefix}/lib/openmpi/libompi_dbg_msgq.so
 %{scls_prefix}/lib/liboshmem.so
 %{scls_prefix}/lib/liboshmem.so.*
@@ -188,20 +179,17 @@ make %{?_smp_mflags} test
 %{scls_prefix}/share/openmpi/amca-param-sets/ft-mpi
 %{scls_prefix}/share/openmpi/*.txt
 %{scls_prefix}/share/openmpi/openmpi-valgrind.supp
-%{scls_prefix}/share/prte/amca-param-sets/example.conf
-%{scls_prefix}/share/prte/help*.txt
-%{scls_prefix}/share/prte/rst/prrte-rst-content/*.rst
-%{scls_prefix}/share/prte/rst/schizo-ompi-rst-content/schizo-ompi-cli.rstxt
 
 %files doc
 %{scls_prefix}/share/doc/openmpi/html
-%{scls_prefix}/share/doc/prrte/html
 %{scls_prefix}/share/man/man1/*.1
 %{scls_prefix}/share/man/man3/*.3
-%{scls_prefix}/share/man/man5/*.5
 %{scls_prefix}/share/man/man7/*.7
 
 %changelog
+* Mon Mar  4 2024 Christian Messe <cmesse@lbl.gov> - 5.0.2-2
+- Update to 5.0.2
+
 * Wed Jan 24 2024 Christian Messe <cmesse@lbl.gov> - 5.0.1-1
 - Initial Package
 
