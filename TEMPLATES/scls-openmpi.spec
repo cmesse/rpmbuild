@@ -2,7 +2,7 @@
 
 Name:           scls-%{scls_flavor}-openmpi
 Version:        5.0.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        A powerful implementation of MPI/SHMEM
 
 License:        BSD
@@ -104,8 +104,7 @@ FCFLAGS+=" -fPIC -DHAVE_UNIX_BYTESWAP %{scls_oflags}" \
    --with-cuda-libdir=%{scls_cuda}/lib64 \
 %endif
    --enable-mpi1-compatibility \
-   --with-libevent-libdir=%{scls_prefix} \
-   --disable-dlopen
+   --with-libevent-libdir=%{scls_prefix}
 
 %make_build
 
@@ -122,7 +121,11 @@ make %{?_smp_mflags} test
 %{scls_prefix}/bin/ompi_info
 %{scls_prefix}/bin/opal_wrapper
 %{scls_prefix}/bin/os*
+%{scls_prefix}/bin/pcc
+%{scls_prefix}/bin/pr*
+%{scls_prefix}/bin/pterm
 %{scls_prefix}/bin/sh*
+%{scls_prefix}/etc/prte*
 %{scls_prefix}/etc/openmpi-mca-params.conf
 %{scls_prefix}/etc/openmpi-totalview.tcl
 %{scls_prefix}/include/mpi*.h
@@ -132,6 +135,7 @@ make %{?_smp_mflags} test
 %{scls_prefix}/include/p*.h
 %{scls_prefix}/include/s*.h
 %{scls_prefix}/include/shmem.fh
+%{scls_prefix}/include/prte
 %if "%{scls_libs}" == "static"
 %{scls_prefix}/lib/libmpi.a
 %{scls_prefix}/lib/libmpi_mpifh.a
@@ -140,6 +144,7 @@ make %{?_smp_mflags} test
 %{scls_prefix}/lib/libopen-pal.a
 %{scls_prefix}/lib/openmpi/libompi_dbg_msgq.a
 %{scls_prefix}/lib/liboshmem.a
+%{scls_prefix}/lib/libprrte.a
 %else
 %{scls_prefix}/lib/libmpi.so
 %{scls_prefix}/lib/libmpi.so.*
@@ -154,6 +159,8 @@ make %{?_smp_mflags} test
 %{scls_prefix}/lib/openmpi/libompi_dbg_msgq.so
 %{scls_prefix}/lib/liboshmem.so
 %{scls_prefix}/lib/liboshmem.so.*
+%{scls_prefix}/lib/libprrte.so
+%{scls_prefix}/lib/libprrte.so.*
 %endif
 %{scls_prefix}/lib/mpi.mod
 %{scls_prefix}/lib/mpi_ext.mod
@@ -175,18 +182,21 @@ make %{?_smp_mflags} test
 %{scls_prefix}/lib/pkgconfig/oshmem-fort.pc
 %{scls_prefix}/lib/pkgconfig/oshmem.pc
 %{scls_prefix}/lib/pmpi_f08_interfaces.mod
-%{scls_prefix}/share/openmpi/amca-param-sets/example.conf
-%{scls_prefix}/share/openmpi/amca-param-sets/ft-mpi
-%{scls_prefix}/share/openmpi/*.txt
-%{scls_prefix}/share/openmpi/openmpi-valgrind.supp
+%{scls_prefix}/share/openmpi
+%{scls_prefix}/share/prte
 
 %files doc
 %{scls_prefix}/share/doc/openmpi/html
+%{scls_prefix}/share/doc/prrte/html
 %{scls_prefix}/share/man/man1/*.1
 %{scls_prefix}/share/man/man3/*.3
+%{scls_prefix}/share/man/man5/*.5
 %{scls_prefix}/share/man/man7/*.7
 
 %changelog
+* Tue Mar 19 2024 Christian Messe <cmesse@lbl.gov> - 5.0.2-3
+- Fix issue with prrte
+
 * Mon Mar  4 2024 Christian Messe <cmesse@lbl.gov> - 5.0.2-2
 - Update to 5.0.2
 
